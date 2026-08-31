@@ -1,0 +1,22 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Smooth Leaflet tile transitions */
+.leaflet-tile {
+  transition: opacity 0.3s ease !important;
+}
+.leaflet-tile-pane {
+  transition: transform 0.25s ease !important;
+}
+.leaflet-zoom-animated {
+  transition: transform 0.25s ease !important;
+}

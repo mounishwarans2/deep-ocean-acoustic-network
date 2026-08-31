@@ -1,0 +1,137 @@
+.sf-page {
+  padding: 0 0 40px 0;
+  animation: sfFadeIn 0.4s ease;
+}
+@keyframes sfFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sf-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #fff;
+  color: #333;
+  font-size: 14px;
+}
+
+/* ── Header ── */
+.sf-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.sf-back {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sf-back:hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+.sf-header-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent-red);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sf-critical-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  animation: sfBlink 1s ease-in-out infinite;
+}
+@keyframes sfBlink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(199,92,92,0.6); }
+  50% { opacity: 0.3; box-shadow: 0 0 2px rgba(199,92,92,0.2); }
+}
+
+/* ── Banner ── */
+.sf-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(199, 92, 92, 0.08);
+  border: 1px solid rgba(199, 92, 92, 0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  animation: sfBannerPulse 2s ease-in-out infinite;
+}
+@keyframes sfBannerPulse {
+  0%, 100% { border-color: rgba(199, 92, 92, 0.3); }
+  50% { border-color: rgba(199, 92, 92, 0.7); }
+}
+.sf-banner-icon {
+  font-size: 28px;
+  color: var(--accent-red);
+  animation: sfBlink 1.5s ease-in-out infinite;
+}
+.sf-banner-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-red);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.sf-banner-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Critical Stats ── */
+.sf-stat-critical {
+  border-color: rgba(199, 92, 92, 0.3) !important;
+  background: rgba(199, 92, 92, 0.04) !important;
+  animation: sfStatPulse 3s ease-in-out infinite;
+}
+@keyframes sfStatPulse {
+  0%, 100% { border-color: rgba(199, 92, 92, 0.3); }
+  50% { border-color: rgba(199, 92, 92, 0.6); }
+}
+
+/* ── Map ── */
+.sf-map-card {
+  border-color: rgba(199, 92, 92, 0.3) !important;
+}
+.sf-map-wrapper {
+  position: relative;
+}
+.sf-map-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid rgba(199, 92, 92, 0.15);
+  animation: sfMapBorder 2s ease-in-out infinite;
+}
+@keyframes sfMapBorder {
+  0%, 100% { border-color: rgba(199, 92, 92, 0.15); }
+  50% { border-color: rgba(199, 92, 92, 0.4); }
+}
+
+/* ── Critical Cards ── */
+.sf-card-critical {
+  border-color: rgba(199, 92, 92, 0.25) !important;
+  background: rgba(199, 92, 92, 0.03) !important;
+}
+
+/* ── Red device blink on map ── */
+@keyframes sfDeviceBlink {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(199,92,92,0.8)); }
+  50% { filter: drop-shadow(0 0 12px rgba(199,92,92,1)) drop-shadow(0 0 20px rgba(199,92,92,0.5)); }
+}
