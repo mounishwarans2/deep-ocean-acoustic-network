@@ -68,14 +68,14 @@ export function SNCPage({ state }: Props) {
           ].map((item, i) => (
             <div key={i} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '7px 10px', borderRadius: 4, fontSize: 11,
+              padding: '7px 10px', borderRadius: 4, fontSize: 12.5,
               background: (item as { highlight?: boolean }).highlight ? 'rgba(217,119,6,0.06)' : item.check ? 'rgba(22,163,74,0.04)' : 'transparent',
               border: `1px solid ${(item as { highlight?: boolean }).highlight ? 'rgba(217,119,6,0.15)' : 'var(--border-light)'}`,
             }}>
               <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{item.value}</span>
-                <span style={{ color: item.check ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 12 }}>{item.check ? '✓' : '—'}</span>
+                <span style={{ color: item.check ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 14 }}>{item.check ? '✓' : '—'}</span>
               </div>
             </div>
           ))}

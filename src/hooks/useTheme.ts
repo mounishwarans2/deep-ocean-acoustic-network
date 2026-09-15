@@ -3,41 +3,38 @@ import { useEffect, useState } from 'react';
 export type Theme = 'dark' | 'light' | 'system';
 
 export function resolveSystemTheme(): 'dark' | 'light' {
-  if (typeof window !== 'undefined' && window.matchMedia) {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
   return 'dark';
 }
 
-export function resolveTheme(t: Theme): 'dark' | 'light' {
-  return t === 'system' ? resolveSystemTheme() : t;
+export function resolveTheme(_t: Theme): 'dark' | 'light' {
+  return 'dark';
 }
 
-export function applyTheme(t: Theme): void {
-  const resolved = resolveTheme(t);
+export function applyTheme(_t: Theme): void {
   if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('data-theme', resolved);
+    document.documentElement.setAttribute('data-theme', 'dark');
+    // Force dark only - persist dark to localStorage
+    try {
+      localStorage.setItem('ui-theme', 'dark');
+    } catch {}
   }
 }
 
 export function useTheme(): [Theme, (t: Theme) => void] {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('ui-theme');
-    return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
-  });
+  const [theme] = useState<Theme>('dark');
 
   useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem('ui-theme', theme);
-  }, [theme]);
+    applyTheme('dark');
+    // Cleanup any old light/system preference
+    try {
+      localStorage.setItem('ui-theme', 'dark');
+    } catch {}
+  }, []);
 
-  useEffect(() => {
-    if (theme !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => applyTheme('system');
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, [theme]);
+  // setter is no-op but keeps API compatible - always stays dark
+  const setTheme = (_t: Theme) => {
+    applyTheme('dark');
+  };
 
   return [theme, setTheme];
 }

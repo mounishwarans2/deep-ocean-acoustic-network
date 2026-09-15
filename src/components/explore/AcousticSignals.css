@@ -1,0 +1,213 @@
+/* ═══════════ Acoustic Signals — signal lab ═══════════ */
+.acoustic-signals .as-lab {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+/* core story strip: medium -> tx/rx -> digital -> dashboard */
+.as-story {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  margin-bottom: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+
+.as-story-step {
+  flex: 1;
+  min-width: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.as-story-icon { font-size: 15px; }
+.as-story-arrow {
+  color: var(--accent-cyan);
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+/* transmitter -> receiver diagram */
+.as-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #04121d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.app .as-link { background: var(--bg-tertiary); }
+
+.as-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.as-node-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.as-node-name {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+}
+.app .as-node-name { color: var(--text-primary); }
+
+.as-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+  margin-top: 4px;
+}
+
+.as-wave {
+  flex: 1;
+  text-align: center;
+  color: var(--accent-cyan);
+  font-size: 14px;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  animation: asWave 2.2s ease-in-out infinite;
+}
+
+@keyframes asWave {
+  0%, 100% { opacity: 0.55; transform: translateX(-4px); }
+  50% { opacity: 1; transform: translateX(4px); }
+}
+
+.as-link-arrow {
+  color: var(--accent-cyan);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.as-panel-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  margin: 14px 0 8px;
+}
+
+/* spectrogram */
+.as-spec-wrap {
+  background: #020a12;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 6px;
+  padding: 8px 8px 4px;
+}
+
+.as-axis-y {
+  display: block;
+  font-size: 9.5px;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.as-axis-x {
+  display: block;
+  text-align: right;
+  font-size: 9.5px;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  padding: 3px 2px 2px;
+}
+
+.as-spec {
+  display: block;
+  width: 100%;
+  height: 150px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #020a12;
+}
+
+/* metrics row */
+.as-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.as-metric {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  text-align: center;
+  min-width: 0;
+}
+
+.as-metric-k {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.as-metric-v {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.as-metric-v.as-live { color: var(--accent-green); }
+
+.as-level {
+  display: inline-block;
+  width: 44px;
+  height: 6px;
+  background: var(--bg-ocean);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.as-level-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent-cyan);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+@media (max-width: 700px) {
+  .as-metrics { grid-template-columns: repeat(2, 1fr); }
+  .as-spec { height: 120px; }
+  .as-story-step { min-width: 130px; }
+}

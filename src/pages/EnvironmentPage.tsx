@@ -1,5 +1,6 @@
 import type { SimulationState } from '../hooks/useSimulation';
 import { deviceTypeColor, deviceSymbol } from '../utils/format';
+import { DepthProfile } from './DepthProfile';
 
 interface Props {
   state: SimulationState;
@@ -21,19 +22,14 @@ export function EnvironmentPage({ state, selectedDeviceId, onSelectDevice }: Pro
         <div className="stat-card"><div className="stat-label">Max Depth</div><div className="stat-value purple">{maxDepth.toLocaleString()} m</div></div>
       </div>
 
-      <div className="page-grid-2">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, alignItems: 'start' }}>
         <div className="card">
           <div className="card-header"><span className="card-title">Depth Profile</span></div>
-          {[...devices].sort((a, b) => a.depth - b.depth).map(d => (
-            <div key={d.id} onClick={() => onSelectDevice(selectedDeviceId === d.id ? null : d.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '2px 4px', borderRadius: 3, marginBottom: 2, background: selectedDeviceId === d.id ? 'rgba(37,99,235,0.06)' : 'transparent' }}>
-              <span style={{ width: 32, fontSize: 9, fontWeight: 600, color: deviceTypeColor(d.type) }}>{d.id}</span>
-              <div style={{ flex: 1, height: 10, background: 'var(--bg-ocean)', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${(d.depth / maxDepth) * 100}%`, background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-cyan))', borderRadius: 2, display: 'flex', alignItems: 'center', paddingLeft: 4 }}>
-                  <span style={{ fontSize: 8, color: '#fff', fontWeight: 600 }}>{d.depth.toLocaleString()} m</span>
-                </div>
-              </div>
-            </div>
-          ))}
+          <DepthProfile
+            devices={devices}
+            selectedDeviceId={selectedDeviceId}
+            onSelectDevice={onSelectDevice}
+          />
         </div>
 
         <div className="card">
@@ -71,7 +67,7 @@ export function EnvironmentPage({ state, selectedDeviceId, onSelectDevice }: Pro
             <div className="stat-card"><div className="stat-label">Background Noise</div><div className="stat-value yellow">{selectedDevice.backgroundNoise.toFixed(1)} dB</div></div>
             <div className="stat-card"><div className="stat-label">Current Speed</div><div className="stat-value">{selectedDevice.currentSpeed.toFixed(2)} m/s</div></div>
             <div className="stat-card"><div className="stat-label">Water Density</div><div className="stat-value">{selectedDevice.waterDensity.toFixed(0)} kg/m³</div></div>
-            <div className="stat-card"><div className="stat-label">Coordinates</div><div className="stat-value" style={{ fontSize: 11 }}>{selectedDevice.latitude.toFixed(3)}°N / {selectedDevice.longitude.toFixed(3)}°W</div></div>
+            <div className="stat-card"><div className="stat-label">Coordinates</div><div className="stat-value" style={{ fontSize: 12.5 }}>{selectedDevice.latitude.toFixed(3)}°N / {selectedDevice.longitude.toFixed(3)}°W</div></div>
           </div>
         </div>
       )}

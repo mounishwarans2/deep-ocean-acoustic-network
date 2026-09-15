@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 *.local
+public/ocean_video.mp4
+
+# Twilio / backend secrets — never commit
+.env
+server/.env
+server/node_modules
 
 # Editor directories and files
 .vscode/*

@@ -25,9 +25,9 @@ export function AlertsPage({ state }: Props) {
 
       {!hasIssues && (
         <div className="card" style={{ textAlign: 'center', padding: 24 }}>
-          <div style={{ fontSize: 20, color: 'var(--accent-green)', marginBottom: 4 }}>✓</div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-green)' }}>SYSTEM HEALTHY</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>No active anomalies detected.</div>
+          <div style={{ fontSize: 24.5, color: 'var(--accent-green)', marginBottom: 4 }}>✓</div>
+          <div style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--accent-green)' }}>SYSTEM HEALTHY</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 2 }}>No active anomalies detected.</div>
         </div>
       )}
 

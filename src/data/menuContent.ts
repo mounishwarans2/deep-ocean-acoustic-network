@@ -77,7 +77,7 @@ export const MENU_GROUPS: MenuGroup[] = [
             heading: 'Main Objectives',
             items: [
               { num: '01', title: 'UNDERWATER COMMUNICATION', desc: 'Build a reliable multi-node acoustic communication network.' },
-              { num: '02', title: 'AI INTELLIGENCE', desc: 'Enable autonomous monitoring and communication decisions.' },
+              { num: '02', title: 'PROGRAMMING INTELLIGENCE', desc: 'Enable autonomous monitoring and communication decisions.' },
               { num: '03', title: 'PRISM ADAPTIVE ROUTING', desc: 'Select suitable routes and reroute communication when links or nodes fail.' },
               { num: '04', title: 'SNC ANALYTICS', desc: 'Analyze latency, traffic intensity, packet loss, service rate, backlog and stability.' },
               { num: '05', title: 'LONG-DURATION POWER', desc: 'Provide continuous autonomous power with hybrid power architecture.' },
@@ -172,7 +172,7 @@ export const MENU_GROUPS: MenuGroup[] = [
       },
       {
         id: 'ai-intel',
-        label: 'AI Intelligence',
+        label: 'Programming Intelligence',
         icon: '🧠',
         actionType: 'content',
         sections: [
@@ -725,9 +725,7 @@ export const MENU_GROUPS: MenuGroup[] = [
     label: 'APPEARANCE',
     icon: '🎨',
     options: [
-      { id: 'theme-dark', label: 'Dark Ocean Theme', icon: '🌙', actionType: 'theme', theme: 'dark' },
-      { id: 'theme-light', label: 'Light Research Theme', icon: '☀️', actionType: 'theme', theme: 'light' },
-      { id: 'theme-system', label: 'System Default', icon: '💻', actionType: 'theme', theme: 'system' },
+      { id: 'theme-dark', label: 'Dark Ocean Theme (Default)', icon: '🌙', actionType: 'theme', theme: 'dark' },
     ],
   },
   {

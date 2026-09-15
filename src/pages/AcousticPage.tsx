@@ -24,7 +24,7 @@ export function AcousticPage({ state, selectedDeviceId, onSelectDevice }: Props)
       <div className="card">
         <div className="card-header">
           <span className="card-title">Acoustic Channel</span>
-          <span style={{ fontSize: 10, fontWeight: 600, color: channelColor }}>{channelState}</span>
+          <span style={{ fontSize: 11.5, fontWeight: 600, color: channelColor }}>{channelState}</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
           <div className="stat-card"><div className="stat-label">Frequency</div><div className="stat-value cyan">{avgFreq.toFixed(1)} kHz</div></div>

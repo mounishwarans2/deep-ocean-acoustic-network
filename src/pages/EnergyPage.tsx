@@ -28,8 +28,8 @@ export function EnergyPage({ state, selectedDeviceId, onSelectDevice }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 0', flexWrap: 'wrap' }}>
           {['Primary Source', 'Energy Management', 'Secondary Storage', 'Communication Load'].map((label, i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: 4, padding: '6px 12px', textAlign: 'center', fontSize: 10, color: 'var(--text-primary)', fontWeight: 500 }}>{label}</div>
-              {i < 3 && <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>→</span>}
+              <div style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: 4, padding: '6px 12px', textAlign: 'center', fontSize: 11.5, color: 'var(--text-primary)', fontWeight: 500 }}>{label}</div>
+              {i < 3 && <span style={{ color: 'var(--text-muted)', fontSize: 16.5 }}>→</span>}
             </div>
           ))}
         </div>

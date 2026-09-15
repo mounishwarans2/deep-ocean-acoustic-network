@@ -56,7 +56,7 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
     <div className="detail-panel">
       <div className="detail-header">
         <div className="detail-header-left">
-          <span style={{ color: deviceTypeColor(device.type), fontSize: 16 }}>{deviceSymbol(device.type)}</span>
+          <span style={{ color: deviceTypeColor(device.type), fontSize: 19.5 }}>{deviceSymbol(device.type)}</span>
           <h3>{device.id} — {device.name}</h3>
           <span className={`status-badge ${device.status.toLowerCase()}`}>{device.status}</span>
         </div>
@@ -79,12 +79,12 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
                 const peerId = link.sourceNode === device.id ? link.destinationNode : link.sourceNode;
                 const peer = devices.find(d => d.id === peerId);
                 return (
-                  <div key={link.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 10, borderBottom: '1px solid var(--border-light)' }}>
+                  <div key={link.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 11.5, borderBottom: '1px solid var(--border-light)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ fontWeight: 600, color: peer ? deviceTypeColor(peer.type) : 'var(--text-muted)' }}>{peerId}</span>
                       <span style={{ color: 'var(--text-muted)' }}>{formatDistance(link.distanceMeters)}</span>
                     </div>
-                    <span style={{ fontSize: 9, fontWeight: 600, color: link.status === 'ACTIVE' ? 'var(--accent-green)' : 'var(--accent-red)' }}>{link.status}</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 600, color: link.status === 'ACTIVE' ? 'var(--accent-green)' : 'var(--accent-red)' }}>{link.status}</span>
                   </div>
                 );
               })}
@@ -115,15 +115,15 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
                 const peer = devices.find(d => d.id === peerId);
                 const inRoute = route.includes(peerId);
                 return (
-                  <div key={link.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 10, borderBottom: '1px solid var(--border-light)' }}>
+                  <div key={link.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 11.5, borderBottom: '1px solid var(--border-light)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ fontWeight: 600, color: peer ? deviceTypeColor(peer.type) : 'var(--text-muted)' }}>{peerId}</span>
-                      {inRoute && <span style={{ fontSize: 8, color: 'var(--accent-cyan)', background: 'rgba(8,145,178,0.1)', padding: '0 4px', borderRadius: 2 }}>ROUTE</span>}
+                      {inRoute && <span style={{ fontSize: 9.5, color: 'var(--accent-cyan)', background: 'rgba(8,145,178,0.1)', padding: '0 4px', borderRadius: 2 }}>ROUTE</span>}
                       <span style={{ color: 'var(--text-muted)' }}>{formatDistance(link.distanceMeters)}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ color: link.signalQuality > 70 ? 'var(--accent-green)' : 'var(--accent-yellow)', fontSize: 9 }}>{link.signalQuality.toFixed(0)}%</span>
-                      <span style={{ fontSize: 9, fontWeight: 600, color: link.status === 'ACTIVE' ? 'var(--accent-green)' : link.status === 'DEGRADED' ? 'var(--accent-yellow)' : 'var(--accent-red)' }}>{link.status}</span>
+                      <span style={{ color: link.signalQuality > 70 ? 'var(--accent-green)' : 'var(--accent-yellow)', fontSize: 10.5 }}>{link.signalQuality.toFixed(0)}%</span>
+                      <span style={{ fontSize: 10.5, fontWeight: 600, color: link.status === 'ACTIVE' ? 'var(--accent-green)' : link.status === 'DEGRADED' ? 'var(--accent-yellow)' : 'var(--accent-red)' }}>{link.status}</span>
                     </div>
                   </div>
                 );
@@ -147,7 +147,7 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
           <h4>Device</h4>
           <div className="detail-row"><span className="detail-row-label">ID</span><span className="detail-row-value">{device.id}</span></div>
           <div className="detail-row"><span className="detail-row-label">Type</span><span className="detail-row-value">{deviceTypeLabel(device.type)}</span></div>
-          <div className="detail-row"><span className="detail-row-label">Purpose</span><span className="detail-row-value" style={{ fontSize: 10 }}>{purpose}</span></div>
+          <div className="detail-row"><span className="detail-row-label">Purpose</span><span className="detail-row-value" style={{ fontSize: 11.5 }}>{purpose}</span></div>
           <div className="detail-row"><span className="detail-row-label">Depth</span><span className="detail-row-value">{device.depth.toLocaleString()} m</span></div>
           <div className="detail-row"><span className="detail-row-label">Condition</span><span className="detail-row-value" style={{ color: device.status === 'NORMAL' ? 'var(--accent-green)' : device.status === 'WARNING' ? 'var(--accent-yellow)' : 'var(--accent-red)' }}>{device.status}</span></div>
         </div>
@@ -160,18 +160,18 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
             const peer = devices.find(d => d.id === peerId);
             const inRoute = route.includes(peerId);
             return (
-              <div key={link.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 10, borderBottom: '1px solid var(--border-light)' }}>
+              <div key={link.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 11.5, borderBottom: '1px solid var(--border-light)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontWeight: 600, color: peer ? deviceTypeColor(peer.type) : 'var(--text-muted)' }}>{peerId}</span>
-                  {inRoute && <span style={{ fontSize: 8, color: 'var(--accent-cyan)', background: 'rgba(8,145,178,0.1)', padding: '0 4px', borderRadius: 2 }}>ROUTE</span>}
+                  {inRoute && <span style={{ fontSize: 9.5, color: 'var(--accent-cyan)', background: 'rgba(8,145,178,0.1)', padding: '0 4px', borderRadius: 2 }}>ROUTE</span>}
                   <span style={{ color: 'var(--text-muted)' }}>{formatDistance(link.distanceMeters)}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ color: link.signalQuality > 70 ? 'var(--accent-green)' : 'var(--accent-yellow)', fontSize: 9 }}>
+                  <span style={{ color: link.signalQuality > 70 ? 'var(--accent-green)' : 'var(--accent-yellow)', fontSize: 10.5 }}>
                     {link.signalQuality.toFixed(0)}%
                   </span>
                   <span style={{
-                    fontSize: 9, fontWeight: 600,
+                    fontSize: 10.5, fontWeight: 600,
                     color: link.status === 'ACTIVE' ? 'var(--accent-green)' : link.status === 'DEGRADED' ? 'var(--accent-yellow)' : 'var(--accent-red)',
                   }}>
                     {link.status}
@@ -209,7 +209,7 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
               <div className="detail-row"><span className="detail-row-label">Previous Hop</span><span className="detail-row-value">{prevHop || '— (origin)'}</span></div>
               <div className="detail-row"><span className="detail-row-label">Route Cost</span><span className="detail-row-value" style={{ color: 'var(--accent-yellow)' }}>{routeCost.toFixed(1)}</span></div>
               <div style={{ marginTop: 6 }}>
-                <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>Active PRISM Route</div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 3 }}>Active PRISM Route</div>
                 <div className="route-flow">
                   {route.map((id, i) => (
                     <span key={id}>
@@ -228,24 +228,24 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
             <div style={{ marginTop: 4 }}>
               {device.alternateRoutes.slice(0, 2).map((alt, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', minWidth: 20 }}>Alt {i + 1}:</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{alt.join(' → ')}</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--text-muted)', minWidth: 20 }}>Alt {i + 1}:</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>{alt.join(' → ')}</span>
                 </div>
               ))}
             </div>
           )}
           {linkCosts.length > 0 && (
             <div style={{ marginTop: 6 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>Link Assessment</div>
+              <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 3 }}>Link Assessment</div>
               {linkCosts.map(lc => (
-                <div key={lc.peer} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 0', fontSize: 9 }}>
+                <div key={lc.peer} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 0', fontSize: 10.5 }}>
                   <span style={{ color: lc.inRoute ? 'var(--accent-cyan)' : 'var(--text-secondary)', fontWeight: lc.inRoute ? 600 : 400 }}>
                     {lc.peer} {lc.inRoute ? '<' : ''} <span style={{ color: 'var(--text-muted)' }}>{formatDistance(lc.distance)}</span>
                   </span>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ color: 'var(--text-muted)' }}>{lc.cost}</span>
                     <span style={{
-                      fontSize: 8, fontWeight: 600,
+                      fontSize: 9.5, fontWeight: 600,
                       color: lc.status === 'ACTIVE' ? 'var(--accent-green)' : lc.status === 'DEGRADED' ? 'var(--accent-yellow)' : 'var(--accent-red)',
                     }}>
                       {lc.status}

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSimulation } from '../hooks/useSimulation';
+import { readNotifyStatus } from '../utils/notify';
+import type { NotifyStatus } from '../utils/notify';
 import { NetworkTopology } from '../components/topology/NetworkTopology';
 import { MiniChart } from '../components/charts/MiniChart';
 import { formatPercent, formatLatency, formatDecimal } from '../utils/format';
@@ -11,6 +13,12 @@ export default function SystemFailurePage() {
   const { state } = useSimulation();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [flowDirection] = useState<'UPLINK' | 'DOWNLINK'>('UPLINK');
+  // Notification outcome written by Dashboard's System Failure action (if any).
+  const [notify, setNotify] = useState<NotifyStatus | null>(() => readNotifyStatus());
+  useEffect(() => {
+    const t = setInterval(() => setNotify(readNotifyStatus()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   if (!state) return <div className="sf-loading">Loading...</div>;
 
@@ -102,6 +110,29 @@ export default function SystemFailurePage() {
           <div className="sf-banner-desc">Micro nuclear battery MN-01 has ceased output. All devices operating on emergency reserves. Immediate recovery required.</div>
         </div>
       </div>
+
+      {/* Twilio notification outcome (written by Dashboard action; failure view always renders) */}
+      {notify && (
+        <div className="card" style={{ borderLeft: '3px solid var(--accent-red)' }}>
+          <div className="card-header"><span className="card-title">🚨 Failure detected — operator notification</span></div>
+          {notify.phase === 'retrying' ? (
+            <div className="metric-row">
+              <span className="metric-label">Status</span>
+              <span className="metric-value" style={{ color: 'var(--accent-yellow)' }}>
+                🔄 Retrying... (attempt {notify.attempt ?? '?'} of 3)
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="metric-row"><span className="metric-label">SMS</span><span className="metric-value">{notify.sms}</span></div>
+              <div className="metric-row"><span className="metric-label">Call</span><span className="metric-value">{notify.call}</span></div>
+            </>
+          )}
+          {notify.detail && (
+            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4 }}>{notify.detail}</div>
+          )}
+        </div>
+      )}
 
       {/* KPI Cards — Alert on MN-01 only */}
       <div className="stat-grid" style={{ marginBottom: 10 }}>

@@ -73,7 +73,7 @@ export function HistoricalAnalytics({ state }: Props) {
                 key={r.id}
                 onClick={() => setRange(r.id)}
                 style={{
-                  padding: '3px 10px', fontSize: 10, borderRadius: 3, border: 'none', cursor: 'pointer',
+                  padding: '3px 10px', fontSize: 11.5, borderRadius: 3, border: 'none', cursor: 'pointer',
                   background: range === r.id ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
                   color: range === r.id ? '#fff' : 'var(--text-secondary)',
                   fontWeight: range === r.id ? 600 : 400,
@@ -84,7 +84,7 @@ export function HistoricalAnalytics({ state }: Props) {
             ))}
           </div>
         </div>
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', padding: '0 0 6px' }}>
+        <div style={{ fontSize: 11.5, color: 'var(--text-muted)', padding: '0 0 6px' }}>
           Rolling buffer: {state.historyLatency.length} points &middot; Displaying last {maxPoints} samples &middot; 3s interval
         </div>
       </div>
@@ -94,12 +94,12 @@ export function HistoricalAnalytics({ state }: Props) {
           <div key={c.title} className="card">
             <div className="card-header">
               <span className="card-title">{c.title}</span>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
                 {c.format(latestValue(c.data))}{c.unit}
               </span>
             </div>
             <MiniChart data={c.data} color={c.color} height={60} showDots />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', marginTop: 4, padding: '0 2px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: 'var(--text-muted)', marginTop: 4, padding: '0 2px' }}>
               <span>min: {c.format(minValue(c.data))}</span>
               <span>avg: {c.format(avgValue(c.data))}</span>
               <span>max: {c.format(maxValue(c.data))}</span>
@@ -111,7 +111,7 @@ export function HistoricalAnalytics({ state }: Props) {
       <div className="card">
         <div className="card-header">
           <span className="card-title">Statistical Summary</span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Last {maxPoints} samples</span>
+          <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Last {maxPoints} samples</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="health-table">

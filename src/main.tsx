@@ -5,8 +5,9 @@ import './index.css'
 import App from './App.tsx'
 import { applyTheme } from './hooks/useTheme'
 
-const savedTheme = localStorage.getItem('ui-theme')
-applyTheme(savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system' ? savedTheme : 'system')
+// Force dark theme only - ignore saved preference
+localStorage.setItem('ui-theme', 'dark')
+applyTheme('dark')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

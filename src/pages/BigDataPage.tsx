@@ -14,7 +14,7 @@ export function BigDataPage({ state }: Props) {
       <div className="card">
         <div className="card-header">
           <span className="card-title">Device Telemetry — Per-Device Stream</span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{state.devices.length} devices reporting</span>
+          <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{state.devices.length} devices reporting</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, padding: '8px 14px' }}>
           {state.devices.map(d => (
@@ -23,17 +23,17 @@ export function BigDataPage({ state }: Props) {
               padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 4,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: deviceTypeColor(d.type) }}>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: deviceTypeColor(d.type) }}>
                   {deviceSymbol(d.type)} {d.id}
                 </span>
                 <span style={{
-                  fontSize: 8, fontWeight: 600, padding: '0 4px', borderRadius: 3,
+                  fontSize: 9.5, fontWeight: 600, padding: '0 4px', borderRadius: 3,
                   color: d.status === 'NORMAL' ? 'var(--accent-green)' : d.status === 'WARNING' ? 'var(--accent-yellow)' : 'var(--accent-red)',
                   background: d.status === 'NORMAL' ? 'rgba(34,197,94,0.1)' : d.status === 'WARNING' ? 'rgba(250,204,21,0.1)' : 'rgba(239,68,68,0.1)',
                 }}>{d.status}</span>
               </div>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{d.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 8px', fontSize: 9 }}>
+              <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{d.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 8px', fontSize: 10.5 }}>
                 <div><span style={{ color: 'var(--text-muted)' }}>TX: </span><span style={{ color: 'var(--text-secondary)' }}>{d.packetsSent.toLocaleString()}</span></div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Loss: </span><span style={{ color: d.packetLoss > 3 ? 'var(--accent-yellow)' : 'var(--text-secondary)' }}>{formatPercent(d.packetLoss)}</span></div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Rate: </span><span style={{ color: 'var(--accent-cyan)' }}>{d.throughput.toFixed(1)} msg/s</span></div>
@@ -42,11 +42,11 @@ export function BigDataPage({ state }: Props) {
                 <div><span style={{ color: 'var(--text-muted)' }}>Bat: </span><span style={{ color: d.secondaryBattery > 80 ? 'var(--accent-green)' : 'var(--accent-yellow)' }}>{formatPercent(d.secondaryBattery)}</span></div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>Depth</span>
+                <span style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>Depth</span>
                 <div style={{ flex: 1, height: 2, background: 'var(--bg-ocean)', borderRadius: 1 }}>
                   <div style={{ height: '100%', width: `${Math.min(d.depth / 55, 100)}%`, background: 'var(--accent-blue)', borderRadius: 1 }} />
                 </div>
-                <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>{d.depth.toLocaleString()}m</span>
+                <span style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>{d.depth.toLocaleString()}m</span>
               </div>
             </div>
           ))}
@@ -72,7 +72,7 @@ export function BigDataPage({ state }: Props) {
                 <div className={`pipeline-box ${step.online ? 'online' : ''}`}>
                   <div>
                     <div className="pipeline-box-name">{step.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{step.detail}</div>
+                    <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>{step.detail}</div>
                   </div>
                   <div className="pipeline-box-status">
                     <span className="status-dot" style={{ background: step.online ? 'var(--accent-green)' : 'var(--accent-red)' }} />
@@ -90,7 +90,7 @@ export function BigDataPage({ state }: Props) {
         <div className="card">
           <div className="card-header">
             <span className="card-title">Kafka</span>
-            <span style={{ color: pipeline.kafka ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 10 }}>
+            <span style={{ color: pipeline.kafka ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 11.5 }}>
               ● {pipeline.kafka ? 'ONLINE' : 'OFFLINE'}
             </span>
           </div>
@@ -111,7 +111,7 @@ export function BigDataPage({ state }: Props) {
         <div className="card">
           <div className="card-header">
             <span className="card-title">Spark</span>
-            <span style={{ color: pipeline.spark ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 10 }}>
+            <span style={{ color: pipeline.spark ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 11.5 }}>
               ● {pipeline.spark ? 'ONLINE' : 'OFFLINE'}
             </span>
           </div>
@@ -132,7 +132,7 @@ export function BigDataPage({ state }: Props) {
         <div className="card">
           <div className="card-header">
             <span className="card-title">Cassandra</span>
-            <span style={{ color: pipeline.cassandra ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 10 }}>
+            <span style={{ color: pipeline.cassandra ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 11.5 }}>
               ● {pipeline.cassandra ? 'ONLINE' : 'OFFLINE'}
             </span>
           </div>

@@ -27,7 +27,7 @@ export function DeviceHealthTable({ state, selectedDeviceId, onSelectDevice }: P
       <div className="card">
         <div className="card-header">
           <span className="card-title">Device Health Table</span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{devices.length} devices</span>
+          <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{devices.length} devices</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="health-table">
@@ -57,7 +57,7 @@ export function DeviceHealthTable({ state, selectedDeviceId, onSelectDevice }: P
                   <td style={{ fontWeight: 600, color: deviceTypeColor(d.type) }}>
                     {deviceSymbol(d.type)} {d.id}
                   </td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: 10 }}>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: 11.5 }}>
                     {deviceTypeLabel(d.type)}
                   </td>
                   <td>
@@ -85,7 +85,7 @@ export function DeviceHealthTable({ state, selectedDeviceId, onSelectDevice }: P
                   <td style={{ color: 'var(--text-secondary)' }}>{formatLatency(d.latency)}</td>
                   <td style={{ color: 'var(--text-secondary)' }}>{d.depth.toLocaleString()} m</td>
                   <td style={{ color: 'var(--text-secondary)' }}>{d.temperature.toFixed(1)} °C</td>
-                  <td style={{ fontSize: 10, color: d.connectedNodes.length > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                  <td style={{ fontSize: 11.5, color: d.connectedNodes.length > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                     {d.connectedNodes.length} node{d.connectedNodes.length !== 1 ? 's' : ''}
                   </td>
                 </tr>

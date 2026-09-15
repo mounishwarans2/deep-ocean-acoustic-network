@@ -68,7 +68,7 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
               <button
                 onClick={() => setFlowDirection('UPLINK')}
                 style={{
-                  padding: '3px 10px', fontSize: 9, fontWeight: 600, borderRadius: 3, cursor: 'pointer',
+                  padding: '3px 10px', fontSize: 10.5, fontWeight: 600, borderRadius: 3, cursor: 'pointer',
                   border: flowDirection === 'UPLINK' ? '1px solid var(--accent-cyan)' : '1px solid var(--border)',
                   background: flowDirection === 'UPLINK' ? 'rgba(8,145,178,0.1)' : 'transparent',
                   color: flowDirection === 'UPLINK' ? 'var(--accent-cyan)' : 'var(--text-muted)',
@@ -80,7 +80,7 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
               <button
                 onClick={() => setFlowDirection('DOWNLINK')}
                 style={{
-                  padding: '3px 10px', fontSize: 9, fontWeight: 600, borderRadius: 3, cursor: 'pointer',
+                  padding: '3px 10px', fontSize: 10.5, fontWeight: 600, borderRadius: 3, cursor: 'pointer',
                   border: flowDirection === 'DOWNLINK' ? '1px solid var(--accent-yellow)' : '1px solid var(--border)',
                   background: flowDirection === 'DOWNLINK' ? 'rgba(217,119,6,0.1)' : 'transparent',
                   color: flowDirection === 'DOWNLINK' ? 'var(--accent-yellow)' : 'var(--text-muted)',
@@ -90,10 +90,10 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
                 ↓ Downlink
               </button>
             </div>
-            <div style={{ display: 'flex', gap: 10, fontSize: 9, color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', gap: 10, fontSize: 10.5, color: 'var(--text-muted)' }}>
               {(['SURFACE_RECEIVER', 'GATEWAY', 'ACOUSTIC_RELAY', 'NAVIGATION_RELAY', 'SEAFLOOR_RELAY', 'HYDROPHONE', 'ENVIRONMENTAL_SENSOR'] as const).map(t => (
                 <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <span style={{ color: deviceTypeColor(t), fontSize: 8 }}>{deviceSymbol(t)}</span>
+                  <span style={{ color: deviceTypeColor(t), fontSize: 9.5 }}>{deviceSymbol(t)}</span>
                   {t.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).split(' ').slice(0, 1)}
                 </span>
               ))}
@@ -117,17 +117,17 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
         <div className="card">
           <div className="card-header"><span className="card-title">Signal Quality</span></div>
           <MiniChart data={historySignalQuality} color="var(--accent-cyan)" height={48} />
-          <div style={{ textAlign: 'right', fontSize: 9, color: 'var(--text-muted)', marginTop: 3 }}>{formatPercent(historySignalQuality[historySignalQuality.length - 1]?.value || 0)}</div>
+          <div style={{ textAlign: 'right', fontSize: 10.5, color: 'var(--text-muted)', marginTop: 3 }}>{formatPercent(historySignalQuality[historySignalQuality.length - 1]?.value || 0)}</div>
         </div>
         <div className="card">
           <div className="card-header"><span className="card-title">Throughput</span></div>
           <MiniChart data={historyThroughput} color="var(--accent-blue)" height={48} />
-          <div style={{ textAlign: 'right', fontSize: 9, color: 'var(--text-muted)', marginTop: 3 }}>{formatDecimal(historyThroughput[historyThroughput.length - 1]?.value || 0)} msg/s</div>
+          <div style={{ textAlign: 'right', fontSize: 10.5, color: 'var(--text-muted)', marginTop: 3 }}>{formatDecimal(historyThroughput[historyThroughput.length - 1]?.value || 0)} msg/s</div>
         </div>
         <div className="card">
           <div className="card-header"><span className="card-title">Latency</span></div>
           <MiniChart data={historyLatency} color="var(--accent-yellow)" height={48} />
-          <div style={{ textAlign: 'right', fontSize: 9, color: 'var(--text-muted)', marginTop: 3 }}>{formatLatency(historyLatency[historyLatency.length - 1]?.value || 0)}</div>
+          <div style={{ textAlign: 'right', fontSize: 10.5, color: 'var(--text-muted)', marginTop: 3 }}>{formatLatency(historyLatency[historyLatency.length - 1]?.value || 0)}</div>
         </div>
       </div>
 
@@ -142,16 +142,16 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
             { name: 'Cassandra', online: pipeline.cassandra },
             { name: 'API', online: pipeline.api },
           ].map(p => (
-            <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, padding: '2px 0' }}>
+            <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, padding: '2px 0' }}>
               <span style={{ color: 'var(--text-secondary)' }}>{p.name}</span>
-              <span style={{ color: p.online ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 9 }}>{p.online ? '● ONLINE' : '● OFFLINE'}</span>
+              <span style={{ color: p.online ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 10.5 }}>{p.online ? '● ONLINE' : '● OFFLINE'}</span>
             </div>
           ))}
         </div>
         <div className="card">
           <div className="card-header"><span className="card-title">Recent Alerts</span></div>
           {alerts.filter(a => a.severity !== 'INFO').length === 0 ? (
-            <div style={{ fontSize: 11, color: 'var(--accent-green)', textAlign: 'center', padding: 6 }}>All systems nominal</div>
+            <div style={{ fontSize: 12.5, color: 'var(--accent-green)', textAlign: 'center', padding: 6 }}>All systems nominal</div>
           ) : alerts.filter(a => a.severity !== 'INFO').slice(0, 3).map(a => (
             <div key={a.id} className={`alert-item ${a.severity.toLowerCase()}`} style={{ marginBottom: 5 }}>
               <div className="alert-content">

@@ -1,5 +1,14 @@
 import type { MenuOption } from '../../data/menuContent';
+import { ExplorePortal } from '../explore/ExplorePortal';
+import { DeviceExplorer } from '../explore/DeviceExplorer';
+import { OceanGallery } from '../explore/OceanGallery';
+import { ListenToOcean } from '../explore/ListenToOcean';
+import { AcousticSignals } from '../explore/AcousticSignals';
+import { OceanSoundscape } from '../explore/OceanSoundscape';
 import './Menu.css';
+
+const EXPLORE_IDS = new Set(['vision', 'mission-arch', 'system-mission', 'milestones', 'future']);
+const DEVICE_IDS = new Set(['about-device','ai-intel','prism','snc','primary-power','secondary-power','syntactic','local-1gb','ballast','emergency-recovery']);
 
 interface Props {
   option: MenuOption;
@@ -7,6 +16,24 @@ interface Props {
 }
 
 export function MenuContentView({ option, onClose }: Props) {
+  if (option.id === 'ocean-gallery') {
+    return <OceanGallery option={option} onClose={onClose} />;
+  }
+  if (option.id === 'listen-ocean') {
+    return <ListenToOcean option={option} onClose={onClose} />;
+  }
+  if (option.id === 'acoustic-signals') {
+    return <AcousticSignals option={option} onClose={onClose} />;
+  }
+  if (option.id === 'ocean-soundscape') {
+    return <OceanSoundscape option={option} onClose={onClose} />;
+  }
+  if (EXPLORE_IDS.has(option.id)) {
+    return <ExplorePortal onClose={onClose} initialSection={option.id} />;
+  }
+  if (DEVICE_IDS.has(option.id)) {
+    return <DeviceExplorer onClose={onClose} initialSection={option.id} />;
+  }
   return (
     <div className="menu-content-view">
       <div className="menu-content-header">
