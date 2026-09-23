@@ -42,7 +42,6 @@ export function MenuPanel({ open, onClose, selectedOption, onSelectOption, onPag
     }
     if (option.actionType === 'theme') {
       setTheme(option.theme || 'system');
-      onClose();
       return;
     }
     if (option.actionType === 'logout') {
@@ -52,12 +51,8 @@ export function MenuPanel({ open, onClose, selectedOption, onSelectOption, onPag
     onSelectOption(option);
   };
 
-  if (!open) return null;
-
   return (
-    <>
-      <div className="menu-overlay" onClick={onClose} />
-      <aside className="menu-panel">
+      <aside className={`menu-panel${open ? ' open' : ' closed'}`} aria-hidden={!open} inert={!open}>
         <div className="menu-header">
           <div className="menu-header-title">
             <span className="menu-logo">🌊</span>
@@ -117,6 +112,5 @@ export function MenuPanel({ open, onClose, selectedOption, onSelectOption, onPag
           <span>Underwater Intelligence Mission Platform</span>
         </div>
       </aside>
-    </>
   );
 }

@@ -37,6 +37,18 @@ html, body, #root {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
+@media (max-width: 480px) {
+  .lp-nav {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .lp-login-btn {
+    padding: 7px 14px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+  }
+}
+
 .landing-page {
   width: 100%;
   overflow-x: hidden;

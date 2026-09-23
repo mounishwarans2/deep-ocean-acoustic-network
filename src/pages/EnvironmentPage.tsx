@@ -22,7 +22,7 @@ export function EnvironmentPage({ state, selectedDeviceId, onSelectDevice }: Pro
         <div className="stat-card"><div className="stat-label">Max Depth</div><div className="stat-value purple">{maxDepth.toLocaleString()} m</div></div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, alignItems: 'start' }}>
+      <div className="env-depth-grid">
         <div className="card">
           <div className="card-header"><span className="card-title">Depth Profile</span></div>
           <DepthProfile
@@ -58,7 +58,7 @@ export function EnvironmentPage({ state, selectedDeviceId, onSelectDevice }: Pro
       {selectedDevice && (
         <div className="card" style={{ marginTop: 10 }}>
           <div className="card-header"><span className="card-title">{selectedDevice.id} — Environment Detail</span></div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          <div className="env-detail-grid">
             <div className="stat-card"><div className="stat-label">Depth</div><div className="stat-value cyan">{selectedDevice.depth.toLocaleString()} m</div></div>
             <div className="stat-card"><div className="stat-label">Temperature</div><div className="stat-value">{selectedDevice.temperature.toFixed(1)} °C</div></div>
             <div className="stat-card"><div className="stat-label">Pressure</div><div className="stat-value">{selectedDevice.pressure.toFixed(0)} bar</div></div>

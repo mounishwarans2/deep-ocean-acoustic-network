@@ -13,4 +13,6 @@ export type {
   Alert,
   PipelineStatus,
   HistoryPoint,
+  RecoveryStage,
+  RecoveryState,
 } from './network';

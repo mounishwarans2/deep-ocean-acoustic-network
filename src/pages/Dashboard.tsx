@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSimulation } from '../hooks/useSimulation';
 import { MenuPanel } from '../components/menu/MenuPanel';
 import { MenuContentView } from '../components/menu/MenuContentView';
 import { NOTIFY_MAX_ATTEMPTS, NOTIFY_RETRY_DELAY_MS, writeNotifyStatus } from '../utils/notify';
+import { speakFailureAlert } from '../utils/voiceAssistant';
+import { OceanIntelligenceAssistant } from '../components/OceanIntelligenceAssistant/OceanIntelligenceAssistant';
 import type { MenuOption } from '../data/menuContent';
 import { OverviewPage } from './OverviewPage';
 import { SNCPage } from './SNCPage';
@@ -31,13 +33,22 @@ const NAV_ITEMS: { id: Page; label: string }[] = [
 
 export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) => void }) {
   const navigate = useNavigate();
-  const { state } = useSimulation();
+  const { state, triggerFailure, acknowledgeFailure } = useSimulation();
   const [page, setPage] = useState<Page>('overview');
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [, setClock] = useState(new Date());
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuOption, setMenuOption] = useState<MenuOption | null>(null);
   const notifySentRef = useRef(false);
+  const [failureSignal, setFailureSignal] = useState<{ key: number; nodeId: string; reason: string } | null>(null);
+  // Red emergency dashboard state — only true while a real failure event is active.
+  const [failureActive, setFailureActive] = useState(false);
+
+  // Confirmed page-open requests from the assistant console (never automatic).
+  const openAssistantPage = useCallback((page: string) => {
+    setPage(page as Page);
+    setMenuOption(null);
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
@@ -49,9 +60,21 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
   // (ref guard blocks only an accidental same-tick double-click before
   // navigation unmounts this page).
   const handleSystemFailure = () => {
-    navigate('/system-failure');
+    // NOTE: no page navigation here — the failure drill runs in place and the
+    // Ocean Intelligence console opens with diagnostics. /system-failure route stays available.
     if (notifySentRef.current) return;
     notifySentRef.current = true;
+    // Drive the REAL simulation state first — map, metrics, alerts, AI all react.
+    triggerFailure('MN-01');
+    // Local laptop-speaker voice alert (browser SpeechSynthesis + alert tone).
+    // Independent of Twilio: uses the real failing node from live state.
+    const failingNode = state?.devices.find(d => d.id === 'MN-01') || state?.devices.find(d => d.status === 'CRITICAL' || d.status === 'OFFLINE');
+    const failNodeId = failingNode?.id || 'MN-01';
+    const failReason = failingNode ? `${failingNode.status === 'CRITICAL' ? 'critical condition' : 'communication failure'} detected. Emergency recovery has been initiated` : 'communication failure detected. Emergency recovery has been initiated';
+    speakFailureAlert(failNodeId, failReason);
+    // Red emergency state + assistant alert (Twilio request below is untouched).
+    setFailureActive(true);
+    setFailureSignal({ key: Date.now(), nodeId: failNodeId, reason: failReason });
     writeNotifyStatus({ phase: 'sending', sms: 'Sending...', call: 'Initiating...', at: Date.now() });
     void (async () => {
       for (let attempt = 1; attempt <= NOTIFY_MAX_ATTEMPTS; attempt++) {
@@ -151,17 +174,21 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
 
   const handleMenuSelect = (option: MenuOption) => {
     setMenuOption(option);
-    setMenuOpen(false);
   };
 
   const handleMenuPage = (target: string) => {
     setPage(target as Page);
     setMenuOption(null);
-    setMenuOpen(false);
+  };
+
+  const handleAcknowledgeFailure = () => {
+    acknowledgeFailure();
+    notifySentRef.current = false;
+    setFailureActive(false);
   };
 
   return (
-    <div className="app">
+    <div className={`app${failureActive ? ' emergency' : ''}`}>
       <header className="header">
         <div className="header-left">
           <div className="header-title-block">
@@ -225,21 +252,44 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
         </div>
       </nav>
 
-      <main className="main">
-        {menuOption ? (
-          <MenuContentView option={menuOption} onClose={() => setMenuOption(null)} />
-        ) : (
-          renderPage()
-        )}
-      </main>
+      {failureActive && (
+        <div className="emergency-banner" role="alert">
+          <span className="emergency-dot" aria-hidden="true" />
+          <div className="emergency-text">
+            <div className="emergency-title">🔴 SYSTEM FAILURE DETECTED</div>
+            <div className="emergency-sub">Underwater communication node failure{failureSignal ? ` — ${failureSignal.nodeId}` : ''}</div>
+          </div>
+          <button type="button" className="emergency-ack" onClick={handleAcknowledgeFailure}>
+            Acknowledge & Reset
+          </button>
+        </div>
+      )}
 
-      <MenuPanel
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        selectedOption={menuOption}
-        onSelectOption={handleMenuSelect}
-        onPageAction={handleMenuPage}
-        onLogout={handleLogout}
+      <div className="app-body">
+        <main className="main">
+          {menuOption ? (
+            <MenuContentView option={menuOption} onClose={() => setMenuOption(null)} />
+          ) : (
+            renderPage()
+          )}
+        </main>
+
+        <MenuPanel
+          open={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          selectedOption={menuOption}
+          onSelectOption={handleMenuSelect}
+          onPageAction={handleMenuPage}
+          onLogout={handleLogout}
+        />
+      </div>
+
+      <OceanIntelligenceAssistant
+        state={state}
+        failure={failureSignal}
+        failureActive={failureActive}
+        exploreOpen={menuOpen}
+        onOpenPage={openAssistantPage}
       />
     </div>
   );

@@ -11,6 +11,7 @@ interface Props {
 
 export function OceanGallery({ option, onClose }: Props) {
   const [theater, setTheater] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const exitTheater = useCallback(() => {
@@ -74,17 +75,25 @@ export function OceanGallery({ option, onClose }: Props) {
                 </button>
               )}
             </div>
-            <video
-              ref={videoRef}
-              className="og-player"
-              src={VIDEO_SRC}
-              controls
-              preload="metadata"
-              playsInline
-              onPlay={() => setTheater(true)}
-            >
-              Your browser does not support the video tag.
-            </video>
+            {videoError ? (
+              <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+                Video unavailable. Please check the connection.
+              </div>
+            ) : (
+              <video
+                ref={videoRef}
+                className="og-player"
+                src={VIDEO_SRC}
+                controls
+                preload="none"
+                poster={`${import.meta.env.BASE_URL}depth-profile-bg.png`}
+                playsInline
+                onPlay={() => setTheater(true)}
+                onError={() => setVideoError(true)}
+              >
+                Your browser does not support the video tag.
+              </video>
+            )}
           </div>
         </div>
 

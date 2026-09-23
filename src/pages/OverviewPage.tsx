@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props) {
-  const { devices, links, snc, alerts, historySignalQuality, historyThroughput, historyLatency, pipeline } = state;
+  const { devices, links, snc, alerts, historySignalQuality, historyThroughput, historyLatency, pipeline, recovery } = state;
   const [flowDirection, setFlowDirection] = useState<'UPLINK' | 'DOWNLINK'>('UPLINK');
   const selectedDevice = selectedDeviceId ? devices.find(d => d.id === selectedDeviceId) : null;
   const activeLinks = links.filter(l => l.status === 'ACTIVE').length;
@@ -26,8 +26,8 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
       <div className="stat-grid" style={{ marginBottom: 10 }}>
         <div className="stat-card">
           <div className="stat-label">Active Devices</div>
-          <div className="stat-value blue">{devices.length}</div>
-          <div className="stat-sub">{devices.filter(d => d.type.includes('RELAY') || d.type === 'GATEWAY' || d.type === 'SURFACE_RECEIVER').length} infrastructure &middot; {devices.filter(d => d.type === 'HYDROPHONE' || d.type === 'ENVIRONMENTAL_SENSOR').length} sensors</div>
+          <div className="stat-value blue">{devices.filter(d => d.status !== 'CRITICAL' && d.status !== 'OFFLINE').length}/{devices.length}</div>
+          <div className="stat-sub">{devices.filter(d => d.type.includes('RELAY') || d.type === 'GATEWAY' || d.type === 'SURFACE_RECEIVER').length} infrastructure &middot; {devices.filter(d => d.type === 'HYDROPHONE' || d.type === 'ENVIRONMENTAL_SENSOR').length} sensors{recovery ? <span style={{ color: 'var(--accent-red)' }}> &middot; {recovery.nodeId} CRITICAL</span> : null}</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Active Links</div>
@@ -147,6 +147,22 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
               <span style={{ color: p.online ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: 10.5 }}>{p.online ? '● ONLINE' : '● OFFLINE'}</span>
             </div>
           ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, padding: '2px 0', borderTop: '1px solid var(--border)', marginTop: 4 }}>
+            <span style={{ color: 'var(--text-secondary)' }}>Network</span>
+            <span style={{ color: links.some(l => l.status === 'FAILED') ? 'var(--accent-yellow)' : 'var(--accent-green)', fontSize: 10.5 }}>{links.some(l => l.status === 'FAILED') ? '● DEGRADED' : '● OPERATIONAL'}</span>
+          </div>
+          {recovery ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, padding: '2px 0' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>{recovery.nodeId}</span>
+                <span style={{ color: 'var(--accent-red)', fontSize: 10.5 }}>● CRITICAL</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, padding: '2px 0' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Recovery</span>
+                <span style={{ color: 'var(--accent-yellow)', fontSize: 10.5 }}>● {recovery.stage.replace('_', ' ')}</span>
+              </div>
+            </>
+          ) : null}
         </div>
         <div className="card">
           <div className="card-header"><span className="card-title">Recent Alerts</span></div>

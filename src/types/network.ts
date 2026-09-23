@@ -113,6 +113,16 @@ export interface CassandraMetrics {
   online: boolean;
 }
 
+export type RecoveryStage = 'FAILED' | 'BALLAST_RELEASE' | 'ASCENDING' | 'SURFACE';
+
+export interface RecoveryState {
+  nodeId: string;
+  stage: RecoveryStage;
+  startedAt: number;
+  depthAtTrigger: number;
+  ballastReleased: boolean;
+}
+
 export interface Alert {
   id: string;
   timestamp: number;

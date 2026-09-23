@@ -749,9 +749,23 @@
   .about-arch-card div[style*="height: 420px"] {
     height: 320px !important;
   }
+  /* Mobile-only: stack cutaway + power rows (desktop keeps side-by-side) */
+  .about-cutaway { flex-direction: column; }
+  .about-cutaway-visual { flex: none; width: 100%; height: 240px; }
+  .about-cutaway-image { width: 100%; min-height: 0; height: 220px; }
+  .about-power-row { flex-direction: column; }
+  .about-power-row img { height: auto !important; }
 }
 @media (max-width: 480px) {
   .about-arch-card div[style*="height: 420px"] {
-    height: 250px !important;
+    height: auto !important;
+    min-height: 0 !important;
   }
+  .about-arch-card div[style*="height: 420px"] img {
+    height: auto !important;
+  }
+  .about-decide-grid { grid-template-columns: 1fr !important; }
+  .about-update-card { width: 100% !important; }
+  .about-hero { padding: 28px 18px; }
+  .about-section { padding: 16px 14px; }
 }

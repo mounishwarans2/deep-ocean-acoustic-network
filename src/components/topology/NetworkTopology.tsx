@@ -48,12 +48,22 @@ function nodeSize(type: string): number {
 }
 
 function buildSvg(d: UnderwaterDevice, isSelected: boolean, isHovered: boolean, isRouteNode: boolean): string {
-  const col = deviceTypeColor(d.type);
+  const isCritical = d.status === 'CRITICAL';
+  const col = isCritical ? '#ef4444' : deviceTypeColor(d.type);
   const sz = nodeSize(d.type);
   const cx = sz;
   const cy = sz;
   const total = sz * 2 + 8;
   const parts: string[] = [];
+
+  if (isCritical) {
+    parts.push(
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (sz * 0.95) + '" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.8">' +
+      '<animate attributeName="r" values="' + (sz * 0.8) + ';' + (sz * 1.1) + ';' + (sz * 0.8) + '" dur="1.6s" repeatCount="indefinite"/>' +
+      '<animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.6s" repeatCount="indefinite"/>' +
+      '</circle>'
+    );
+  }
 
   if (isSelected) {
     parts.push(
@@ -553,11 +563,13 @@ export function NetworkTopology({ devices, links, selectedDeviceId, onSelectDevi
       const isSelected = selectedDeviceId === d.id;
       const isHovered = hoveredId === d.id;
       const sz = nodeSize(d.type);
-      const col = isSelected || isHovered ? deviceTypeColor(d.type) : 'rgba(255,255,255,0.7)';
+      const isCritical = d.status === 'CRITICAL';
+      const col = isCritical ? '#ef4444' : isSelected || isHovered ? deviceTypeColor(d.type) : 'rgba(255,255,255,0.7)';
+      const labelText = isCritical ? d.id + ' — CRITICAL' : d.id;
       labelsLayer.addLayer(L.marker(pos, {
         icon: L.divIcon({
           className: 'node-label',
-          html: '<div style="color:' + col + ';font-size:10px;font-family:monospace;font-weight:600;text-shadow:0 0 3px rgba(0,0,0,0.9),0 1px 4px rgba(0,0,0,0.8);white-space:nowrap;text-align:center;transform:translateY(' + (sz + 10) + 'px)">' + d.id + '</div>',
+          html: '<div style="color:' + col + ';font-size:10px;font-family:monospace;font-weight:600;text-shadow:0 0 3px rgba(0,0,0,0.9),0 1px 4px rgba(0,0,0,0.8);white-space:nowrap;text-align:center;transform:translateY(' + (sz + 10) + 'px)">' + labelText + '</div>',
           iconSize: [0, 0], iconAnchor: [0, 0],
         }),
         interactive: false,

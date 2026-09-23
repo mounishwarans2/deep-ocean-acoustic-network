@@ -107,7 +107,7 @@ export default function AboutDevice() {
           ))}
         </div>
         {/* DECIDE — ACT side by side */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+        <div className="about-decide-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
           <div className="about-arch-card">
             <h5>DECIDE</h5>
             <p>{AI_STEPS[2].desc}</p>
@@ -132,8 +132,8 @@ export default function AboutDevice() {
           </div>
         </div>
         {/* UPDATE centered below */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
-          <div className="about-arch-card" style={{ width: 'calc(50% - 6px)' }}>
+        <div className="about-update-wrap" style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+          <div className="about-arch-card about-update-card" style={{ width: 'calc(50% - 6px)' }}>
             <h5>UPDATE</h5>
             <p>{AI_STEPS[4].desc}</p>
             <div style={{ width: '100%', height: 420, background: '#0a0f14', borderRadius: 6, marginTop: 10, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -314,7 +314,7 @@ export default function AboutDevice() {
       {/* ── 6. Primary Power ── */}
       <div className="about-section">
         <h3>PRIMARY POWER SOURCE — MICRO NUCLEAR BATTERY</h3>
-        <div style={{
+        <div className="about-power-row" style={{
           display: 'flex',
           gap: 12,
           marginTop: 12,
