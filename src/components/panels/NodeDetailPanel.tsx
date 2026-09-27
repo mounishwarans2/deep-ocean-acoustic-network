@@ -1,5 +1,6 @@
 import type { UnderwaterDevice, NetworkLink } from '../../types';
-import { formatPercent, formatLatency, formatWatts, formatDistance, deviceTypeColor, deviceSymbol, deviceTypeLabel } from '../../utils/format';
+import { formatPercent, formatLatency, formatWatts, formatDistance, formatLatLng, deviceTypeColor, deviceSymbol, deviceTypeLabel } from '../../utils/format';
+import { deviceSensors } from '../../simulation/nodes';
 
 interface Props {
   device: UnderwaterDevice;
@@ -105,6 +106,7 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
               <h4>Surface Receiver</h4>
               <div className="detail-row"><span className="detail-row-label">ID</span><span className="detail-row-value">{device.id}</span></div>
               <div className="detail-row"><span className="detail-row-label">Role</span><span className="detail-row-value" style={{ color: 'var(--accent-cyan)' }}>Ocean-to-Land Gateway</span></div>
+              <div className="detail-row"><span className="detail-row-label">Location</span><span className="detail-row-value">{formatLatLng(device.latitude, device.longitude)}</span></div>
               <div className="detail-row"><span className="detail-row-label">Depth</span><span className="detail-row-value">{device.depth.toLocaleString()} m</span></div>
               <div className="detail-row"><span className="detail-row-label">Condition</span><span className="detail-row-value" style={{ color: device.status === 'NORMAL' ? 'var(--accent-green)' : device.status === 'WARNING' ? 'var(--accent-yellow)' : 'var(--accent-red)' }}>{device.status}</span></div>
             </div>
@@ -147,6 +149,10 @@ export function NodeDetailPanel({ device, devices, links, onClose, flowDirection
           <h4>Device</h4>
           <div className="detail-row"><span className="detail-row-label">ID</span><span className="detail-row-value">{device.id}</span></div>
           <div className="detail-row"><span className="detail-row-label">Type</span><span className="detail-row-value">{deviceTypeLabel(device.type)}</span></div>
+          {deviceSensors(device.id).length > 0 && (
+            <div className="detail-row"><span className="detail-row-label">Sensor Type</span><span className="detail-row-value">{deviceSensors(device.id).join(', ')}</span></div>
+          )}
+          <div className="detail-row"><span className="detail-row-label">Location</span><span className="detail-row-value">{formatLatLng(device.latitude, device.longitude)}</span></div>
           <div className="detail-row"><span className="detail-row-label">Purpose</span><span className="detail-row-value" style={{ fontSize: 11.5 }}>{purpose}</span></div>
           <div className="detail-row"><span className="detail-row-label">Depth</span><span className="detail-row-value">{device.depth.toLocaleString()} m</span></div>
           <div className="detail-row"><span className="detail-row-label">Condition</span><span className="detail-row-value" style={{ color: device.status === 'NORMAL' ? 'var(--accent-green)' : device.status === 'WARNING' ? 'var(--accent-yellow)' : 'var(--accent-red)' }}>{device.status}</span></div>

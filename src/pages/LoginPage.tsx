@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { MeshBackground } from '../components/MeshBackground';
 import './LoginPage.css';
 
 const DEFAULT_USERNAME = 'THAILAND';
@@ -59,7 +60,7 @@ export default function LoginPage() {
 
       if (validUser || isDefault) {
         sessionStorage.setItem('authenticated', 'true');
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       } else {
         setError('Invalid username or password');
       }
@@ -70,6 +71,7 @@ export default function LoginPage() {
     <div className="login-page">
       <button className="login-back" onClick={() => navigate('/')}>BACK</button>
       <div className="login-bg" />
+      <MeshBackground />
 
       <svg className="login-lines" viewBox="0 0 1540 900" fill="none">
         <line x1="180" y1="200" x2="400" y2="350" stroke="rgba(0,229,255,0.1)" strokeWidth="1" />
@@ -131,8 +133,8 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          <h1 className="login-title">UNDERWATER<br />INTELLIGENCE</h1>
-          <p className="login-subtitle">Deep Ocean Acoustic Communication Network</p>
+          <h1 className="login-title">MARISLINK</h1>
+          <p className="login-subtitle">Intelligent Underwater Acoustic Communication &amp; Monitoring System</p>
 
           <form onSubmit={handleSubmit}>
             <p className="login-secure">

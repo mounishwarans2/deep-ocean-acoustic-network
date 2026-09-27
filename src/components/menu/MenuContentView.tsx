@@ -1,10 +1,27 @@
 import type { MenuOption } from '../../data/menuContent';
+import type { SimulationState } from '../../hooks/useSimulation';
 import { ExplorePortal } from '../explore/ExplorePortal';
 import { DeviceExplorer } from '../explore/DeviceExplorer';
 import { OceanGallery } from '../explore/OceanGallery';
 import { ListenToOcean } from '../explore/ListenToOcean';
 import { AcousticSignals } from '../explore/AcousticSignals';
 import { OceanSoundscape } from '../explore/OceanSoundscape';
+import { DataVisualizationView } from './DataVisualizationView';
+import { SystemArchitectureView } from './SystemArchitectureView';
+import { ResearchConceptView } from './ResearchConceptView';
+import { ProjectStatusView } from './ProjectStatusView';
+import { ProfileView } from './ProfileView';
+import { SettingsView } from './SettingsView';
+import { BigDataOverviewView } from './data/BigDataOverviewView';
+import { SparkAnalyticsView } from './data/SparkAnalyticsView';
+import { ScalaProcessingView } from './data/ScalaProcessingView';
+import { KafkaStreamingView } from './data/KafkaStreamingView';
+import { CassandraStorageView } from './data/CassandraStorageView';
+import { NetworkMetricsView } from './data/NetworkMetricsView';
+import { DataPipelineView } from './data/DataPipelineView';
+import { AboutProjectView } from './AboutProjectView';
+import { BackButton } from './BackButton';
+import './AboutProjectView.css';
 import './Menu.css';
 
 const EXPLORE_IDS = new Set(['vision', 'mission-arch', 'system-mission', 'milestones', 'future']);
@@ -12,27 +29,70 @@ const DEVICE_IDS = new Set(['about-device','ai-intel','prism','snc','primary-pow
 
 interface Props {
   option: MenuOption;
-  onClose: () => void;
+  state?: SimulationState | null;
+  onNavigatePage?: (page: string) => void;
 }
 
-export function MenuContentView({ option, onClose }: Props) {
+export function MenuContentView({ option, state = null, onNavigatePage }: Props) {
   if (option.id === 'ocean-gallery') {
-    return <OceanGallery option={option} onClose={onClose} />;
+    return <OceanGallery option={option} />;
   }
   if (option.id === 'listen-ocean') {
-    return <ListenToOcean option={option} onClose={onClose} />;
+    return <ListenToOcean option={option} />;
   }
   if (option.id === 'acoustic-signals') {
-    return <AcousticSignals option={option} onClose={onClose} />;
+    return <AcousticSignals option={option} />;
   }
   if (option.id === 'ocean-soundscape') {
-    return <OceanSoundscape option={option} onClose={onClose} />;
+    return <OceanSoundscape option={option} />;
+  }
+  if (option.id === 'data-viz') {
+    return <DataVisualizationView option={option} />;
+  }
+  if (option.id === 'system-arch') {
+    return <SystemArchitectureView option={option} />;
+  }
+  if (option.id === 'research-concept') {
+    return <ResearchConceptView option={option} />;
+  }
+  if (option.id === 'project-status') {
+    return <ProjectStatusView option={option} />;
+  }
+  if (option.id === 'profile') {
+    return <ProfileView option={option} />;
+  }
+  if (option.id === 'settings') {
+    return <SettingsView option={option} onNavigatePage={onNavigatePage} />;
+  }
+  if (option.id === 'bigdata-overview') {
+    return <BigDataOverviewView option={option} state={state} />;
+  }
+  if (option.id === 'spark') {
+    return <SparkAnalyticsView option={option} state={state} />;
+  }
+  if (option.id === 'scala') {
+    return <ScalaProcessingView option={option} state={state} />;
+  }
+  if (option.id === 'kafka') {
+    return <KafkaStreamingView option={option} state={state} />;
+  }
+  if (option.id === 'cassandra') {
+    return <CassandraStorageView option={option} state={state} />;
+  }
+  if (option.id === 'network-metrics') {
+    return <NetworkMetricsView option={option} state={state} />;
+  }
+  if (option.id === 'data-pipeline') {
+    return <DataPipelineView option={option} state={state} />;
+  }
+  if (option.id === 'about-project') {
+    return <AboutProjectView option={option} state={state} />;
   }
   if (EXPLORE_IDS.has(option.id)) {
-    return <ExplorePortal onClose={onClose} initialSection={option.id} />;
+    return <ExplorePortal initialSection={option.id} />;
   }
   if (DEVICE_IDS.has(option.id)) {
-    return <DeviceExplorer onClose={onClose} initialSection={option.id} />;
+    return <DeviceExplorer initialSection={option.id} />;
   }
   return (
     <div className="menu-content-view">
@@ -41,10 +101,9 @@ export function MenuContentView({ option, onClose }: Props) {
           <span className="menu-content-icon">{option.icon}</span>
           <div>
             <div className="menu-content-label">{option.label}</div>
-            <div className="menu-content-ctx">Hamburger menu content view</div>
           </div>
         </div>
-        <button className="menu-content-back" onClick={onClose}>← Back to Dashboard</button>
+        <BackButton />
       </div>
 
       <div className="menu-content-body">

@@ -1,0 +1,155 @@
+/* About the Project page — same ocean-blue dashboard theme (page-scoped). */
+.about-page .card-title {
+  color: #0F2F4B;
+}
+
+.about-page .card {
+  border-color: #B9D6E8;
+}
+
+.about-title {
+  color: #0F2F4B;
+  font-size: 1.4rem;
+  margin: 6px 0 2px;
+}
+
+.about-subtitle {
+  color: #1B6FA0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.about-lead {
+  color: #334E68;
+  font-size: 0.95rem;
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
+
+.about-video {
+  width: 100%;
+  max-height: 62vh;
+  border-radius: 10px;
+  border: 1px solid #B9D6E8;
+  background: #000;
+  margin-top: 10px;
+}
+
+.about-page .card:has(.about-video) {
+  text-align: left;
+}
+
+.about-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #334E68;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.about-list strong {
+  color: #0F2F4B;
+}
+
+.about-list.about-columns {
+  columns: 2;
+  column-gap: 24px;
+}
+
+.about-list.about-numbered {
+  list-style: none;
+  padding-left: 0;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.about-layer-card {
+  background: #FFFFFF;
+  border: 1px solid #B9D6E8;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.about-layer-title {
+  color: #0F2F4B;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.about-layer-card .about-list {
+  margin-top: 0;
+}
+
+.about-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 10px 0 4px;
+}
+
+.about-flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.about-flow-box {
+  width: 100%;
+  text-align: center;
+  background: #EDF2F7;
+  border: 1px solid #0284C7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: #0F2F4B;
+}
+
+.about-flow-sub {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: #1B6FA0;
+  margin-top: 2px;
+}
+
+.about-flow-arrow {
+  color: #0284C7;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.about-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+
+.about-chip {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0F2F4B;
+  background: #EDF2F7;
+  border: 1px solid #B9D6E8;
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+@media (max-width: 640px) {
+  .about-list.about-columns {
+    columns: 1;
+  }
+}

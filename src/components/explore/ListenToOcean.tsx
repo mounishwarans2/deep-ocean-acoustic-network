@@ -1,5 +1,6 @@
 import type { MenuOption } from '../../data/menuContent';
 import { WaveformPlayer } from './WaveformPlayer';
+import { BackButton } from '../menu/BackButton';
 import './ListenToOcean.css';
 
 const WHALE_SRC = `${import.meta.env.BASE_URL}whale.mp3`;
@@ -7,10 +8,9 @@ const DOLPHIN_SRC = `${import.meta.env.BASE_URL}dolphin.mp3`;
 
 interface Props {
   option: MenuOption;
-  onClose: () => void;
 }
 
-export function ListenToOcean({ option, onClose }: Props) {
+export function ListenToOcean({ option }: Props) {
   return (
     <div className="menu-content-view listen-ocean">
       <div className="menu-content-header">
@@ -21,7 +21,7 @@ export function ListenToOcean({ option, onClose }: Props) {
             <div className="menu-content-ctx">Explore the Deep · Audio Explorer</div>
           </div>
         </div>
-        <button className="menu-content-back" onClick={onClose}>← Back to Dashboard</button>
+        <BackButton />
       </div>
 
       <div className="menu-content-body">

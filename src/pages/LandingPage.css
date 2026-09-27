@@ -79,7 +79,7 @@ html, body, #root {
   content: '';
   position: fixed;
   inset: 0;
-  background: rgba(8, 27, 42, 0.6);
+  background: rgba(8, 27, 42, 0.45);
   z-index: 0;
 }
 
@@ -101,12 +101,16 @@ html, body, #root {
 }
 
 .lp-hero-title {
-  font-size: clamp(28px, 4.5vw, 52px);
-  font-weight: 800;
-  letter-spacing: 3px;
-  line-height: 1.15;
-  margin-bottom: 24px;
+  font-size: clamp(44px, 8vw, 96px);
+  font-weight: 900;
+  letter-spacing: 6px;
+  line-height: 1.1;
+  margin-bottom: 16px;
   color: #EAF2F7;
+  text-shadow: 0 0 32px rgba(56, 189, 248, 0.35);
+}
+.lp-hero .mesh-bg {
+  z-index: 1;
 }
 
 .lp-hero-subtitle {

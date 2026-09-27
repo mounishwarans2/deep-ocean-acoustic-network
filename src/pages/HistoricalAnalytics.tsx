@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { SimulationState } from '../hooks/useSimulation';
 import type { HistoryPoint } from '../types';
 import { MiniChart } from '../components/charts/MiniChart';
+import { HistoricalOceanObservations } from '../components/OceanSensors/HistoricalOceanObservations';
 import { formatPercent, formatLatency, formatDecimal } from '../utils/format';
 
 interface Props {
@@ -142,6 +143,8 @@ export function HistoricalAnalytics({ state }: Props) {
           </table>
         </div>
       </div>
+
+      <HistoricalOceanObservations />
     </div>
   );
 }

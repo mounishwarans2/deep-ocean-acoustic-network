@@ -1,0 +1,255 @@
+/* System Architecture — scoped styles (light ocean-blue theme, Grid/Flexbox only). */
+
+.sa-subtitle {
+  width: 100%;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.sa-text {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+.sa-note {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
+
+.sa-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sa-list li {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.sa-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* Main vertical layered diagram */
+.sa-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.sa-layer-box {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.sa-layer-box b {
+  display: block;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+}
+
+.sa-layer-box span {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.sa-arrow {
+  color: var(--accent-cyan);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+/* Vertical mini flows inside layer cards */
+.sa-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.sa-flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sa-flow-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  text-align: center;
+  min-width: 220px;
+}
+
+.sa-flow-arrow {
+  color: var(--accent-cyan);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* End-to-end flow: visually distinct horizontal strip */
+.sa-e2e {
+  border-color: var(--accent-blue);
+}
+
+.sa-flow-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.sa-hflow-step {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 100px;
+}
+
+.sa-hflow-step .sa-flow-box {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 6px;
+  font-size: 0.74rem;
+}
+
+.sa-hflow-arrow {
+  flex-shrink: 0;
+  color: var(--accent-blue);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0 4px;
+}
+
+/* Responsibility cards */
+.sa-resp-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.sa-resp-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sa-resp-card b {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.sa-resp-card span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Prototype mapping rows */
+.sa-map {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.sa-map-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.sa-map-row b {
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.sa-map-arrow {
+  color: var(--accent-cyan);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sa-map-row span:last-child {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1100px) {
+  .sa-resp-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .sa-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sa-resp-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sa-flow-horizontal {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .sa-hflow-step {
+    flex-direction: column;
+  }
+  .sa-hflow-step .sa-flow-box {
+    width: 100%;
+    max-width: 420px;
+  }
+  .sa-hflow-arrow {
+    padding: 2px 0;
+    transform: rotate(90deg);
+  }
+  .sa-map-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .sa-map-arrow {
+    transform: rotate(90deg);
+  }
+}

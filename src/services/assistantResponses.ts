@@ -165,6 +165,7 @@ const PAGES: { keys: string[]; label: string; page: string }[] = [
   { keys: ['alert'], label: 'Alerts', page: 'alerts' },
   { keys: ['histor', 'history'], label: 'Historical', page: 'history' },
   { keys: ['big data'], label: 'Big Data', page: 'bigdata' },
+  { keys: ['ocean sensors', 'sensors'], label: 'Ocean Sensors', page: 'sensors' },
   { keys: ['overview', 'dashboard', 'main'], label: 'Overview', page: 'overview' },
 ];
 

@@ -1,5 +1,6 @@
 import type { SimulationState } from '../hooks/useSimulation';
-import { deviceTypeColor, deviceSymbol, deviceTypeLabel, formatPercent, formatLatency, formatdB } from '../utils/format';
+import { deviceTypeColor, deviceSymbol, deviceTypeLabel, formatPercent, formatLatency, formatdB, formatLatLng } from '../utils/format';
+import { deviceFunctionLines } from '../simulation/nodes';
 
 interface Props {
   state: SimulationState;
@@ -34,15 +35,17 @@ export function DeviceHealthTable({ state, selectedDeviceId, onSelectDevice }: P
             <thead>
               <tr>
                 <th>Device</th>
-                <th>Type</th>
+                <th>Depth</th>
+                <th>Sensor / Function</th>
+                <th>Location</th>
                 <th>Status</th>
+                <th>Type</th>
                 <th>Primary</th>
                 <th>Secondary</th>
                 <th>Signal</th>
                 <th>Strength</th>
                 <th>Loss</th>
                 <th>Latency</th>
-                <th>Depth</th>
                 <th>Temp</th>
                 <th>Conn</th>
               </tr>
@@ -57,11 +60,26 @@ export function DeviceHealthTable({ state, selectedDeviceId, onSelectDevice }: P
                   <td style={{ fontWeight: 600, color: deviceTypeColor(d.type) }}>
                     {deviceSymbol(d.type)} {d.id}
                   </td>
+                  <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{d.depth.toLocaleString()} m</td>
                   <td style={{ color: 'var(--text-secondary)', fontSize: 11.5 }}>
-                    {deviceTypeLabel(d.type)}
+                    {deviceFunctionLines(d.id).length > 0 ? (
+                      <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {deviceFunctionLines(d.id).map(s => (
+                          <span key={s} style={{ whiteSpace: 'nowrap' }}>{s}</span>
+                        ))}
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                    )}
+                  </td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: 11.5, whiteSpace: 'nowrap' }}>
+                    {formatLatLng(d.latitude, d.longitude)}
                   </td>
                   <td>
                     <span className={`status-badge ${d.status.toLowerCase()}`}>{d.status}</span>
+                  </td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: 11.5 }}>
+                    {deviceTypeLabel(d.type)}
                   </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -83,7 +101,6 @@ export function DeviceHealthTable({ state, selectedDeviceId, onSelectDevice }: P
                   <td style={{ color: 'var(--text-secondary)' }}>{formatdB(d.signalStrength)}</td>
                   <td style={{ color: d.packetLoss > 3 ? 'var(--accent-yellow)' : 'var(--text-secondary)' }}>{formatPercent(d.packetLoss)}</td>
                   <td style={{ color: 'var(--text-secondary)' }}>{formatLatency(d.latency)}</td>
-                  <td style={{ color: 'var(--text-secondary)' }}>{d.depth.toLocaleString()} m</td>
                   <td style={{ color: 'var(--text-secondary)' }}>{d.temperature.toFixed(1)} °C</td>
                   <td style={{ fontSize: 11.5, color: d.connectedNodes.length > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                     {d.connectedNodes.length} node{d.connectedNodes.length !== 1 ? 's' : ''}

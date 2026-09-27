@@ -1,0 +1,238 @@
+/* Research Concept — scoped styles (light ocean-blue theme, Grid/Flexbox only). */
+
+.rc-subtitle {
+  width: 100%;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.rc-statement {
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.rc-text {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+.rc-note {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
+
+.rc-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rc-list li {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.rc-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.rc-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.rc-challenge,
+.rc-focus {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.rc-challenge b,
+.rc-focus b {
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+/* Research questions */
+.rc-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rc-question {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+}
+
+.rc-question b {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.rc-question span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* Vertical flows */
+.rc-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.rc-flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rc-flow-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  text-align: center;
+  min-width: 240px;
+}
+
+.rc-flow-arrow {
+  color: var(--accent-cyan);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* Component cards */
+.rc-comp {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.rc-comp-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.rc-comp b {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+/* Highlighted failure-tolerance section */
+.rc-highlight {
+  border-color: var(--accent-cyan);
+}
+
+/* Workflow steps */
+.rc-workflow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.rc-step {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.rc-step b {
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.rc-step span {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* Future cards */
+.rc-future {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.rc-future b {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.rc-future span {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  .rc-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .rc-grid-2,
+  .rc-grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rc-flow-box {
+    min-width: 0;
+    width: 100%;
+    max-width: 420px;
+  }
+}

@@ -1,0 +1,50 @@
+/* Data Visualization — NOAA CTD observation profile (scoped). */
+
+.dv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.dv-chart-card {
+  margin: 0;
+}
+
+.dv-span {
+  grid-column: 1 / -1;
+}
+
+.dv-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 8px 0 0;
+}
+
+.dv-source {
+  margin: 0;
+}
+
+.dv-source-line {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 2px 0 0;
+  line-height: 1.55;
+}
+
+.dv-source-line:first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+@media (max-width: 900px) {
+  .dv-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dv-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

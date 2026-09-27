@@ -13,7 +13,17 @@ interface DeviceDef {
   freq: number;
   bw: number;
   onLand?: boolean;
+  /** Actual ocean sensors embarked on this device (exact sensor names). Empty = no ocean-sensor payload. */
+  sensors: string[];
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DETERMINISTIC DEVICE-POSITION + SENSOR CONFIGURATION (single source of truth)
+// The device table, the deployment map and the detail panels all read the
+// latitude/longitude/depth/sensor suite from this table. Positions are fixed:
+// normal telemetry updates never touch lat/lng/depth/x/y (only the recovery
+// sequence intentionally changes depth of the failing node).
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function xyToLatLng(x: number, y: number): [number, number] {
   const lng = 78 + (x / 100) * 20;
@@ -42,27 +52,89 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 }
 
 const DEVICES: DeviceDef[] = [
-  { id: 'DC-01', name: 'Terrestrial Data Center', type: 'DATA_CENTER', lat: 17.70, lng: 83.22, depth: 0, x: 26.1, y: 15.3, connected: ['SR-01'], freq: 0, bw: 0, onLand: true },
-  { id: 'SR-01', name: 'Surface Receiver Alpha', type: 'SURFACE_RECEIVER', lat: 17.62, lng: 83.38, depth: 0, x: 26.9, y: 15.9, connected: ['DC-01', 'MN-01', 'MN-02'], freq: 15.0, bw: 6.0 },
-  { id: 'MN-01', name: 'Main Underwater Node', type: 'GATEWAY', lat: 13.00, lng: 88.00, depth: 2000, x: 50.0, y: 46.7, connected: ['SR-01', 'MN-02', 'SUB-A', 'SUB-B', 'SUB-C', 'SUB-D'], freq: 15.0, bw: 6.0 },
-  { id: 'MN-02', name: 'Backup Main Node', type: 'GATEWAY', lat: 16.00, lng: 84.50, depth: 1800, x: 32.5, y: 26.7, connected: ['SR-01', 'MN-01', 'SUB-A', 'SUB-B', 'SUB-C', 'SUB-D'], freq: 14.0, bw: 5.5 },
-  { id: 'SUB-A', name: 'Sub-Node Alpha', type: 'ACOUSTIC_RELAY', lat: 15.00, lng: 85.00, depth: 2800, x: 35.0, y: 33.3, connected: ['MN-01', 'MN-02', 'SUB-B', 'SUB-C', 'SUB-D', 'S-01', 'S-02', 'S-03'], freq: 12.5, bw: 4.2 },
-  { id: 'SUB-B', name: 'Sub-Node Beta', type: 'NAVIGATION_RELAY', lat: 15.00, lng: 93.00, depth: 2600, x: 75.0, y: 33.3, connected: ['MN-01', 'MN-02', 'SUB-A', 'SUB-C', 'SUB-D', 'S-04', 'S-05', 'S-06'], freq: 10.0, bw: 3.5 },
-  { id: 'SUB-C', name: 'Sub-Node Gamma', type: 'SEAFLOOR_RELAY', lat: 9.50, lng: 85.00, depth: 4800, x: 35.0, y: 70.0, connected: ['MN-01', 'MN-02', 'SUB-A', 'SUB-B', 'SUB-D', 'S-07', 'S-08', 'S-09'], freq: 9.0, bw: 3.2 },
-  { id: 'SUB-D', name: 'Sub-Node Delta', type: 'ACOUSTIC_RELAY', lat: 10.50, lng: 94.00, depth: 4600, x: 80.0, y: 63.3, connected: ['MN-01', 'MN-02', 'SUB-A', 'SUB-B', 'SUB-C', 'S-10', 'S-11', 'S-12'], freq: 12.5, bw: 4.2 },
-  { id: 'S-01', name: 'Hydrophone Sensor 01', type: 'HYDROPHONE', lat: 16.20, lng: 84.20, depth: 2200, x: 31.0, y: 25.3, connected: ['SUB-A', 'S-02'], freq: 8.0, bw: 3.0 },
-  { id: 'S-02', name: 'Environmental Sensor 02', type: 'ENVIRONMENTAL_SENSOR', lat: 14.30, lng: 84.00, depth: 3100, x: 30.0, y: 38.0, connected: ['SUB-A', 'S-01', 'S-03'], freq: 7.5, bw: 2.8 },
-  { id: 'S-03', name: 'Hydrophone Sensor 03', type: 'HYDROPHONE', lat: 15.50, lng: 86.20, depth: 3500, x: 41.0, y: 30.0, connected: ['SUB-A', 'S-02'], freq: 8.0, bw: 3.0 },
-  { id: 'S-04', name: 'Environmental Sensor 04', type: 'ENVIRONMENTAL_SENSOR', lat: 16.20, lng: 93.50, depth: 1800, x: 77.5, y: 25.3, connected: ['SUB-B', 'S-05'], freq: 7.5, bw: 2.8 },
-  { id: 'S-05', name: 'Hydrophone Sensor 05', type: 'HYDROPHONE', lat: 14.20, lng: 93.80, depth: 2400, x: 79.0, y: 38.7, connected: ['SUB-B', 'S-04', 'S-06'], freq: 8.0, bw: 3.0 },
-  { id: 'S-06', name: 'Environmental Sensor 06', type: 'ENVIRONMENTAL_SENSOR', lat: 14.80, lng: 92.00, depth: 3000, x: 70.0, y: 34.7, connected: ['SUB-B', 'S-05'], freq: 7.5, bw: 2.8 },
-  { id: 'S-07', name: 'Hydrophone Sensor 07', type: 'HYDROPHONE', lat: 10.50, lng: 84.00, depth: 4200, x: 30.0, y: 63.3, connected: ['SUB-C', 'S-08'], freq: 8.0, bw: 3.0 },
-  { id: 'S-08', name: 'Environmental Sensor 08', type: 'ENVIRONMENTAL_SENSOR', lat: 8.50, lng: 84.50, depth: 5000, x: 32.5, y: 76.7, connected: ['SUB-C', 'S-07', 'S-09'], freq: 7.5, bw: 2.8 },
-  { id: 'S-09', name: 'Hydrophone Sensor 09', type: 'HYDROPHONE', lat: 9.80, lng: 86.50, depth: 4600, x: 42.5, y: 68.0, connected: ['SUB-C', 'S-08'], freq: 8.0, bw: 3.0 },
-  { id: 'S-10', name: 'Environmental Sensor 10', type: 'ENVIRONMENTAL_SENSOR', lat: 11.50, lng: 94.50, depth: 4000, x: 82.5, y: 56.7, connected: ['SUB-D', 'S-11'], freq: 7.5, bw: 2.8 },
-  { id: 'S-11', name: 'Hydrophone Sensor 11', type: 'HYDROPHONE', lat: 9.50, lng: 94.50, depth: 5200, x: 82.5, y: 70.0, connected: ['SUB-D', 'S-10', 'S-12'], freq: 8.0, bw: 3.0 },
-  { id: 'S-12', name: 'Environmental Sensor 12', type: 'ENVIRONMENTAL_SENSOR', lat: 10.00, lng: 93.50, depth: 4400, x: 77.5, y: 66.7, connected: ['SUB-D', 'S-11'], freq: 7.5, bw: 2.8 },
+  { id: 'DC-01', name: 'Terrestrial Data Center', type: 'DATA_CENTER', lat: 17.70, lng: 83.22, depth: 0, x: 26.1, y: 15.3, connected: ['SR-01'], freq: 0, bw: 0, onLand: true, sensors: [] },
+  { id: 'SR-01', name: 'Surface Receiver Alpha', type: 'SURFACE_RECEIVER', lat: 17.62, lng: 83.38, depth: 0, x: 26.9, y: 15.9, connected: ['DC-01', 'MN-01', 'MN-02'], freq: 15.0, bw: 6.0, sensors: [] },
+  { id: 'MN-01', name: 'Main Underwater Node', type: 'GATEWAY', lat: 13.00, lng: 88.00, depth: 2000, x: 50.0, y: 46.7, connected: ['SR-01', 'MN-02', 'SUB-A', 'SUB-B', 'SUB-C', 'SUB-D'], freq: 15.0, bw: 6.0, sensors: [] },
+  { id: 'MN-02', name: 'Backup Main Node', type: 'GATEWAY', lat: 16.00, lng: 84.50, depth: 1800, x: 32.5, y: 26.7, connected: ['SR-01', 'MN-01', 'SUB-A', 'SUB-B', 'SUB-C', 'SUB-D'], freq: 14.0, bw: 5.5, sensors: [] },
+  { id: 'SUB-A', name: 'Sub-Node Alpha', type: 'ACOUSTIC_RELAY', lat: 15.00, lng: 85.00, depth: 2800, x: 35.0, y: 33.3, connected: ['MN-01', 'MN-02', 'SUB-B', 'SUB-C', 'SUB-D', 'S-01', 'S-02', 'S-03'], freq: 12.5, bw: 4.2, sensors: [] },
+  { id: 'SUB-B', name: 'Sub-Node Beta', type: 'NAVIGATION_RELAY', lat: 15.00, lng: 93.00, depth: 2600, x: 75.0, y: 33.3, connected: ['MN-01', 'MN-02', 'SUB-A', 'SUB-C', 'SUB-D', 'S-04', 'S-05', 'S-06'], freq: 10.0, bw: 3.5, sensors: [] },
+  { id: 'SUB-C', name: 'Sub-Node Gamma', type: 'SEAFLOOR_RELAY', lat: 9.50, lng: 85.00, depth: 4800, x: 35.0, y: 70.0, connected: ['MN-01', 'MN-02', 'SUB-A', 'SUB-B', 'SUB-D', 'S-07', 'S-08', 'S-09'], freq: 9.0, bw: 3.2, sensors: [] },
+  { id: 'SUB-D', name: 'Sub-Node Delta', type: 'ACOUSTIC_RELAY', lat: 10.50, lng: 94.00, depth: 4600, x: 80.0, y: 63.3, connected: ['MN-01', 'MN-02', 'SUB-A', 'SUB-B', 'SUB-C', 'S-10', 'S-11', 'S-12'], freq: 12.5, bw: 4.2, sensors: [] },
+  { id: 'S-01', name: 'Hydrophone Sensor 01', type: 'HYDROPHONE', lat: 16.20, lng: 84.20, depth: 2200, x: 31.0, y: 25.3, connected: ['SUB-A', 'S-02'], freq: 8.0, bw: 3.0, sensors: ['Hydrophone'] },
+  { id: 'S-02', name: 'Temperature Depth Oxygen Sensor 02', type: 'ENVIRONMENTAL_SENSOR', lat: 14.30, lng: 84.00, depth: 3100, x: 30.0, y: 38.0, connected: ['SUB-A', 'S-01', 'S-03'], freq: 7.5, bw: 2.8, sensors: ['Temperature Sensor', 'Pressure / Depth Sensor', 'Dissolved Oxygen Sensor'] },
+  { id: 'S-03', name: 'Hydrophone Sensor 03', type: 'HYDROPHONE', lat: 15.50, lng: 86.20, depth: 3500, x: 41.0, y: 30.0, connected: ['SUB-A', 'S-02'], freq: 8.0, bw: 3.0, sensors: ['Hydrophone'] },
+  { id: 'S-04', name: 'Temperature Salinity Oxygen Sensor 04', type: 'ENVIRONMENTAL_SENSOR', lat: 16.20, lng: 93.50, depth: 1800, x: 77.5, y: 25.3, connected: ['SUB-B', 'S-05'], freq: 7.5, bw: 2.8, sensors: ['Temperature Sensor', 'Salinity Sensor', 'Dissolved Oxygen Sensor'] },
+  { id: 'S-05', name: 'Hydrophone Sensor 05', type: 'HYDROPHONE', lat: 14.20, lng: 93.80, depth: 2400, x: 79.0, y: 38.7, connected: ['SUB-B', 'S-04', 'S-06'], freq: 8.0, bw: 3.0, sensors: ['Hydrophone'] },
+  { id: 'S-06', name: 'Salinity Turbidity pH Sensor 06', type: 'ENVIRONMENTAL_SENSOR', lat: 14.80, lng: 92.00, depth: 3000, x: 70.0, y: 34.7, connected: ['SUB-B', 'S-05'], freq: 7.5, bw: 2.8, sensors: ['Salinity Sensor', 'Turbidity Sensor', 'pH Sensor'] },
+  { id: 'S-07', name: 'Hydrophone Sensor 07', type: 'HYDROPHONE', lat: 10.50, lng: 84.00, depth: 4200, x: 30.0, y: 63.3, connected: ['SUB-C', 'S-08'], freq: 8.0, bw: 3.0, sensors: ['Hydrophone'] },
+  { id: 'S-08', name: 'Temperature Depth pH Sensor 08', type: 'ENVIRONMENTAL_SENSOR', lat: 8.50, lng: 84.50, depth: 5000, x: 32.5, y: 76.7, connected: ['SUB-C', 'S-07', 'S-09'], freq: 7.5, bw: 2.8, sensors: ['Temperature Sensor', 'Pressure / Depth Sensor', 'pH Sensor'] },
+  { id: 'S-09', name: 'Hydrophone Sensor 09', type: 'HYDROPHONE', lat: 9.80, lng: 86.50, depth: 4600, x: 42.5, y: 68.0, connected: ['SUB-C', 'S-08'], freq: 8.0, bw: 3.0, sensors: ['Hydrophone'] },
+  { id: 'S-10', name: 'Oxygen Turbidity Sensor 10', type: 'ENVIRONMENTAL_SENSOR', lat: 11.50, lng: 94.50, depth: 4000, x: 82.5, y: 56.7, connected: ['SUB-D', 'S-11'], freq: 7.5, bw: 2.8, sensors: ['Dissolved Oxygen Sensor', 'Turbidity Sensor'] },
+  { id: 'S-11', name: 'Hydrophone Sensor 11', type: 'HYDROPHONE', lat: 9.50, lng: 94.50, depth: 5200, x: 82.5, y: 70.0, connected: ['SUB-D', 'S-10', 'S-12'], freq: 8.0, bw: 3.0, sensors: ['Hydrophone'] },
+  { id: 'S-12', name: 'Temperature Salinity Oxygen Sensor 12', type: 'ENVIRONMENTAL_SENSOR', lat: 10.00, lng: 93.50, depth: 4400, x: 77.5, y: 66.7, connected: ['SUB-D', 'S-11'], freq: 7.5, bw: 2.8, sensors: ['Temperature Sensor', 'Salinity Sensor', 'Dissolved Oxygen Sensor'] },
 ];
+
+/** Fixed deployment position + sensor suite per device (single source of truth). */
+export interface DeviceDeployment {
+  latitude: number;
+  longitude: number;
+  depth: number;
+  sensors: string[];
+}
+
+const DEPLOYMENT: Record<string, DeviceDeployment> = Object.fromEntries(
+  DEVICES.map(d => [d.id, { latitude: d.lat, longitude: d.lng, depth: d.depth, sensors: [...d.sensors] }]),
+);
+
+/** Fixed deployment record for a device (never mutated by telemetry). */
+export function deviceDeployment(deviceId: string): DeviceDeployment | null {
+  return DEPLOYMENT[deviceId] ?? null;
+}
+
+/** Actual sensor names embarked on a device ([] when it carries no ocean-sensor payload). */
+export function deviceSensors(deviceId: string): string[] {
+  return DEPLOYMENT[deviceId]?.sensors ?? [];
+}
+
+/**
+ * Network/device function lines for infrastructure nodes that carry no
+ * ocean-sensor payload (same device configuration as above — single source
+ * of truth). Each entry renders on its own compact line.
+ */
+const DEVICE_FUNCTIONS: Record<string, string[]> = {
+  'DC-01': ['Data Coordinator /', 'Acoustic Gateway'],
+  'SR-01': ['Surface Relay /', 'Communication Gateway'],
+  'MN-01': ['Monitoring Node /', 'Acoustic Transceiver'],
+  'MN-02': ['Monitoring Node /', 'Acoustic Transceiver'],
+  'SUB-A': ['Autonomous Subsea Node /', 'Acoustic Transceiver'],
+  'SUB-B': ['Autonomous Subsea Node /', 'Acoustic Transceiver'],
+  'SUB-C': ['Autonomous Subsea Node /', 'Acoustic Transceiver'],
+  'SUB-D': ['Autonomous Subsea Node /', 'Acoustic Transceiver'],
+};
+
+/** Sensor names when present, otherwise the device's network/function lines. Never empty for known devices. */
+export function deviceFunctionLines(deviceId: string): string[] {
+  const sensors = deviceSensors(deviceId);
+  if (sensors.length > 0) return sensors;
+  return DEVICE_FUNCTIONS[deviceId] ?? [];
+}
+
+/**
+ * Functional role of network infrastructure devices (same device
+ * configuration as the sensor mapping above — single source of truth).
+ */
+export function deviceFunction(type: DeviceType): string {
+  switch (type) {
+    case 'DATA_CENTER': return 'Data Center';
+    case 'SURFACE_RECEIVER': return 'Surface Receiver';
+    case 'GATEWAY': return 'Gateway';
+    case 'ACOUSTIC_RELAY': return 'Acoustic Relay';
+    case 'NAVIGATION_RELAY': return 'Navigation Relay';
+    case 'SEAFLOOR_RELAY': return 'Seafloor Relay';
+    case 'HYDROPHONE': return 'Hydrophone';
+    default: return type;
+  }
+}
 
 const DATA_CENTER_ID = 'DC-01';
 const SURFACE_ID = 'SR-01';

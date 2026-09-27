@@ -1,0 +1,121 @@
+/* Prototype page — same ocean-blue dashboard theme as Ocean Sensors (page-scoped). */
+.prototype-page .card-title {
+  color: #0F2F4B;
+}
+
+.prototype-page .card {
+  border-color: #B9D6E8;
+}
+
+.proto-title {
+  color: #0F2F4B;
+  font-size: 1.4rem;
+  margin: 6px 0 2px;
+}
+
+.proto-subtitle {
+  color: #1B6FA0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.proto-lead {
+  color: #334E68;
+  font-size: 0.95rem;
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
+
+.proto-video-card {
+  text-align: center;
+}
+
+.proto-video {
+  width: 100%;
+  max-height: 62vh;
+  border-radius: 10px;
+  border: 1px solid #B9D6E8;
+  background: #000;
+  margin-top: 10px;
+}
+
+.proto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.proto-sub-card {
+  background: #FFFFFF;
+  border: 1px solid #B9D6E8;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.proto-sub-title {
+  color: #0F2F4B;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.proto-sub-list {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  color: #1B6FA0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.proto-sub-text {
+  color: #334E68;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.proto-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 10px 0 4px;
+}
+
+.proto-flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.proto-flow-box {
+  width: 100%;
+  text-align: center;
+  background: #EDF2F7;
+  border: 1px solid #0284C7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: #0F2F4B;
+}
+
+.proto-flow-arrow {
+  color: #0284C7;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .proto-video {
+    max-height: 40vh;
+  }
+}

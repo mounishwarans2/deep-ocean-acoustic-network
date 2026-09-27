@@ -1,0 +1,249 @@
+/* Operator Profile — scoped styles (light ocean-blue theme, Grid/Flexbox only). */
+
+.pf-subtitle {
+  width: 100%;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.pf-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+.pf-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pf-list li {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.pf-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.pf-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* Hero profile card */
+.pf-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pf-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 28px;
+  background: rgba(79, 163, 199, 0.1);
+  border: 1px solid rgba(79, 163, 199, 0.35);
+  flex-shrink: 0;
+}
+
+.pf-role {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pf-active {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-green);
+  border: 1px solid rgba(62, 155, 118, 0.4);
+  background: rgba(62, 155, 118, 0.08);
+  border-radius: 4px;
+  padding: 2px 9px;
+}
+
+.pf-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.pf-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pf-fact span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pf-fact strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Capability / responsibility / module blocks */
+.pf-cap,
+.pf-resp {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.pf-cap {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.pf-cap-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.pf-cap b,
+.pf-resp b {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.pf-module {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pf-module b {
+  font-size: 0.86rem;
+  color: var(--text-primary);
+}
+
+.pf-module span {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Workspace workflow */
+.pf-workflow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.pf-wstep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pf-wbox {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 8px;
+  padding: 9px 20px;
+  text-align: center;
+  min-width: 280px;
+}
+
+.pf-wbox b {
+  display: block;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+}
+
+.pf-wbox span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.pf-warrow {
+  color: var(--accent-cyan);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* Access status panel */
+.pf-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pf-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 0.88rem;
+}
+
+.pf-status-row span {
+  color: var(--text-secondary);
+}
+
+.pf-status-row strong {
+  color: var(--accent-green);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .pf-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .pf-grid-2,
+  .pf-grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pf-wbox {
+    min-width: 0;
+    width: 100%;
+    max-width: 420px;
+  }
+}

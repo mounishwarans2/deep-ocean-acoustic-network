@@ -1,0 +1,95 @@
+/* Centralized dashboard preferences — applied via data attributes on .app.
+   Loaded after App.css so these rules win. Light theme stays the default. */
+
+/* ── Dark mode (opt-in) ── */
+.app[data-dashboard-theme='dark'] {
+  --bg-primary: #081B2A;
+  --bg-secondary: #102A3B;
+  --bg-tertiary: #16384C;
+  --bg-ocean: #0F4C6E;
+  --bg-ocean-deep: #0A3A55;
+  --border: #1C4A65;
+  --border-light: #1A425C;
+  --border-focus: #1976B9;
+  --text-primary: #EAF2F7;
+  --text-secondary: #B0C4D4;
+  --text-muted: #8FA8B8;
+  --accent-blue: #1976B9;
+  --accent-cyan: #4FA3C7;
+  --accent-green: #3E9B76;
+  --accent-yellow: #D9A441;
+  --accent-red: #C75C5C;
+  --accent-purple: #7A8BA0;
+  --accent-orange: #D9A441;
+  --navy: #0C2235;
+  --navy-light: #133A54;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* ── Accent color (works in both themes) ── */
+.app[data-accent='cyan'] {
+  --accent-blue: #0891B2;
+  --accent-cyan: #06B6D4;
+  --border-focus: #0891B2;
+}
+.app[data-accent='deep'] {
+  --accent-blue: #1D4ED8;
+  --accent-cyan: #3B82F6;
+  --border-focus: #1D4ED8;
+}
+.app[data-accent='teal'] {
+  --accent-blue: #0F766E;
+  --accent-cyan: #14B8A6;
+  --border-focus: #0F766E;
+}
+
+/* ── Compact cards ── */
+.app[data-compact='on'] .main {
+  padding: 10px 12px;
+}
+.app[data-compact='on'] .card {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
+
+/* ── Animations / reduced motion (non-essential only; state colors still change) ── */
+.app[data-animations='off'] *,
+.app[data-motion='reduced'] * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ── High contrast (keeps the ocean appearance) ── */
+.app[data-contrast='high'] {
+  --text-primary: #081826;
+  --text-secondary: #12314A;
+  --text-muted: #2F4A5E;
+  --border: #8FA9BE;
+  --border-light: #8FA9BE;
+}
+.app[data-contrast='high'][data-dashboard-theme='dark'] {
+  --text-primary: #FFFFFF;
+  --text-secondary: #D7E6F0;
+  --text-muted: #A9C2D4;
+  --border: #3E6A8A;
+  --border-light: #3E6A8A;
+}
+
+/* ── Keyboard navigation focus visibility ── */
+.app[data-kb='on'] :focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+/* ── Explore sidebar position (safe flexbox reorder) ── */
+.app[data-sidebar='left'] .menu-panel {
+  order: -1;
+  border-left: none;
+  border-right: 1px solid var(--border);
+  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.45);
+}
+.app[data-sidebar='left'] .menu-panel.closed {
+  border-right-color: transparent;
+  box-shadow: none;
+}

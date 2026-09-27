@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
+import './settings-apply.css'
 import { applyTheme } from './hooks/useTheme'
 
 // Force dark theme only - ignore saved preference

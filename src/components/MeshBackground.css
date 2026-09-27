@@ -1,0 +1,9 @@
+/* Interactive mesh canvas — always behind content, never intercepts clicks. */
+canvas.mesh-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}

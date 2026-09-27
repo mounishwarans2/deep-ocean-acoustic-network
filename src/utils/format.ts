@@ -25,6 +25,13 @@ export function formatDistance(meters: number): string {
   return Math.round(meters) + ' m';
 }
 
+/** Geographic position in degrees, e.g. "11.2745° N, 79.8213° E". */
+export function formatLatLng(lat: number, lng: number): string {
+  const latHem = lat >= 0 ? 'N' : 'S';
+  const lngHem = lng >= 0 ? 'E' : 'W';
+  return `${Math.abs(lat).toFixed(4)}° ${latHem}, ${Math.abs(lng).toFixed(4)}° ${lngHem}`;
+}
+
 export function formatBytes(mb: number): string {
   if (mb >= 1024) return (mb / 1024).toFixed(1) + ' GB';
   return Math.round(mb) + ' MB';

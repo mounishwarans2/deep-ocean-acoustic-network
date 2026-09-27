@@ -1,23 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { SimulationState } from '../../hooks/useSimulation';
-import {
-  isVoiceSupported,
-  isSpeaking,
-  speak,
-  stopSpeaking,
-  isVoiceEnabled,
-  setVoiceEnabled,
-  loadVoiceSettings,
-  saveVoiceSettings,
-  listEnglishVoices,
-} from '../../utils/voiceAssistant';
 import { buildSnapshot } from '../../services/aiContext';
 import type { DashboardSnapshot } from '../../services/aiContext';
 import { buildRichResponse, createConversationContext } from '../../services/assistantResponses';
 import type { Block } from '../../services/assistantResponses';
 import { readNotifyStatus } from '../../utils/notify';
-import { VoiceControls } from './VoiceControls';
 import type { WhaleMood } from './WhaleAvatar';
 import { WhaleOrbit } from './WhaleOrbit';
 import { ResponseBlock } from './ResponseBlocks';
@@ -37,6 +25,8 @@ interface Props {
   /** true while the Explore drawer is open (shift aside) */
   exploreOpen: boolean;
   onOpenPage: (page: string) => void;
+  /** display-only: suppress the failure announcement bubble (recovery logic untouched) */
+  announcementsEnabled?: boolean;
 }
 
 interface FailureCard {
@@ -98,19 +88,12 @@ const SUGGESTIONS = [
   'System status',
 ];
 
-export function OceanIntelligenceAssistant({ state, failure, failureActive, exploreOpen, onOpenPage }: Props) {
+export function OceanIntelligenceAssistant({ state, failure, failureActive, exploreOpen, onOpenPage, announcementsEnabled = true }: Props) {
   // CLOSED by default: only the small robot launcher is visible.
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [muted, setMuted] = useState(() => !isVoiceEnabled());
-  const [showSettings, setShowSettings] = useState(false);
-  const [volume, setVolume] = useState(() => loadVoiceSettings().volume);
-  const [rate, setRate] = useState(() => loadVoiceSettings().rate);
-  const [voiceName, setVoiceName] = useState(() => loadVoiceSettings().voiceName);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [whale, setWhale] = useState<WhaleMood>('idle');
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
   const [unread, setUnread] = useState(0);
@@ -126,37 +109,8 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
   const ctxRef = useRef(createConversationContext());
   const nextId = useCallback(() => `m${Date.now().toString(36)}-${(idRef.current += 1)}`, []);
 
-  // speaking indicator
-  useEffect(() => {
-    if (!chatOpen) return;
-    const t = window.setInterval(() => {
-      const on = isSpeaking();
-      setSpeaking(on);
-      setWhale(prev => {
-        if (on) return 'speaking';
-        return prev === 'speaking' ? 'idle' : prev;
-      });
-    }, 400);
-    return () => window.clearInterval(t);
-  }, [chatOpen]);
-
-  useEffect(() => {
-    if (!chatOpen) stopSpeaking();
-  }, [chatOpen]);
   useEffect(() => () => {
-    stopSpeaking();
     window.clearTimeout(foundTimer.current);
-  }, []);
-
-  // voices may load asynchronously
-  useEffect(() => {
-    if (!isVoiceSupported()) return;
-    const load = () => setVoices(listEnglishVoices());
-    load();
-    window.speechSynthesis.onvoiceschanged = load;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
   }, []);
 
   useEffect(() => {
@@ -298,26 +252,6 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
     [state, thinking, failureActive, flashFound, nextId],
   );
 
-  const speakText = useCallback(
-    (text: string) => {
-      speak(text, { volume, rate, voiceName });
-    },
-    [volume, rate, voiceName],
-  );
-
-  const speakLast = useCallback(() => {
-    const last = [...messages].reverse().find(m => m.role === 'assistant');
-    if (last) speakText(last.text);
-  }, [messages, speakText]);
-
-  const toggleMute = useCallback(() => {
-    setMuted(prev => {
-      const next = !prev;
-      setVoiceEnabled(!next);
-      return next;
-    });
-  }, []);
-
   const notify = readNotifyStatus();
 
   // The open console is position:fixed with its own x/y (never shifted).
@@ -328,7 +262,7 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
       {/* small floating robot launcher — the only thing visible by default */}
       {!chatOpen && (
         <>
-          {failureActive && unread > 0 && (
+          {failureActive && unread > 0 && announcementsEnabled && (
             <div className="oi-bubble" role="alert">
               <div className="oi-bubble-title">🚨 Ocean Intelligence</div>
               <div className="oi-bubble-text">System failure detected. Check the underwater network.</div>
@@ -342,7 +276,7 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
             aria-label={failureActive ? 'Ocean Intelligence — system failure alert, open assistant' : 'Ocean Intelligence — open assistant'}
             title="Ocean Intelligence"
           >
-            <WhaleOrbit state={failureActive ? 'alert' : thinking ? 'thinking' : speaking ? 'speaking' : 'normal'} />
+            <WhaleOrbit state={failureActive ? 'alert' : thinking ? 'thinking' : 'normal'} />
             {unread > 0 && (
               <span className="oi-badge" aria-label={`${unread} unread alerts`}>{unread}</span>
             )}
@@ -387,8 +321,13 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
           </div>
 
           <div className="oi-whalebox">
-            <img src="/dolphins.gif" alt="Dolphin pod in the monitored ocean zone" className="oi-monitor-gif" />
-            <div className="oi-whalelabel" data-mood={whale}>{whale === 'idle' ? 'MONITORING' : whale === 'thinking' ? 'ANALYZING' : whale === 'speaking' ? 'SPEAKING' : whale === 'found' ? 'DATA FOUND' : whale === 'warning' ? 'ALERT' : 'SYSTEM FAILURE'}</div>
+            <img
+              src="/dolphins.gif"
+              alt="Dolphin pod in the monitored ocean zone"
+              className="oi-monitor-gif"
+              onError={() => console.warn('[Ocean Intelligence] dolphins.gif failed to load from /dolphins.gif')}
+            />
+            <div className="oi-whalelabel" data-mood={whale}>{whale === 'idle' ? 'MONITORING' : whale === 'thinking' ? 'ANALYZING' : whale === 'found' ? 'DATA FOUND' : whale === 'warning' ? 'ALERT' : 'SYSTEM FAILURE'}</div>
           </div>
 
           <div className="oi-scroll" ref={bodyRef}>
@@ -412,7 +351,6 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
                       <div className="rb-kv"><span>Communication</span><b>{m.failureCard.comms}</b></div>
                       <div className="rb-kv"><span>Time</span><b>{m.failureCard.time}</b></div>
                       <div className="oi-failure-channels">
-                        <span>🔊 Voice alert issued</span>
                         <span>📱 SMS notification {notify ? `— ${notify.sms}` : 'initiated'}</span>
                         <span>☎ Emergency call {notify ? `— ${notify.call}` : 'initiated'}</span>
                       </div>
@@ -421,9 +359,6 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
                   {m.role === 'assistant' && snapshot && m.blocks.map((b, j) => (
                     <ResponseBlock key={`${m.id}-${j}`} block={b} snapshot={snapshot} onConfirmNav={onOpenPage} />
                   ))}
-                  {m.role === 'assistant' && (
-                    <button type="button" className="oi-speak-one" onClick={() => speakText(m.text)} aria-label="Speak this response" title="Speak this response">🔊 Speak</button>
-                  )}
                 </div>
               </div>
             ))}
@@ -452,42 +387,6 @@ export function OceanIntelligenceAssistant({ state, failure, failureActive, expl
             />
             <button type="submit" className="oi-send" disabled={!input.trim() || thinking} aria-label="Send question">➤</button>
           </form>
-
-          <VoiceControls
-            speaking={speaking}
-            muted={muted}
-            onSpeakLast={speakLast}
-            onStop={stopSpeaking}
-            onToggleMute={toggleMute}
-            canSpeak={messages.some(m => m.role === 'assistant')}
-          />
-
-          <button type="button" className="oi-settings-toggle" onClick={() => setShowSettings(s => !s)} aria-expanded={showSettings}>
-            ⚙ Voice settings {showSettings ? '▾' : '▸'}
-          </button>
-          {showSettings && (
-            <div className="oi-settings">
-              <label className="oi-set-row">
-                <span>Volume</span>
-                <input type="range" min={0} max={1} step={0.05} value={volume} onChange={e => { const v = Number(e.target.value); setVolume(v); saveVoiceSettings({ volume: v }); }} aria-label="Voice volume" />
-              </label>
-              <label className="oi-set-row">
-                <span>Speed</span>
-                <input type="range" min={0.5} max={1.5} step={0.05} value={rate} onChange={e => { const v = Number(e.target.value); setRate(v); saveVoiceSettings({ rate: v }); }} aria-label="Speech speed" />
-              </label>
-              {voices.length > 0 && (
-                <label className="oi-set-row">
-                  <span>Voice</span>
-                  <select value={voiceName} onChange={e => { setVoiceName(e.target.value); saveVoiceSettings({ voiceName: e.target.value }); }} aria-label="Voice selection">
-                    <option value="">System default</option>
-                    {voices.map(v => (
-                      <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
-                    ))}
-                  </select>
-                </label>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>

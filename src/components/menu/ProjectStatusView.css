@@ -1,0 +1,247 @@
+/* Project Status — scoped styles (light ocean-blue theme, Grid/Flexbox only). */
+
+.ps-subtitle {
+  width: 100%;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.ps-intro {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.ps-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+.ps-note {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
+
+.ps-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ps-list li {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.ps-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Overall status rows + badges */
+.ps-overall {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ps-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 12px;
+}
+
+.ps-status-row b {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.ps-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.ps-badge.done {
+  color: var(--accent-green);
+  border-color: rgba(62, 155, 118, 0.4);
+  background: rgba(62, 155, 118, 0.08);
+}
+
+.ps-badge.concept {
+  color: var(--accent-yellow);
+  border-color: rgba(217, 164, 65, 0.4);
+  background: rgba(217, 164, 65, 0.08);
+}
+
+.ps-badge.dev {
+  color: var(--accent-cyan);
+  border-color: rgba(79, 163, 199, 0.4);
+  background: rgba(79, 163, 199, 0.08);
+}
+
+.ps-badge.future {
+  color: var(--text-muted);
+}
+
+/* Component / boundary / step blocks */
+.ps-comp,
+.ps-bound,
+.ps-step {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.ps-comp {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.ps-comp-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ps-comp b,
+.ps-bound b,
+.ps-step b {
+  font-size: 0.86rem;
+  color: var(--text-primary);
+}
+
+/* Vertical flows */
+.ps-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.ps-flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ps-flow-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  text-align: center;
+  min-width: 240px;
+}
+
+.ps-flow-arrow {
+  color: var(--accent-cyan);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* Roadmap phases */
+.ps-phases {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ps-phase {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.ps-phase > b {
+  display: block;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.ps-phase-item {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 0.85rem;
+  color: var(--accent-green);
+  padding: 2px 0;
+}
+
+.ps-phase-item span:last-child {
+  color: var(--text-secondary);
+}
+
+.ps-phase-item .ps-future {
+  color: var(--text-muted);
+}
+
+/* Summary markers */
+.ps-check {
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+.ps-arrow {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .ps-phases {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .ps-grid-2,
+  .ps-phases {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ps-flow-box {
+    min-width: 0;
+    width: 100%;
+    max-width: 420px;
+  }
+  .ps-status-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

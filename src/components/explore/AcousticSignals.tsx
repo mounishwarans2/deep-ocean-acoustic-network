@@ -4,13 +4,13 @@ import { WaveformPlayer } from './WaveformPlayer';
 import type { WaveformPlayerHandle } from './WaveformPlayer';
 import { SpectrogramCanvas } from './SpectrogramCanvas';
 import type { SignalStats } from './SpectrogramCanvas';
+import { BackButton } from '../menu/BackButton';
 import './AcousticSignals.css';
 
 const SAMPLE_SRC = `${import.meta.env.BASE_URL}dolphin.mp3`;
 
 interface Props {
   option: MenuOption;
-  onClose: () => void;
 }
 
 function formatTime(sec: number): string {
@@ -41,7 +41,7 @@ const ANALYSIS_ITEMS = [
   { icon: '🔊', title: 'Noise / Interference', desc: 'Helps identify environmental or communication disturbances.' },
 ];
 
-export function AcousticSignals({ option, onClose }: Props) {
+export function AcousticSignals({ option }: Props) {
   const playerRef = useRef<WaveformPlayerHandle>(null);
   const progressRef = useRef({ t: 0, d: 0 });
   const [stats, setStats] = useState<SignalStats | null>(null);
@@ -67,7 +67,7 @@ export function AcousticSignals({ option, onClose }: Props) {
             <div className="menu-content-ctx">Underwater acoustic communication & signal analysis</div>
           </div>
         </div>
-        <button className="menu-content-back" onClick={onClose}>← Back to Dashboard</button>
+        <BackButton />
       </div>
 
       <div className="menu-content-body">

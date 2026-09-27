@@ -1,5 +1,6 @@
 import type { SimulationState } from '../hooks/useSimulation';
 import { deviceTypeColor, formatPercent, formatWatts, deviceSymbol } from '../utils/format';
+import { deviceFunction, deviceSensors } from '../simulation/nodes';
 
 interface Props {
   state: SimulationState;
@@ -59,7 +60,17 @@ export function EnergyPage({ state, selectedDeviceId, onSelectDevice }: Props) {
                 return (
                   <tr key={d.id} onClick={() => onSelectDevice(selectedDeviceId === d.id ? null : d.id)} className={selectedDeviceId === d.id ? 'selected' : ''}>
                     <td style={{ fontWeight: 600, color: deviceTypeColor(d.type) }}>{deviceSymbol(d.type)} {d.id}</td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{d.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).split(' ').slice(0, 2).join(' ')}</td>
+                    <td style={{ color: 'var(--text-secondary)', fontSize: 11.5 }}>
+                      {deviceSensors(d.id).length > 0 ? (
+                        <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {deviceSensors(d.id).map(s => (
+                            <span key={s} style={{ whiteSpace: 'nowrap' }}>{s}</span>
+                          ))}
+                        </span>
+                      ) : (
+                        <span style={{ whiteSpace: 'nowrap' }}>{deviceFunction(d.type)}</span>
+                      )}
+                    </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ minWidth: 36, color: 'var(--accent-green)' }}>{formatPercent(d.primaryBattery)}</span>

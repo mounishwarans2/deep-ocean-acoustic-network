@@ -1,7 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
+import { BackButton } from '../menu/BackButton';
 import './DeviceExplorer.css';
 
-interface Props { onClose?: () => void; initialSection?: string | null; }
+interface Props { initialSection?: string | null; }
+
+/* Reusable subsystem block for the functional architecture diagram. */
+function ArchBlock({ k, lines, hover, onEnter, onLeave, accent }: {
+  k: string; lines: string[]; hover: string | null;
+  onEnter: (k: string) => void; onLeave: () => void; accent?: boolean;
+}) {
+  return (
+    <div
+      className={`dx-arch-block${hover === k ? ' hl' : ''}${accent ? ' accent' : ''}`}
+      onMouseEnter={() => onEnter(k)}
+      onMouseLeave={onLeave}
+      role="button"
+      tabIndex={0}
+      aria-label={lines.join(' ')}
+      onFocus={() => onEnter(k)}
+      onBlur={onLeave}
+    >
+      {lines.map((l, i) => <span key={i}>{l}</span>)}
+    </div>
+  );
+}
 
 const NAV = [
   { id: 'dx-about', label: 'About the Device', num: '01' },
@@ -17,7 +39,7 @@ const NAV = [
   { id: 'dx-map', label: 'System Map', num: '11' },
 ];
 
-export function DeviceExplorer({ onClose, initialSection }: Props) {
+export function DeviceExplorer({ initialSection }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState('dx-about');
   const [hoverComp, setHoverComp] = useState<string | null>(null);
@@ -124,7 +146,7 @@ export function DeviceExplorer({ onClose, initialSection }: Props) {
               </li>
             ))}
           </ul>
-          {onClose && <button className="dx-btn" style={{ width:'100%', marginTop:10 }} onClick={onClose}>← Back to Dashboard</button>}
+          <BackButton className="dx-btn" style={{ width: '100%', marginTop: 10 }} />
         </nav>
 
         <div className="dx-content">
@@ -135,23 +157,56 @@ export function DeviceExplorer({ onClose, initialSection }: Props) {
             <p className="dx-p">The device is a compact autonomous underwater platform designed to perform communication, sensing, local processing, energy management and recovery operations within a submerged network.</p>
             <div className="dx-cutaway-wrap">
               <div>
-                <div className="dx-cutaway-visual">
-                  <div className="dx-cutaway-device">DEVICE CORE</div>
-                  {[
-                    { t:'PROGRAMMING INTELLIGENCE', x:6, y:8, k:'ai' },
-                    { t:'PRISM ROUTING', x:62, y:6, k:'prism' },
-                    { t:'SNC ANALYTICS', x:32, y:82, k:'snc' },
-                    { t:'PRIMARY POWER', x:2, y:42, k:'primary' },
-                    { t:'SECONDARY POWER', x:68, y:44, k:'secondary' },
-                    { t:'LOCAL STORAGE', x:10, y:68, k:'storage' },
-                    { t:'ACOUSTIC MODULE', x:58, y:78, k:'acoustic' },
-                    { t:'SYNTACTIC FOAM', x:74, y:20, k:'foam' },
-                    { t:'BALLAST RELEASE', x:36, y:2, k:'ballast' },
-                    { t:'EMERGENCY RECOVERY', x:5, y:55, k:'emergency' },
-                  ].map(c => (
-                    <div key={c.k} className={`dx-cutaway-callout ${hoverComp===c.k?'hl':''}`} style={{ left:`${c.x}%`, top:`${c.y}%` }}
-                      onMouseEnter={() => setHoverComp(c.k)} onMouseLeave={() => setHoverComp(null)}>{c.t}</div>
-                  ))}
+                <div className="dx-cutaway-visual dx-arch" role="img" aria-label="Functional architecture diagram of the underwater device">
+                  {/* PROCESSING / INTELLIGENCE */}
+                  <div className="dx-arch-group">
+                    <div className="dx-arch-glabel">PROCESSING / INTELLIGENCE</div>
+                    <div className="dx-arch-row">
+                      <ArchBlock k="ai" lines={['PROGRAMMING', 'INTELLIGENCE']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                      <ArchBlock k="snc" lines={['SNC', 'ANALYTICS']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                    </div>
+                  </div>
+                  <div className="dx-arch-vlink" aria-hidden="true">↓</div>
+                  {/* CORE + POWER */}
+                  <div className="dx-arch-core-row">
+                    <ArchBlock k="primary" lines={['PRIMARY', 'POWER']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                    <span className="dx-arch-hlink" aria-hidden="true">→</span>
+                    <div className="dx-arch-core"><span>DEVICE</span><span>CORE</span></div>
+                    <span className="dx-arch-hlink" aria-hidden="true">←</span>
+                    <ArchBlock k="secondary" lines={['SECONDARY', 'POWER']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                  </div>
+                  <div className="dx-arch-vlink" aria-hidden="true">↓</div>
+                  {/* COMMUNICATION */}
+                  <div className="dx-arch-group">
+                    <div className="dx-arch-glabel">COMMUNICATION</div>
+                    <div className="dx-arch-row">
+                      <ArchBlock k="prism" lines={['PRISM', 'ROUTING']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                      <span className="dx-arch-hlink" aria-hidden="true">→</span>
+                      <ArchBlock k="acoustic" lines={['ACOUSTIC', 'COMMUNICATION']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} accent />
+                    </div>
+                  </div>
+                  {/* STORAGE / RECOVERY / STRUCTURE */}
+                  <div className="dx-arch-bottom">
+                    <div className="dx-arch-group">
+                      <div className="dx-arch-glabel">STORAGE</div>
+                      <div className="dx-arch-row">
+                        <ArchBlock k="storage" lines={['LOCAL', 'STORAGE']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                      </div>
+                    </div>
+                    <div className="dx-arch-group">
+                      <div className="dx-arch-glabel">RECOVERY</div>
+                      <div className="dx-arch-row">
+                        <ArchBlock k="ballast" lines={['BALLAST', 'RELEASE']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                        <ArchBlock k="emergency" lines={['EMERGENCY', 'RECOVERY']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                      </div>
+                    </div>
+                    <div className="dx-arch-group">
+                      <div className="dx-arch-glabel">STRUCTURE</div>
+                      <div className="dx-arch-row">
+                        <ArchBlock k="foam" lines={['SYNTACTIC', 'FOAM']} hover={hoverComp} onEnter={setHoverComp} onLeave={() => setHoverComp(null)} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="dx-components">
                   {['PROGRAMMING INTELLIGENCE','PRISM ROUTING','SNC ANALYTICS','PRIMARY POWER','SECONDARY POWER','LOCAL STORAGE','ACOUSTIC COMMUNICATION','SYNTACTIC FOAM','BALLAST RELEASE','EMERGENCY RECOVERY'].map(m => {

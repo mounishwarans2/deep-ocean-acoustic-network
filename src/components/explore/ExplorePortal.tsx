@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
+import { BackButton } from '../menu/BackButton';
 import './ExplorePortal.css';
 
 interface Props {
-  onClose?: () => void;
   initialSection?: string | null;
 }
 
-export function ExplorePortal({ onClose, initialSection }: Props) {
+export function ExplorePortal({ initialSection }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -485,11 +485,7 @@ export function ExplorePortal({ onClose, initialSection }: Props) {
         <div className="xp-label" style={{ justifyContent: 'center', marginBottom: 10 }}>Mission Objective</div>
         <h2>Connect the nodes. Understand the network. Monitor the ocean. Build toward intelligent underwater communication.</h2>
         <div className="xp-final-sub">Observe • Communicate • Analyze • Predict • Respond</div>
-        {onClose && (
-          <button className="xp-back-btn" onClick={onClose}>
-            ← Back to Dashboard
-          </button>
-        )}
+        <BackButton className="xp-back-btn" />
       </section>
     </div>
   );

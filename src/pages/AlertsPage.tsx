@@ -1,4 +1,5 @@
 import type { SimulationState } from '../hooks/useSimulation';
+import { useDashboardSettings } from '../hooks/useDashboardSettings';
 import { formatTimestamp } from '../utils/format';
 
 interface Props {
@@ -7,11 +8,25 @@ interface Props {
   onSelectDevice: (id: string | null) => void;
 }
 
+/** Display-only notification filtering (emergency logic elsewhere is untouched). */
+function isRecoveryAnnouncement(a: { id: string; message: string; details: string }): boolean {
+  if (a.id === 'fail-recovery') return true;
+  return /ballast|ascen|recover/i.test(`${a.message} ${a.details}`);
+}
+
 export function AlertsPage({ state }: Props) {
-  const { alerts } = state;
-  const criticals = alerts.filter(a => a.severity === 'CRITICAL');
-  const warnings = alerts.filter(a => a.severity === 'WARNING');
-  const infos = alerts.filter(a => a.severity === 'INFO');
+  const { settings } = useDashboardSettings();
+  const n = settings.notifications;
+  const visible = state.alerts.filter(a => {
+    if (a.severity === 'CRITICAL' && !n.critical) return false;
+    if (a.severity === 'WARNING' && !n.network) return false;
+    if (a.severity === 'INFO' && !n.system) return false;
+    if (!n.recovery && isRecoveryAnnouncement(a)) return false;
+    return true;
+  });
+  const criticals = visible.filter(a => a.severity === 'CRITICAL');
+  const warnings = visible.filter(a => a.severity === 'WARNING');
+  const infos = visible.filter(a => a.severity === 'INFO');
   const hasIssues = criticals.length > 0 || warnings.length > 0;
 
   return (

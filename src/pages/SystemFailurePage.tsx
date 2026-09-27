@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useSimulation } from '../hooks/useSimulation';
 import { readNotifyStatus } from '../utils/notify';
 import type { NotifyStatus } from '../utils/notify';
 import { NetworkTopology } from '../components/topology/NetworkTopology';
 import { MiniChart } from '../components/charts/MiniChart';
 import { formatPercent, formatLatency, formatDecimal } from '../utils/format';
+import { BackButton } from '../components/menu/BackButton';
 import './SystemFailurePage.css';
 
 export default function SystemFailurePage() {
-  const navigate = useNavigate();
   const { state } = useSimulation();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [flowDirection] = useState<'UPLINK' | 'DOWNLINK'>('UPLINK');
@@ -95,7 +94,7 @@ export default function SystemFailurePage() {
   return (
     <div className="sf-page">
       <div className="sf-header">
-        <button className="sf-back" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
+        <BackButton className="sf-back" />
         <div className="sf-header-title">
           <span className="sf-critical-dot" />
           SYSTEM FAILURE — CRITICAL CONDITION

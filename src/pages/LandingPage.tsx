@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AboutDevice from './AboutDevice';
+import { MeshBackground } from '../components/MeshBackground';
 import './LandingPage.css';
 import prismPhoto from '../assets/components/prism-routing.jpg';
 import sncAnalytics from '../assets/components/snc-analytics.jpg';
@@ -57,6 +58,7 @@ export default function LandingPage() {
       </nav>
 
       <section className="lp-hero">
+        <MeshBackground />
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="lp-particle" style={{ left: `${10 + i * 11}%`, animationDelay: `${i * 1.2}s` }} />
         ))}
@@ -78,9 +80,9 @@ export default function LandingPage() {
         </svg>
 
         <div className="lp-hero-content">
-          <h1 className="lp-hero-title">DEEP OCEAN INTELLIGENT COMMUNICATION NETWORK</h1>
+          <h1 className="lp-hero-title">MARISLINK</h1>
           <p className="lp-hero-subtitle">
-            Programming-Powered Underwater Acoustic Communication, Adaptive PRISM Routing and Stochastic Network Calculus Analytics.
+            Intelligent Underwater Acoustic Communication &amp; Monitoring System
           </p>
           <div className="lp-hero-buttons">
             <button className="lp-btn-primary" onClick={() => navigate('/login')}>EXPLORE NETWORK</button>
@@ -185,7 +187,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="lp-footer">
-        <div className="lp-footer-title">Deep Ocean Intelligent Communication Network</div>
+        <div className="lp-footer-title">MARISLINK</div>
         <div className="lp-footer-sub">Research &bull; Innovation &bull; Underwater Intelligence</div>
       </footer>
 

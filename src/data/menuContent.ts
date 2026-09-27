@@ -529,25 +529,6 @@ export const MENU_GROUPS: MenuGroup[] = [
         label: 'Data Visualization',
         icon: '📈',
         actionType: 'content',
-        sections: [
-          {
-            heading: 'Environmental & Network Visualizations',
-            bullets: [
-              'Temperature',
-              'Pressure',
-              'Depth',
-              'Acoustic frequency',
-              'Signal strength',
-              'Packet loss',
-              'Latency',
-              'Energy level',
-              'Node health',
-            ],
-          },
-          {
-            note: 'Simulation-derived values unless a real external data source is connected.',
-          },
-        ],
       },
     ],
   },
@@ -758,59 +739,18 @@ export const MENU_GROUPS: MenuGroup[] = [
         label: 'System Architecture',
         icon: '🧩',
         actionType: 'content',
-        sections: [
-          {
-            heading: 'Layered Architecture',
-            flow: [
-              'UNDERWATER SENSOR LAYER',
-              'COMMUNICATION NODE LAYER',
-              'ANALYTICS LAYER',
-              'DATA STORAGE LAYER',
-              'DASHBOARD LAYER',
-            ],
-          },
-        ],
       },
       {
         id: 'research-concept',
         label: 'Research Concept',
         icon: '🔬',
         actionType: 'content',
-        sections: [
-          {
-            heading: 'Research Concept',
-            paragraph:
-              'A research prototype exploring autonomous underwater communication with adaptive, failure-tolerant routing.',
-          },
-          {
-            bullets: [
-              'Adaptive acoustic communication',
-              'Autonomous decision-making',
-              'Network resilience research',
-              'Deep-ocean deployment concepts',
-            ],
-          },
-        ],
       },
       {
         id: 'project-status',
         label: 'Project Status',
         icon: '📍',
         actionType: 'content',
-        sections: [
-          {
-            heading: 'Current Status',
-            bullets: [
-              'Simulation and dashboard implementation',
-              'AI monitoring logic',
-              'PRISM routing concept',
-              'SNC analytics implementation',
-              'Hybrid power concept',
-              'Emergency recovery concept',
-              'Future physical prototype development',
-            ],
-          },
-        ],
       },
     ],
   },
@@ -824,26 +764,23 @@ export const MENU_GROUPS: MenuGroup[] = [
         label: 'Profile',
         icon: '🪪',
         actionType: 'content',
-        sections: [
-          {
-            heading: 'Profile',
-            bullets: ['Operator access', 'Mission context: Underwater Intelligence Dashboard', 'Role: Research / Operator'],
-          },
-        ],
       },
       {
         id: 'settings',
         label: 'Settings',
         icon: '⚙️',
         actionType: 'content',
-        sections: [
-          {
-            heading: 'Settings',
-            bullets: ['Theme preference', 'Navigation preference', 'Notification display'],
-          },
-        ],
       },
       { id: 'logout', label: 'Logout', icon: '🚪', actionType: 'logout' },
     ],
   },
 ];
+
+/** Look up an Explore menu option by id (used to render info routes). */
+export function findMenuOption(id: string): MenuOption | null {
+  for (const group of MENU_GROUPS) {
+    const found = group.options.find(o => o.id === id);
+    if (found) return found;
+  }
+  return null;
+}

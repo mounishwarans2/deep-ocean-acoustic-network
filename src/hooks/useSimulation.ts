@@ -63,7 +63,7 @@ function clampNum(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val));
 }
 
-export function useSimulation() {
+export function useSimulation(autoRefresh = true) {
   const [state, setState] = useState<SimulationState | null>(null);
   const initialized = useRef(false);
   const failureRef = useRef<FailureCtx | null>(null);
@@ -181,6 +181,9 @@ export function useSimulation() {
     const interval = setInterval(() => {
       setState(prev => {
         if (!prev) return prev;
+        // Auto-refresh preference pauses routine telemetry display updates.
+        // The emergency recovery sequence always continues (safety behavior).
+        if (!autoRefresh && !failureRef.current) return prev;
         const updated = prev.devices.map(d => updateDeviceTelemetry(d));
         updated.forEach(d => computeSNCInline(d));
         const updatedLinks = prev.links.map(l => updateLinkTelemetry(l));
@@ -213,7 +216,7 @@ export function useSimulation() {
       });
     }, 3000);
     return () => clearInterval(interval);
-  }, [state !== null]);
+  }, [state !== null, autoRefresh]);
 
   const triggerFailure = useCallback((nodeId: string) => {
     if (failureRef.current || !state) return;

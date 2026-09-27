@@ -1,7 +1,7 @@
 ﻿import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import type { UnderwaterDevice, NetworkLink } from '../../types';
-import { deviceTypeColor, formatDistance } from '../../utils/format';
-import { xyToLatLng } from '../../simulation/nodes';
+import { deviceTypeColor, formatDistance, formatLatLng } from '../../utils/format';
+import { deviceSensors } from '../../simulation/nodes';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -14,6 +14,8 @@ interface Props {
 }
 
 function nodeRole(d: UnderwaterDevice): string {
+  const sensors = deviceSensors(d.id);
+  if (sensors.length > 0) return sensors.join(' · ');
   switch (d.type) {
     case 'DATA_CENTER': return 'Data Center / Terrestrial Hub';
     case 'SURFACE_RECEIVER': return 'Surface Gateway';
@@ -21,8 +23,6 @@ function nodeRole(d: UnderwaterDevice): string {
     case 'ACOUSTIC_RELAY': return 'Acoustic Relay Node';
     case 'NAVIGATION_RELAY': return 'Navigation Relay Node';
     case 'SEAFLOOR_RELAY': return 'Seafloor Relay Node';
-    case 'HYDROPHONE': return 'Hydrophone Sensor';
-    case 'ENVIRONMENTAL_SENSOR': return 'Environmental Sensor';
     default: return d.type;
   }
 }
@@ -174,11 +174,13 @@ export function NetworkTopology({ devices, links, selectedDeviceId, onSelectDevi
     return ls;
   }, [selectedDeviceId, links]);
 
+  // Fixed deployment positions from the single source of truth
+  // (device latitude/longitude — the same values shown in the device table).
+  // Normal telemetry updates never change these coordinates.
   const devicePosMap = useMemo(() => {
     const m = new Map<string, L.LatLng>();
     devices.forEach(d => {
-      const [lat, lng] = xyToLatLng(d.x, d.y);
-      m.set(d.id, L.latLng(lat, lng));
+      m.set(d.id, L.latLng(d.latitude, d.longitude));
     });
     return m;
   }, [devices]);
@@ -509,15 +511,33 @@ export function NetworkTopology({ devices, links, selectedDeviceId, onSelectDevi
     });
   }, [devices, links, activeRouteLinkKeys, allRoutesLinkKeys, neighborLinks, selectedDeviceId, flowDirection, devicePosMap, displayRoute]);
 
+  // Stable markers: devices keep fixed positions — markers are created once
+  // and updated in place (never torn down) so re-renders, telemetry ticks,
+  // tab switches and drawer open/close cannot move devices relative to
+  // each other. Only the recovery sequence intentionally changes depth.
+  const markerSigRef = useRef<Map<string, string>>(new Map());
+  const selectedDeviceIdRef = useRef(selectedDeviceId);
+  useEffect(() => { selectedDeviceIdRef.current = selectedDeviceId; });
+
+  function makeDeviceIcon(d: UnderwaterDevice, isSelected: boolean, isHovered: boolean, isRouteNode: boolean): L.DivIcon {
+    const sz = nodeSize(d.type);
+    return L.divIcon({
+      className: 'device-node',
+      html: buildSvg(d, isSelected, isHovered, isRouteNode),
+      iconSize: [sz * 2 + 8, sz * 2 + 8],
+      iconAnchor: [sz + 4, sz + 4],
+    });
+  }
+
   useEffect(() => {
     const map = mapRef.current;
-    const labelsLayer = labelsLayerRef.current;
-    if (!map || !labelsLayer) return;
+    if (!map) return;
 
     markersRef.current.forEach((marker, id) => {
       if (!devices.find(d => d.id === id)) {
         map.removeLayer(marker);
         markersRef.current.delete(id);
+        markerSigRef.current.delete(id);
       }
     });
 
@@ -528,27 +548,38 @@ export function NetworkTopology({ devices, links, selectedDeviceId, onSelectDevi
       const isSelected = selectedDeviceId === d.id;
       const isHovered = hoveredId === d.id;
       const isRouteNode = activeRouteNodes.has(d.id);
+      const sig = `${d.type}|${d.status}|${isSelected}|${isHovered}|${isRouteNode}`;
 
       const existing = markersRef.current.get(d.id);
-      if (existing) map.removeLayer(existing);
+      if (existing) {
+        // Fixed position: nudge the marker to its deployment coordinates
+        // (no-op while healthy) and refresh the icon only on visual change.
+        existing.setLatLng(pos);
+        if (markerSigRef.current.get(d.id) !== sig) {
+          existing.setIcon(makeDeviceIcon(d, isSelected, isHovered, isRouteNode));
+          markerSigRef.current.set(d.id, sig);
+        }
+        return;
+      }
 
-      const sz = nodeSize(d.type);
       const marker = L.marker(pos, {
-        icon: L.divIcon({
-          className: 'device-node',
-          html: buildSvg(d, isSelected, isHovered, isRouteNode),
-          iconSize: [sz * 2 + 8, sz * 2 + 8],
-          iconAnchor: [sz + 4, sz + 4],
-        }),
+        icon: makeDeviceIcon(d, isSelected, isHovered, isRouteNode),
       })
         .addTo(map)
-        .on('click', () => onSelectDevice(selectedDeviceId === d.id ? null : d.id))
+        .on('click', () => {
+          const cur = selectedDeviceIdRef.current;
+          onSelectDeviceRef.current(cur === d.id ? null : d.id);
+        })
         .on('mouseover', () => setHoveredId(d.id))
         .on('mouseout', () => setHoveredId(null));
 
       markersRef.current.set(d.id, marker);
+      markerSigRef.current.set(d.id, sig);
     });
-  }, [devices, selectedDeviceId, hoveredId, activeRouteNodes, devicePosMap, onSelectDevice]);
+    // `onSelectDevice` intentionally read via ref: re-subscribing clicks on
+    // every parent render would recreate handlers without need.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [devices, selectedDeviceId, hoveredId, activeRouteNodes, devicePosMap]);
 
   useEffect(() => {
     const labelsLayer = labelsLayerRef.current;
@@ -646,7 +677,17 @@ export function NetworkTopology({ devices, links, selectedDeviceId, onSelectDevi
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'rgba(255,255,255,0.5)' }}>Role</span>
-                <span style={{ color: 'rgba(255,255,255,0.7)' }}>{nodeRole(popupDevice)}</span>
+                <span style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'right', maxWidth: 170 }}>{nodeRole(popupDevice)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Sensor Type</span>
+                <span style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'right', maxWidth: 170 }}>
+                  {deviceSensors(popupDevice.id).length > 0 ? deviceSensors(popupDevice.id).join(', ') : '—'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Location</span>
+                <span style={{ color: 'rgba(255,255,255,0.7)' }}>{formatLatLng(popupDevice.latitude, popupDevice.longitude)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'rgba(255,255,255,0.5)' }}>Depth</span>
@@ -701,6 +742,9 @@ export function NetworkTopology({ devices, links, selectedDeviceId, onSelectDevi
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)' }}>
             Depth: {formatDistance(hovered.depth)}
             <span style={{ marginLeft: 6, color: hovered.status === 'NORMAL' ? '#22c55e' : hovered.status === 'WARNING' ? '#fbbf24' : '#ef4444' }}>{hovered.status}</span>
+          </div>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)' }}>
+            {formatLatLng(hovered.latitude, hovered.longitude)}
           </div>
           <div style={{ marginTop: 3, fontSize: 8, color: 'rgba(255,255,255,0.45)' }}>
             Click to inspect {'\u00b7'} Use flow toggle to view routes

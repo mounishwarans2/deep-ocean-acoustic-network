@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MenuOption } from '../../data/menuContent';
+import { BackButton } from '../menu/BackButton';
 import './OceanGallery.css';
 
 const VIDEO_SRC = `${import.meta.env.BASE_URL}ocean_video.mp4`;
 
 interface Props {
   option: MenuOption;
-  onClose: () => void;
 }
 
-export function OceanGallery({ option, onClose }: Props) {
+export function OceanGallery({ option }: Props) {
   const [theater, setTheater] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -42,7 +42,7 @@ export function OceanGallery({ option, onClose }: Props) {
             <div className="menu-content-ctx">Explore the Deep · Ocean Gallery</div>
           </div>
         </div>
-        <button className="menu-content-back" onClick={onClose}>← Back to Dashboard</button>
+        <BackButton />
       </div>
 
       <div className="menu-content-body">

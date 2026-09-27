@@ -91,10 +91,18 @@ export function OverviewPage({ state, selectedDeviceId, onSelectDevice }: Props)
               </button>
             </div>
             <div style={{ display: 'flex', gap: 10, fontSize: 10.5, color: 'var(--text-muted)' }}>
-              {(['SURFACE_RECEIVER', 'GATEWAY', 'ACOUSTIC_RELAY', 'NAVIGATION_RELAY', 'SEAFLOOR_RELAY', 'HYDROPHONE', 'ENVIRONMENTAL_SENSOR'] as const).map(t => (
+              {([
+                ['SURFACE_RECEIVER', 'Surface'],
+                ['GATEWAY', 'Main'],
+                ['ACOUSTIC_RELAY', 'Acoustic Sub'],
+                ['NAVIGATION_RELAY', 'Nav Sub'],
+                ['SEAFLOOR_RELAY', 'Seafloor Sub'],
+                ['HYDROPHONE', 'Hydrophone'],
+                ['ENVIRONMENTAL_SENSOR', 'Multi-Sensor'],
+              ] as const).map(([t, label]) => (
                 <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                   <span style={{ color: deviceTypeColor(t), fontSize: 9.5 }}>{deviceSymbol(t)}</span>
-                  {t.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).split(' ').slice(0, 1)}
+                  {label}
                 </span>
               ))}
             </div>

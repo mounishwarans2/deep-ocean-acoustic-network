@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { MenuOption } from '../../data/menuContent';
+import { BackButton } from '../menu/BackButton';
 import './OceanSoundscape.css';
 
 interface Props {
   option: MenuOption;
-  onClose: () => void;
 }
 
 const TOTAL_SECONDS = 222; // 03:42
@@ -112,7 +112,7 @@ function drawSpectrogram(
   }
 }
 
-export function OceanSoundscape({ option, onClose }: Props) {
+export function OceanSoundscape({ option }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const [playing, setPlaying] = useState(false);
@@ -183,7 +183,7 @@ export function OceanSoundscape({ option, onClose }: Props) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div className="os-live-badge"><span className="os-live-dot" /> LIVE</div>
-          <button className="menu-content-back" onClick={onClose}>← Back to Dashboard</button>
+          <BackButton />
         </div>
       </div>
 

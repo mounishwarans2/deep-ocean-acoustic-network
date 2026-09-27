@@ -63,7 +63,6 @@
 .da-panel-tagline { font-size: 11.5px; color: var(--text-muted); }
 .da-chevron { color: var(--accent-cyan); font-size: 14px; }
 .da-panel-body { padding: 4px 16px 16px; border-top: 1px solid var(--border); }
-.da-badge-note { font-size: 10.5px; color: var(--text-muted); margin: 8px 0 4px; }
 
 .da-qa { margin: 10px 0; }
 .da-q {
