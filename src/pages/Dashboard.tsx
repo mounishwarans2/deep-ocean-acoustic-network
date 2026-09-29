@@ -152,7 +152,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
           await new Promise(r => setTimeout(r, NOTIFY_RETRY_DELAY_MS));
         }
         try {
-          const res = await fetch('/api/notify/failure', {
+          const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')}/api/notify/failure`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
