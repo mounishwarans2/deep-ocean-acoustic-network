@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://deep-ocean-acoustic-network.vercel.app/sitemap.xml
