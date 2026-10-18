@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MeshBackground } from '../components/MeshBackground';
 import './LoginPage.css';
 
-const DEFAULT_USERNAME = 'THAILAND';
+const DEFAULT_USERNAME = '927624BAD044';
 const DEFAULT_PASSWORD = 'kaviyarasu';
 
 function getStoredCredentials() {
