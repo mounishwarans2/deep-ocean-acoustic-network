@@ -1,6 +1,23 @@
 // Comprehensive test suite for MARISLINK server endpoints, Supabase integration, and validation
 const http = require('http');
 
+// Snapshot original environment variables for clean restoration
+const originalEnv = {
+  PORT: process.env.PORT,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_KEY: process.env.SUPABASE_KEY,
+};
+
+// Track and capture running server instance to close it cleanly after tests
+let runningServer = null;
+const originalHttpListen = http.Server.prototype.listen;
+http.Server.prototype.listen = function (...args) {
+  runningServer = this;
+  return originalHttpListen.apply(this, args);
+};
+
 const PORT = 5057;
 process.env.PORT = PORT;
 // Ensure Supabase is initially unconfigured to test missing credentials handling.
@@ -158,13 +175,56 @@ async function runTests() {
     const longNodeNotify = await request('POST', '/api/notify/failure', { nodeId: 'A'.repeat(70) });
     assert(longNodeNotify.status === 400 && longNodeNotify.data.error.includes('nodeId is too long'), 'POST /api/notify/failure rejects nodeId > 64 chars with 400');
 
+    // ── Phase 5: Telemetry Data Validation & Format Edge Cases ───────────────
+    console.log('\n--- Phase 5: Advanced Data Validation & Format Safeguards ---');
+
+    // Direct array batch format (without wrapping in readings property)
+    const directArrayBatchBad = await request('POST', '/api/telemetry/batch', [
+      { node_id: '   ' } // whitespace-only node_id
+    ]);
+    assert(directArrayBatchBad.status === 400 && directArrayBatchBad.data.error.includes('node_id is required'), 'Rejects whitespace-only node_id in direct array batch with 400');
+
+    // Non-numeric depth
+    const nonNumDepth = await request('POST', '/api/telemetry', { node_id: 'MN-01', depth_m: 'deep' });
+    assert(nonNumDepth.status === 400 && nonNumDepth.data.error.includes('depth_m must be a valid number'), 'Rejects non-numeric depth with 400');
+
+    // Non-numeric battery
+    const nonNumBattery = await request('POST', '/api/telemetry', { node_id: 'MN-01', battery_level: 'full' });
+    assert(nonNumBattery.status === 400 && nonNumBattery.data.error.includes('battery_level must be a valid number'), 'Rejects non-numeric battery with 400');
+
+    // Negative latency
+    const negLatency = await request('POST', '/api/telemetry', { node_id: 'MN-01', latency_ms: -15 });
+    assert(negLatency.status === 400 && negLatency.data.error.includes('latency_ms must be >= 0'), 'Rejects negative latency with 400');
+
+    // Negative packet loss
+    const negLoss = await request('POST', '/api/telemetry', { node_id: 'MN-01', packet_loss: -2 });
+    assert(negLoss.status === 400 && negLoss.data.error.includes('packet_loss must be >= 0'), 'Rejects negative packet loss with 400');
+
+    // Non-numeric pressure
+    const nonNumPressure = await request('POST', '/api/telemetry', { node_id: 'MN-01', pressure_mpa: 'heavy' });
+    assert(nonNumPressure.status === 400 && nonNumPressure.data.error.includes('pressure_mpa must be a valid number'), 'Rejects non-numeric pressure with 400');
+
     console.log(`\n======================================================`);
     console.log(`Results: ${passed} passed, ${failed} failed.`);
     console.log(`======================================================\n`);
-    process.exit(failed > 0 ? 1 : 0);
   } catch (err) {
     console.error('Test execution error:', err);
-    process.exit(1);
+    failed++;
+  } finally {
+    // ── Teardown: Cleanly close server and restore environment variables ────
+    if (runningServer) {
+      await new Promise(resolve => runningServer.close(resolve));
+    }
+    http.Server.prototype.listen = originalHttpListen;
+    for (const [key, val] of Object.entries(originalEnv)) {
+      if (val === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = val;
+      }
+    }
+    console.log('[TEARDOWN] Server closed and environment variables restored cleanly.');
+    process.exit(failed > 0 ? 1 : 0);
   }
 }
 

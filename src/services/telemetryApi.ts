@@ -3,6 +3,18 @@
 import type { UnderwaterDevice } from '../types/network';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const REQUEST_TIMEOUT_MS = 10000;
+
+function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = REQUEST_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, {
+    ...options,
+    signal: controller.signal,
+  }).finally(() => {
+    clearTimeout(timer);
+  });
+}
 
 export interface TelemetryRecord {
   id?: number;
@@ -33,7 +45,7 @@ export interface BackendHealthResponse {
 /** Check backend and database connectivity */
 export async function checkBackendHealth(): Promise<BackendHealthResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/health`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/health`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
     });
@@ -42,10 +54,11 @@ export async function checkBackendHealth(): Promise<BackendHealthResponse> {
     }
     return await res.json();
   } catch (err) {
+    const isTimeout = err instanceof Error && err.name === 'AbortError';
     return {
       ok: false,
       databaseConfigured: false,
-      databaseStatus: err instanceof Error ? err.message : 'Server unreachable',
+      databaseStatus: isTimeout ? 'Health check timed out (10s)' : (err instanceof Error ? err.message : 'Server unreachable'),
     };
   }
 }
@@ -73,7 +86,7 @@ export async function saveTelemetryReading(
   reading: Partial<TelemetryRecord>,
 ): Promise<{ ok: boolean; data?: TelemetryRecord; error?: string }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/telemetry`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/telemetry`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reading),
@@ -84,9 +97,10 @@ export async function saveTelemetryReading(
     }
     return { ok: true, data: result.data };
   } catch (err) {
+    const isTimeout = err instanceof Error && err.name === 'AbortError';
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Network error saving telemetry',
+      error: isTimeout ? 'Save telemetry request timed out (10s)' : (err instanceof Error ? err.message : 'Network error saving telemetry'),
     };
   }
 }
@@ -97,7 +111,7 @@ export async function saveTelemetryBatch(
 ): Promise<{ ok: boolean; count?: number; error?: string }> {
   if (readings.length === 0) return { ok: true, count: 0 };
   try {
-    const res = await fetch(`${API_BASE_URL}/api/telemetry/batch`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/telemetry/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ readings: readings.slice(0, 50) }),
@@ -108,9 +122,10 @@ export async function saveTelemetryBatch(
     }
     return { ok: true, count: result.count };
   } catch (err) {
+    const isTimeout = err instanceof Error && err.name === 'AbortError';
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Network error in batch save',
+      error: isTimeout ? 'Batch telemetry request timed out (10s)' : (err instanceof Error ? err.message : 'Network error in batch save'),
     };
   }
 }
@@ -128,7 +143,7 @@ export async function fetchRecentTelemetry(params?: {
     const queryString = query.toString();
     const url = `${API_BASE_URL}/api/telemetry${queryString ? `?${queryString}` : ''}`;
 
-    const res = await fetch(url, {
+    const res = await fetchWithTimeout(url, {
       method: 'GET',
       headers: { Accept: 'application/json' },
     });
@@ -138,9 +153,10 @@ export async function fetchRecentTelemetry(params?: {
     }
     return { ok: true, data: result.data || [], count: result.count || 0 };
   } catch (err) {
+    const isTimeout = err instanceof Error && err.name === 'AbortError';
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Network error retrieving telemetry',
+      error: isTimeout ? 'Telemetry fetch timed out (10s)' : (err instanceof Error ? err.message : 'Network error retrieving telemetry'),
     };
   }
 }

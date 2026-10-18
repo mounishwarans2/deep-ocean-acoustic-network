@@ -18,6 +18,7 @@ export const SupabaseTelemetryViewer: FC<Props> = ({ state, selectedDeviceId, te
     syncState,
     cloudRecords,
     loadingRecords,
+    manualCooldown,
     syncSnapshot,
     loadCloudTelemetry,
   } = externalSync || localSync;
@@ -37,8 +38,7 @@ export const SupabaseTelemetryViewer: FC<Props> = ({ state, selectedDeviceId, te
   }, [loadCloudTelemetry, selectedNodeFilter]);
 
   const handleManualSync = async () => {
-    await syncSnapshot();
-    await loadCloudTelemetry(selectedNodeFilter === 'ALL' ? undefined : selectedNodeFilter);
+    await syncSnapshot({ isManual: true });
   };
 
   const getStatusBadge = () => {
@@ -101,19 +101,23 @@ export const SupabaseTelemetryViewer: FC<Props> = ({ state, selectedDeviceId, te
 
           <button
             onClick={() => void handleManualSync()}
-            disabled={syncState.syncing}
+            disabled={syncState.syncing || (manualCooldown ?? 0) > 0}
             style={{
               padding: '4px 12px',
               fontSize: 11.5,
               borderRadius: 4,
               border: 'none',
-              background: syncState.syncing ? 'var(--bg-tertiary)' : 'var(--accent-blue)',
-              color: '#fff',
+              background: syncState.syncing || (manualCooldown ?? 0) > 0 ? 'var(--bg-tertiary)' : 'var(--accent-blue)',
+              color: syncState.syncing || (manualCooldown ?? 0) > 0 ? 'var(--text-muted)' : '#fff',
               fontWeight: 600,
-              cursor: syncState.syncing ? 'not-allowed' : 'pointer',
+              cursor: syncState.syncing || (manualCooldown ?? 0) > 0 ? 'not-allowed' : 'pointer',
             }}
           >
-            {syncState.syncing ? 'Syncing...' : '⬆ Sync Snapshot'}
+            {syncState.syncing
+              ? 'Syncing...'
+              : (manualCooldown ?? 0) > 0
+                ? `Cooldown (${manualCooldown}s)`
+                : '⬆ Sync Snapshot'}
           </button>
         </div>
       </div>
@@ -155,7 +159,7 @@ export const SupabaseTelemetryViewer: FC<Props> = ({ state, selectedDeviceId, te
         <table className="health-table">
           <thead>
             <tr>
-              <th>Recorded At (UTC)</th>
+              <th>Recorded Time</th>
               <th>Node ID</th>
               <th>Depth (m)</th>
               <th>Temp (°C)</th>
