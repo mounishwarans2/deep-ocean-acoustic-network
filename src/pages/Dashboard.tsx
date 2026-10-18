@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSimulation } from '../hooks/useSimulation';
+import { useTelemetrySync } from '../hooks/useTelemetrySync';
 import { useDashboardSettings } from '../hooks/useDashboardSettings';
 import { MenuPanel } from '../components/menu/MenuPanel';
 import { MenuContentView } from '../components/menu/MenuContentView';
@@ -25,6 +26,8 @@ import { PrototypePage } from './PrototypePage';
 import { AboutProjectPage } from './AboutProjectPage';
 
 export type Page = 'overview' | 'snc' | 'energy' | 'acoustic' | 'environment' | 'health' | 'alerts' | 'history' | 'bigdata' | 'sim3d' | 'sensors' | 'prototype' | 'about';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 const NAV_ITEMS: { id: Page; label: string }[] = [
   { id: 'overview', label: 'Overview' },
@@ -84,6 +87,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
   const location = useLocation();
   const { settings } = useDashboardSettings();
   const { state, triggerFailure, acknowledgeFailure } = useSimulation(settings.autoRefresh);
+  const telemetrySync = useTelemetrySync(state, true);
   // Tab comes from the URL (never restored from storage): login always lands
   // on /dashboard (Overview), refresh keeps the current sub-page.
   const page = pageFromPath(location.pathname);
@@ -152,7 +156,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
           await new Promise(r => setTimeout(r, NOTIFY_RETRY_DELAY_MS));
         }
         try {
-          const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')}/api/notify/failure`, {
+          const res = await fetch(`${API_BASE_URL}/api/notify/failure`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -223,7 +227,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
       case 'environment': return <EnvironmentPage {...props} />;
       case 'health': return <DeviceHealthTable {...props} />;
       case 'alerts': return <AlertsPage {...props} />;
-      case 'history': return <HistoricalAnalytics {...props} />;
+      case 'history': return <HistoricalAnalytics {...props} telemetrySync={telemetrySync} />;
       case 'bigdata': return <BigDataPage state={state} />;
       case 'sim3d': return <Sim3DPage />;
       case 'sensors': return <OceanSensorsPage state={state} />;
@@ -300,6 +304,25 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
           <div className="header-item">
             <span>Network:</span>
             <span className="value" style={{ color: '#4ade80' }}>Operational</span>
+          </div>
+          <div className="header-item">
+            <span>Database:</span>
+            <span
+              className="value"
+              style={{
+                color: telemetrySync.syncState.databaseStatus === 'connected'
+                  ? '#4ade80'
+                  : telemetrySync.syncState.databaseConfigured
+                    ? '#facc15'
+                    : 'rgba(255,255,255,0.4)',
+              }}
+            >
+              {telemetrySync.syncState.databaseStatus === 'connected'
+                ? 'Connected'
+                : telemetrySync.syncState.databaseConfigured
+                  ? 'Configured'
+                  : 'Unconfigured'}
+            </span>
           </div>
           {activeAlerts > 0 && (
             <div className="alert-count-badge">{activeAlerts} Alert{activeAlerts !== 1 ? 's' : ''}</div>

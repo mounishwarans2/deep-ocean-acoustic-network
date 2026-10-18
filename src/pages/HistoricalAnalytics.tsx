@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import type { SimulationState } from '../hooks/useSimulation';
+import type { TelemetrySync } from '../hooks/useTelemetrySync';
 import type { HistoryPoint } from '../types';
 import { MiniChart } from '../components/charts/MiniChart';
 import { HistoricalOceanObservations } from '../components/OceanSensors/HistoricalOceanObservations';
+import { SupabaseTelemetryViewer } from '../components/telemetry/SupabaseTelemetryViewer';
 import { formatPercent, formatLatency, formatDecimal } from '../utils/format';
 
 interface Props {
   state: SimulationState;
   selectedDeviceId: string | null;
   onSelectDevice: (id: string | null) => void;
+  telemetrySync?: TelemetrySync;
 }
 
 type TimeRange = '1min' | '5min' | '15min' | '1hr';
@@ -43,7 +46,7 @@ function maxValue(data: HistoryPoint[]): number {
   return Math.max(...data.map(d => d.value));
 }
 
-export function HistoricalAnalytics({ state }: Props) {
+export function HistoricalAnalytics({ state, selectedDeviceId, telemetrySync }: Props) {
   const [range, setRange] = useState<TimeRange>('5min');
   const maxPoints = TIME_RANGES.find(r => r.id === range)?.points ?? 100;
 
@@ -145,6 +148,7 @@ export function HistoricalAnalytics({ state }: Props) {
       </div>
 
       <HistoricalOceanObservations />
+      <SupabaseTelemetryViewer state={state} selectedDeviceId={selectedDeviceId} telemetrySync={telemetrySync} />
     </div>
   );
 }
