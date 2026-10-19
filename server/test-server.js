@@ -18,6 +18,31 @@ http.Server.prototype.listen = function (...args) {
   return originalHttpListen.apply(this, args);
 };
 
+// Isolate database operations by mocking outbound fetch calls to mock Supabase domain
+const originalFetch = globalThis.fetch;
+const interceptedFetchCalls = [];
+if (typeof globalThis.fetch === 'function') {
+  globalThis.fetch = async (url, opts) => {
+    const urlStr = url ? url.toString() : '';
+    if (urlStr.includes('mock-proj.supabase.co')) {
+      interceptedFetchCalls.push({ url: urlStr, method: opts?.method || 'GET' });
+      if (opts?.method === 'POST') {
+        return new Response(JSON.stringify([{ id: 101, node_id: 'MN-01' }]), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify([
+        { id: 1, node_id: 'MN-02', depth_m: 120, recorded_at: new Date().toISOString() }
+      ]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return originalFetch.apply(globalThis, [url, opts]);
+  };
+}
+
 const PORT = 5057;
 process.env.PORT = PORT;
 // Ensure Supabase is initially unconfigured to test missing credentials handling.
@@ -96,6 +121,17 @@ async function runTests() {
 
     const unconfiguredGet = await request('GET', '/api/telemetry');
     assert(unconfiguredGet.status === 503, 'GET /api/telemetry returns 503 when DB is unconfigured');
+
+    // Unconfigured filtered query: GET /api/telemetry?nodeId=MN-02
+    const unconfiguredGetFiltered = await request('GET', '/api/telemetry?nodeId=MN-02');
+    assert(unconfiguredGetFiltered.status === 503, 'GET /api/telemetry?nodeId=MN-02 returns 503 when DB is unconfigured');
+    assert(unconfiguredGetFiltered.data.error.includes('Supabase database is not configured'), 'Error message clearly explains missing credentials for filtered query');
+
+    // Unconfigured direct-array batch
+    const unconfiguredDirectBatch = await request('POST', '/api/telemetry/batch', [
+      { node_id: 'MN-01', depth_m: 50 }
+    ]);
+    assert(unconfiguredDirectBatch.status === 503, 'POST /api/telemetry/batch with valid direct array returns 503 when DB is unconfigured');
 
     // ── Phase 2: Input Validation with Credentials Configured ───────────────
     console.log('\n--- Phase 2: Input Validation & Sanitization ---');
@@ -204,6 +240,28 @@ async function runTests() {
     const nonNumPressure = await request('POST', '/api/telemetry', { node_id: 'MN-01', pressure_mpa: 'heavy' });
     assert(nonNumPressure.status === 400 && nonNumPressure.data.error.includes('pressure_mpa must be a valid number'), 'Rejects non-numeric pressure with 400');
 
+    // ── Phase 6: Telemetry Query Filtering & Direct-Array Acceptance ─────────
+    console.log('\n--- Phase 6: Telemetry Query Filtering & Direct-Array Acceptance ---');
+
+    // Valid direct array batch format
+    const validDirectBatch = await request('POST', '/api/telemetry/batch', [
+      { node_id: 'MN-01', depth_m: 55.4, temperature_c: 12.1, battery_level: 95 }
+    ]);
+    assert(validDirectBatch.status === 201, 'POST /api/telemetry/batch accepts valid direct array format with 201');
+    assert(validDirectBatch.data.ok === true && validDirectBatch.data.count === 1, 'Valid direct array returns ok=true and count=1');
+
+    // Filtered query: GET /api/telemetry?nodeId=MN-02
+    const filteredGet = await request('GET', '/api/telemetry?nodeId=MN-02');
+    assert(filteredGet.status === 200, 'GET /api/telemetry?nodeId=MN-02 returns 200 with isolated mock database');
+    assert(filteredGet.data.ok === true && filteredGet.data.nodeId === 'MN-02', 'GET /api/telemetry parses and reflects nodeId="MN-02" filter parameter');
+    const matchedFetch = interceptedFetchCalls.find(c => c.url.includes('node_id=eq.MN-02'));
+    assert(Boolean(matchedFetch), 'Supabase query builder passed node_id filter eq.MN-02 to database client');
+
+    // Whitespace-only nodeId query (permissive handling documentation)
+    const whitespaceNodeGet = await request('GET', '/api/telemetry?nodeId=%20%20');
+    assert(whitespaceNodeGet.status === 200, 'GET /api/telemetry with whitespace nodeId returns 200 (permissive handling)');
+    assert(whitespaceNodeGet.data.nodeId === null, 'Whitespace-only nodeId query is normalized to null (no filter applied)');
+
     console.log(`\n======================================================`);
     console.log(`Results: ${passed} passed, ${failed} failed.`);
     console.log(`======================================================\n`);
@@ -216,6 +274,9 @@ async function runTests() {
       await new Promise(resolve => runningServer.close(resolve));
     }
     http.Server.prototype.listen = originalHttpListen;
+    if (typeof originalFetch === 'function') {
+      globalThis.fetch = originalFetch;
+    }
     for (const [key, val] of Object.entries(originalEnv)) {
       if (val === undefined) {
         delete process.env[key];
