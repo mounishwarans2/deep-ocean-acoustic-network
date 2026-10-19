@@ -38,7 +38,10 @@ export const SupabaseTelemetryViewer: FC<Props> = ({ state, selectedDeviceId, te
   }, [loadCloudTelemetry, selectedNodeFilter]);
 
   const handleManualSync = async () => {
-    await syncSnapshot({ isManual: true });
+    await syncSnapshot({
+      isManual: true,
+      refreshFilter: selectedNodeFilter === 'ALL' ? undefined : selectedNodeFilter,
+    });
   };
 
   const getStatusBadge = () => {

@@ -81,7 +81,7 @@ export function useTelemetrySync(state: SimulationState | null, autoSync = true)
   }, []);
 
   // 3. Sync current simulation state to Supabase
-  const syncSnapshot = useCallback(async (options?: { isManual?: boolean }) => {
+  const syncSnapshot = useCallback(async (options?: { isManual?: boolean; refreshFilter?: string }) => {
     const isManual = options?.isManual ?? false;
     const now = Date.now();
 
@@ -115,7 +115,7 @@ export function useTelemetrySync(state: SimulationState | null, autoSync = true)
           error: null,
         }));
         // Await the required refresh so callers have up-to-date data upon completion
-        await loadCloudTelemetry();
+        await loadCloudTelemetry(options?.refreshFilter);
       } else {
         setSyncState(prev => ({
           ...prev,
