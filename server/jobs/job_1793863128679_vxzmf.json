@@ -1,0 +1,21 @@
+{
+  "jobId": "job_1793863128679_vxzmf",
+  "status": "FAILED",
+  "datasetPath": "/home/mounish/project/ProjectAM/agile methology/data/spark-datasets/marislink_underwater_telemetry_primary.csv",
+  "datasetName": "marislink_underwater_telemetry_primary.csv",
+  "startTime": 1793863128679,
+  "endTime": 1793863138123,
+  "durationMs": 9444,
+  "logs": [
+    "================================================================================\n MARISLINK REAL APACHE SPARK LAUNCHER\n Execution Time : 2026-11-05T07:18:48Z\n Project Root   : /home/mounish/project/ProjectAM/agile methology\n Input Dataset  : /home/mounish/project/ProjectAM/agile methology/data/spark-datasets/marislink_underwater_telemetry_primary.csv\n Output Target  : /home/mounish/project/ProjectAM/agile methology/server/jobs/job_1793863128679_vxzmf_results.json\n================================================================================\n",
+    "[info] welcome to sbt 1.12.13 (Ubuntu Java 17.0.20.1)\n",
+    "[info] loading project definition from /home/mounish/project/ProjectAM/agile methology/spark-pipeline/project\n",
+    "[info] loading settings for project root from build.sbt...\n",
+    "[info] set current project to marislink-spark-pipeline (in build file:/home/mounish/project/ProjectAM/agile%20methology/spark-pipeline/)\n",
+    "[error] Expected symbol\n",
+    "[error] Not a valid command: --\n[error] Expected 'debug'\n[error] Expected 'info'\n[error] Expected 'warn'\n[error] Expected 'error'\n[error] Expected 'addPluginSbtFile'\n[error] --batch\n[error]   ^\n"
+  ],
+  "results": null,
+  "error": "Spark process terminated with exit code 1. Check logs for details.",
+  "outputJsonPath": "/home/mounish/project/ProjectAM/agile methology/server/jobs/job_1793863128679_vxzmf_results.json"
+}

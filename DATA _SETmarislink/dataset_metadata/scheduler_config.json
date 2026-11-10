@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "status": "ACTIVE",
+  "cronExpression": "5 0 * * *",
+  "timezone": "Asia/Kolkata",
+  "startDate": "2026-09-01",
+  "initialEndDate": "2026-11-05",
+  "lastGeneratedDate": "2026-11-10",
+  "nextScheduledRun": "2026-11-11 00:05:00 Asia/Kolkata",
+  "backfillCompleted": true,
+  "totalDatesTarget": 66,
+  "totalDatesGenerated": 71,
+  "failedDates": [],
+  "history": [
+    {
+      "action": "DAILY_SCHEDULED_RUN",
+      "date": "2026-11-06",
+      "timestamp": "2026-11-05T18:35:00.094Z",
+      "status": "SUCCESS",
+      "filename": "marislink_telemetry_20261106.csv.gz"
+    },
+    {
+      "action": "HISTORICAL_BACKFILL",
+      "timestamp": "2026-11-05T16:53:21.097Z",
+      "datesProcessed": 66,
+      "newlyGenerated": 0,
+      "alreadyExisted": 66,
+      "failed": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "action": "HISTORICAL_BACKFILL",
+      "timestamp": "2026-11-05T16:52:46.830Z",
+      "datesProcessed": 66,
+      "newlyGenerated": 66,
+      "alreadyExisted": 0,
+      "failed": 0,
+      "status": "SUCCESS"
+    }
+  ],
+  "catchupPolicy": "AUTO_ON_RESTART",
+  "updatedAt": "2026-11-10T09:16:29.428Z",
+  "deploymentNote": "Persistent generation continues daily at 00:05 Asia/Kolkata while backend runs. If the server was stopped, missed dates are automatically backfilled on startup. For permanent 24/7 generation without local machine running, deploy as a daemon or worker service (PM2 / systemd / Cloud VM).",
+  "lastRunAt": "2026-11-10T09:16:29.428Z",
+  "lastRunStatus": "SUCCESS"
+}

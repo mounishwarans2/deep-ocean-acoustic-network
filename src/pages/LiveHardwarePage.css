@@ -1,0 +1,859 @@
+/* ==============================================================================
+   MARISLINK: LIVE HARDWARE MONITORING STYLES
+   Professional White & Blue Underwater IoT Hardware Dashboard
+   ============================================================================== */
+
+.hardware-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 4px 40px 4px;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ── Hero Banner ────────────────────────────────────────────────────────────── */
+.hw-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+  border: 1px solid #cbd5e1;
+  border-left: 6px solid #0284c7;
+  border-radius: 12px;
+  padding: 22px 26px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.hw-hero-titles h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hw-hero-titles p {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.hw-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Connection Badges */
+.hw-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.hw-status-badge.online {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.hw-status-badge.stale {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.hw-status-badge.disconnected {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.hw-pulse-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+  animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.hw-pulse-dot-cyan {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #06b6d4;
+  box-shadow: 0 0 10px #06b6d4;
+  display: inline-block;
+  animation: pulse-ring 1.4s infinite;
+}
+
+.hw-pulse-dot-purple {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  box-shadow: 0 0 10px #8b5cf6;
+  display: inline-block;
+  animation: pulse-ring 1.4s infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Source banner & pills */
+.hw-source-banner {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hw-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.hw-source-pill.wokwi-active {
+  background: #ecfeff;
+  color: #0e7490;
+  border: 1.5px solid #06b6d4;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+}
+
+.hw-source-pill.fallback-active {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1.5px solid #8b5cf6;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.25);
+}
+
+.hw-source-pill.waiting {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+}
+
+.hw-source-sub {
+  font-weight: 500;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.hw-packet-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hw-stat-chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.hw-stat-chip.wokwi-chip {
+  background: #cffafe;
+  color: #155e75;
+  border-color: #a5f3fc;
+}
+
+.hw-stat-chip.fallback-chip {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-color: #ddd6fe;
+}
+
+.hw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  border: 1px solid transparent;
+}
+
+.hw-btn-primary {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0369a1;
+}
+
+.hw-btn-primary:hover {
+  background: #0369a1;
+}
+
+.hw-btn-wokwi {
+  background: #0891b2;
+  color: #ffffff;
+  border-color: #0e7490;
+}
+
+.hw-btn-wokwi:hover {
+  background: #0e7490;
+}
+
+.hw-btn-fallback {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #6d28d9;
+}
+
+.hw-btn-fallback:hover {
+  background: #6d28d9;
+}
+
+.hw-btn-spark {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #6d28d9;
+}
+
+.hw-btn-spark:hover {
+  background: #6d28d9;
+}
+
+.hw-btn-outline {
+  background: #ffffff;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.hw-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* ── Scientific Calibration Notice ─────────────────────────────────────────── */
+.hw-calibration-banner {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #0284c7;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 12.5px;
+  color: #334155;
+  line-height: 1.55;
+}
+
+.hw-calibration-banner strong {
+  color: #0f172a;
+}
+
+/* ── Live Sensor KPI Grid ──────────────────────────────────────────────────── */
+.hw-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.hw-kpi-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hw-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.hw-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hw-kpi-val {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.hw-kpi-val .unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.hw-kpi-sub {
+  font-size: 11.5px;
+  color: #475569;
+}
+
+.hw-kpi-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.hw-kpi-badge.optimal { background: #dcfce7; color: #15803d; }
+.hw-kpi-badge.stable { background: #e0f2fe; color: #0369a1; }
+.hw-kpi-badge.degraded { background: #fef3c7; color: #b45309; }
+.hw-kpi-badge.critical { background: #fee2e2; color: #b91c1c; }
+
+/* ── Hardware Circuit Visualizer & Pinouts ─────────────────────────────────── */
+.hw-circuit-section {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+}
+
+.hw-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hw-circuit-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .hw-circuit-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hw-schematic-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hw-module-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.hw-module-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hw-module-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.hw-module-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0284c7;
+}
+
+.hw-module-desc {
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+.hw-leds-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.hw-led-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.hw-led-bulb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+
+.hw-led-bulb.green-on { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+.hw-led-bulb.green-off { background: #14532d; }
+.hw-led-bulb.yellow-on { background: #eab308; box-shadow: 0 0 8px #eab308; }
+.hw-led-bulb.yellow-off { background: #713f12; }
+.hw-led-bulb.red-on { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+.hw-led-bulb.red-off { background: #7f1d1d; }
+
+.hw-pinout-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.hw-pinout-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.hw-pinout-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.hw-pinout-table tr:hover td {
+  background: #f8fafc;
+}
+
+/* ── Charts Grid ───────────────────────────────────────────────────────────── */
+.hw-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.hw-chart-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.hw-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.hw-chart-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.hw-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.hw-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hw-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.hw-svg-chart {
+  width: 100%;
+  height: 150px;
+}
+
+/* ── Stream Table ──────────────────────────────────────────────────────────── */
+.hw-table-section {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+}
+
+.hw-stream-table-wrapper {
+  overflow-x: auto;
+}
+
+.hw-stream-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.hw-stream-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-bottom: 2px solid #cbd5e1;
+  white-space: nowrap;
+}
+
+.hw-stream-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.hw-stream-table tr:hover td {
+  background: #f0f9ff;
+}
+
+.hw-source-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.hw-source-tag.wokwi {
+  background: #ecfeff;
+  color: #0e7490;
+  border: 1px solid #06b6d4;
+  box-shadow: 0 0 4px rgba(6, 182, 212, 0.2);
+}
+
+.hw-source-tag.fallback {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #8b5cf6;
+  box-shadow: 0 0 4px rgba(139, 92, 246, 0.2);
+}
+
+/* ── Quickstart Instructions ───────────────────────────────────────────────── */
+.hw-quickstart-card {
+  background: #ffffff;
+  border: 1px dashed #94a3b8;
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-size: 12.5px;
+  color: #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hw-code-block {
+  background: #0f172a;
+  color: #38bdf8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  display: inline-block;
+}
+
+/* ── Interactive Evaluator Sandbox (Tinkercad-Style) ────────────────────────── */
+.hw-sandbox-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #cbd5e1;
+  border-left: 6px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 18px 22px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hw-sandbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.hw-sandbox-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hw-preset-btn {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hw-preset-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.hw-preset-btn.alert {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.hw-preset-btn.alert:hover {
+  background: #fee2e2;
+}
+
+.hw-sliders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.hw-slider-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.hw-slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.hw-slider-input {
+  width: 100%;
+  accent-color: #0284c7;
+  cursor: pointer;
+  height: 6px;
+}
+
+.hw-slider-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.hw-sandbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+/* ── Telemetry & Hardware Integration Pipeline ────────────────────────────── */
+.hw-pipeline-section {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+}
+
+.hw-pipeline-grid {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 6px 0;
+}
+
+.hw-pipe-step {
+  flex: 1;
+  min-width: 170px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.hw-pipe-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hw-pipe-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hw-pipe-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.hw-pipe-desc {
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.hw-pipe-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0369a1;
+  background: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.hw-pipe-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 0 2px;
+}
+
+/* ── Evaluator Technical Guide ────────────────────────────────────────────── */
+.hw-guide-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+}
+
+.hw-guide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.hw-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.hw-guide-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hw-guide-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #0284c7;
+  text-transform: uppercase;
+}
+
+.hw-guide-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.hw-guide-text {
+  font-size: 11.5px;
+  color: #475569;
+  line-height: 1.55;
+}

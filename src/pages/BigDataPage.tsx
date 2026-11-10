@@ -1,10 +1,10 @@
 import type { SimulationState } from '../hooks/useSimulation';
-import { DataAnalytics } from './DataAnalytics';
+import { BigDataLabPage } from './BigDataLabPage';
 
 interface Props {
   state: SimulationState;
 }
 
 export function BigDataPage({ state }: Props) {
-  return <DataAnalytics state={state} />;
+  return <BigDataLabPage state={state} />;
 }

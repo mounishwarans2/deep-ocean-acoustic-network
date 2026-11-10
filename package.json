@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "server": "node server/index.js",
+    "hardware:node": "node hardware-simulation/run-virtual-node.js",
     "install:server": "npm --prefix server install"
   },
   "dependencies": {

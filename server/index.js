@@ -19,6 +19,14 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '128kb' }));
 
+// ── Big Data & Spark Pipeline Routes ──────────────────────────────────────────
+const sparkRouter = require('./spark-routes');
+app.use('/api/spark', sparkRouter);
+
+// ── Virtual Hardware & IoT Telemetry Routes ───────────────────────────────────
+const hardwareRouter = require('./hardware-telemetry');
+app.use('/api/hardware', hardwareRouter);
+
 // ── Twilio helpers ────────────────────────────────────────────────────────────
 function credentialsConfigured() {
   return Boolean(TWILIO_SID && TWILIO_TOKEN && TWILIO_FROM && ALERT_TO);
@@ -63,6 +71,7 @@ function getSupabaseClient() {
   }
   return supabaseClient;
 }
+app.set('getSupabaseClient', getSupabaseClient);
 
 // ── Telemetry validation helper ───────────────────────────────────────────────
 function validateTelemetryReading(item) {
@@ -376,4 +385,12 @@ app.listen(PORT, () => {
     `[marislink-server] listening on http://localhost:${PORT} ` +
     `(twilio: ${credentialsConfigured()}, database: ${isDatabaseConfigured()})`
   );
+
+  // Initialize MARISLINK Permanent Dataset Scheduler & Catch-up Engine
+  try {
+    const datasetScheduler = require('./dataset-scheduler');
+    datasetScheduler.initScheduler();
+  } catch (schedErr) {
+    console.warn('[marislink-server] Scheduler init warning:', schedErr.message);
+  }
 });

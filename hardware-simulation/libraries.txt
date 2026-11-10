@@ -1,0 +1,7 @@
+# Wokwi Arduino Library Dependencies
+Adafruit BMP085 Library@1.2.4
+Adafruit BMP280 Library@2.6.8
+Adafruit Unified Sensor@1.1.14
+Adafruit SSD1306@2.5.13
+Adafruit GFX Library@1.11.11
+ArduinoJson@7.2.1

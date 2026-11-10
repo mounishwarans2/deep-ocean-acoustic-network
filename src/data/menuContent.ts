@@ -677,6 +677,7 @@ export const MENU_GROUPS: MenuGroup[] = [
         actionType: 'page',
         page: 'overview',
       },
+      { id: 'circuit-connections', label: 'Circuit Connections (Tinkercad / Wokwi)', icon: '🔌', actionType: 'page', page: 'circuits' },
       { id: 'ocean-sim', label: 'Ocean Network Simulation', icon: '🌊', actionType: 'page', page: 'overview' },
       { id: 'data-flow-viz', label: 'Data Flow Visualization', icon: '💧', actionType: 'page', page: 'bigdata' },
       { id: 'comm-arch', label: 'Communication Architecture', icon: '🏗️', actionType: 'page', page: 'overview' },

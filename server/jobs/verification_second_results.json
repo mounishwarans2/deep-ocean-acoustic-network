@@ -1,0 +1,253 @@
+{
+  "metadata": {
+    "engine": "Apache Spark 3.5.9",
+    "language": "Scala 2.12.18",
+    "executedAt": "2026-11-05T07:44:31.902789358Z",
+    "executionTimeMs": 14087,
+    "inputDataset": "../data/spark-datasets/marislink_verification_second_dataset.csv",
+    "status": "SUCCESS"
+  },
+  "summary": {
+    "totalRecords": 50,
+    "duplicateRecords": 5,
+    "validRecords": 40,
+    "invalidRecords": 5,
+    "nodesDetected": 4,
+    "overallAvgLatency": 155.4,
+    "overallAvgPacketLoss": 3.18,
+    "overallAvgBattery": 85.3,
+    "overallAvgSignalStrength": -59.75
+  },
+  "nodeMetrics": [
+{
+          "nodeId": "GATEWAY-Z77",
+          "recordCount": 10,
+          "avgLatency": 22.0,
+          "minLatency": 18.4,
+          "maxLatency": 25.6,
+          "avgPacketLoss": 0.2,
+          "avgBattery": 96.0,
+          "avgSignalStrength": -38.0,
+          "avgDepth": 12.0,
+          "avgTemperature": 22.0,
+          "avgPressure": 0.1,
+          "healthStatus": "OPTIMAL"
+        },
+{
+          "nodeId": "HYDROPHONE-K1",
+          "recordCount": 10,
+          "avgLatency": 192.2,
+          "minLatency": 188.6,
+          "maxLatency": 195.8,
+          "avgPacketLoss": 4.2,
+          "avgBattery": 81.9,
+          "avgSignalStrength": -71.0,
+          "avgDepth": 1602.1,
+          "avgTemperature": 3.8,
+          "avgPressure": 16.2,
+          "healthStatus": "STABLE"
+        },
+{
+          "nodeId": "NODE-X99",
+          "recordCount": 10,
+          "avgLatency": 348.6,
+          "minLatency": 345.0,
+          "maxLatency": 352.2,
+          "avgPacketLoss": 7.5,
+          "avgBattery": 73.2,
+          "avgSignalStrength": -82.0,
+          "avgDepth": 2501.8,
+          "avgTemperature": 2.5,
+          "avgPressure": 25.1,
+          "healthStatus": "CRITICAL"
+        },
+{
+          "nodeId": "NODE-Y88",
+          "recordCount": 10,
+          "avgLatency": 58.8,
+          "minLatency": 55.2,
+          "maxLatency": 62.4,
+          "avgPacketLoss": 0.8,
+          "avgBattery": 90.1,
+          "avgSignalStrength": -48.0,
+          "avgDepth": 121.9,
+          "avgTemperature": 18.2,
+          "avgPressure": 1.2,
+          "healthStatus": "OPTIMAL"
+        }
+  ],
+  "sampleCleanRecords": [
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:01:00",
+          "depth_m": 10.2,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 97.8,
+          "signal_strength": -38.0,
+          "latency_ms": 18.4,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:03:00",
+          "depth_m": 10.6,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 97.4,
+          "signal_strength": -38.0,
+          "latency_ms": 19.2,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:05:00",
+          "depth_m": 11.0,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 97.0,
+          "signal_strength": -38.0,
+          "latency_ms": 20.0,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:07:00",
+          "depth_m": 11.4,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 96.6,
+          "signal_strength": -38.0,
+          "latency_ms": 20.8,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:09:00",
+          "depth_m": 11.8,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 96.2,
+          "signal_strength": -38.0,
+          "latency_ms": 21.6,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:11:00",
+          "depth_m": 12.2,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 95.8,
+          "signal_strength": -38.0,
+          "latency_ms": 22.4,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:13:00",
+          "depth_m": 12.6,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 95.4,
+          "signal_strength": -38.0,
+          "latency_ms": 23.2,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:15:00",
+          "depth_m": 13.0,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 95.0,
+          "signal_strength": -38.0,
+          "latency_ms": 24.0,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:17:00",
+          "depth_m": 13.4,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 94.6,
+          "signal_strength": -38.0,
+          "latency_ms": 24.8,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "timestamp": "2026-11-05 14:19:00",
+          "depth_m": 13.8,
+          "temperature_c": 22.0,
+          "pressure_mpa": 0.1,
+          "battery_level": 94.2,
+          "signal_strength": -38.0,
+          "latency_ms": 25.6,
+          "packet_loss": 0.2,
+          "communication_status": "OPTIMAL",
+          "node_status": "ACTIVE"
+        }
+  ],
+  "sampleInvalidRecords": [
+{
+          "node_id": "<null>",
+          "depth_m": "100.0",
+          "battery_level": "80.0",
+          "latency_ms": "50.0",
+          "packet_loss": "1.0",
+          "filter_reason": "Failed ocean telemetry constraint bounds"
+        },
+{
+          "node_id": "GATEWAY-Z77",
+          "depth_m": "10.0",
+          "battery_level": "-10.0",
+          "latency_ms": "18.0",
+          "packet_loss": "0.2",
+          "filter_reason": "Failed ocean telemetry constraint bounds"
+        },
+{
+          "node_id": "HYDROPHONE-K1",
+          "depth_m": "1600.0",
+          "battery_level": "80.0",
+          "latency_ms": "-50.0",
+          "packet_loss": "4.0",
+          "filter_reason": "Failed ocean telemetry constraint bounds"
+        },
+{
+          "node_id": "NODE-X99",
+          "depth_m": "-200.0",
+          "battery_level": "70.0",
+          "latency_ms": "300.0",
+          "packet_loss": "5.0",
+          "filter_reason": "Failed ocean telemetry constraint bounds"
+        },
+{
+          "node_id": "NODE-Y88",
+          "depth_m": "120.0",
+          "battery_level": "140.0",
+          "latency_ms": "55.0",
+          "packet_loss": "1.0",
+          "filter_reason": "Failed ocean telemetry constraint bounds"
+        }
+  ]
+}

@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = "marislink_esp32_node.ino"
+elf = "build/marislink_esp32_node.ino.elf"

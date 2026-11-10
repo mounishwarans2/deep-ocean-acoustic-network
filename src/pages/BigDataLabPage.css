@@ -1,0 +1,1521 @@
+/* ==============================================================================
+   MARISLINK: BIG DATA PROCESSING & ANALYTICS LAB STYLES
+   Clean, professional white-and-blue interface for underwater big data analytics
+   ============================================================================== */
+
+.bdlab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 8px 4px 32px 4px;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ── Top Header Banner ───────────────────────────────────────────────────────── */
+.bdlab-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+  border: 1px solid #cbd5e1;
+  border-left: 6px solid #0284c7;
+  border-radius: 10px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.bdlab-hero-titles h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bdlab-hero-titles p {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.bdlab-hero-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bdlab-engine-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.bdlab-engine-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.bdlab-view-toggle {
+  display: inline-flex;
+  background: #e2e8f0;
+  padding: 3px;
+  border-radius: 8px;
+  gap: 2px;
+}
+
+.bdlab-toggle-btn {
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.bdlab-toggle-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+/* ── Navigation Tabs (Two-Row Distributed Grid) ───────────────────────── */
+.bdlab-nav-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-bottom: 2px solid #0284c7;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bdlab-nav-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.bdlab-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  min-width: 0;
+  box-sizing: border-box;
+  text-align: center;
+  user-select: none;
+}
+
+.bdlab-tab:hover {
+  color: #0284c7;
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  transform: translateY(-1px);
+}
+
+.bdlab-tab.active {
+  color: #0369a1;
+  background: #e0f2fe;
+  border-color: #0284c7;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.18);
+  font-weight: 800;
+}
+
+.bdlab-tab-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.bdlab-tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.bdlab-tab-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-weight: 800;
+  background: #e2e8f0;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.bdlab-tab.active .bdlab-tab-badge {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+@media (max-width: 1440px) {
+  .bdlab-tab {
+    font-size: 11px;
+    padding: 8px 6px;
+    gap: 5px;
+  }
+  .bdlab-tab-badge {
+    font-size: 9.5px;
+    padding: 2px 5px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .bdlab-nav-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .bdlab-tab {
+    font-size: 11.5px;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 640px) {
+  .bdlab-nav-row {
+    grid-template-columns: 1fr;
+  }
+  .bdlab-tab {
+    font-size: 11px;
+    padding: 7px 8px;
+  }
+}
+
+/* ── Tab Content Panels ──────────────────────────────────────────────────────── */
+.bdlab-panel-content {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Section Header Inside Panel */
+.bdlab-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 14px;
+}
+
+.bdlab-section-head h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bdlab-section-head p {
+  margin: 4px 0 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* ── Dataset Management Cards ────────────────────────────────────────────────── */
+.bdlab-dataset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.bdlab-dataset-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bdlab-dataset-card:hover {
+  border-color: #38bdf8;
+  background: #f0f9ff;
+  transform: translateY(-1px);
+}
+
+.bdlab-dataset-card.selected {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.bdlab-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.bdlab-card-desc {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.bdlab-card-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0369a1;
+  flex-wrap: wrap;
+}
+
+.bdlab-meta-tag {
+  background: #e0f2fe;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Upload Dropzone */
+.bdlab-dropzone {
+  border: 2px dashed #94a3b8;
+  border-radius: 10px;
+  padding: 28px 20px;
+  text-align: center;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bdlab-dropzone:hover, .bdlab-dropzone.dragover {
+  border-color: #0284c7;
+  background: #f0f9ff;
+}
+
+.bdlab-dropzone-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.bdlab-dropzone-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.bdlab-dropzone-sub {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Active Dataset Detail Card */
+.bdlab-active-dataset-bar {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #10b981;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bdlab-dataset-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bdlab-dataset-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: monospace;
+}
+
+.bdlab-dataset-specs {
+  font-size: 11.5px;
+  color: #475569;
+}
+
+/* Table styling */
+.bdlab-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  max-height: 400px;
+}
+
+.bdlab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.bdlab-table th {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 800;
+  padding: 10px 14px;
+  border-bottom: 1px solid #cbd5e1;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.bdlab-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.bdlab-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.bdlab-table tr:hover {
+  background: #f0f9ff;
+}
+
+/* ── Spark Execution Tab ─────────────────────────────────────────────────────── */
+.bdlab-exec-box {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.bdlab-run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+  transition: all 0.2s ease;
+}
+
+.bdlab-run-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5);
+  background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+}
+
+.bdlab-run-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.bdlab-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.bdlab-status-idle { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.bdlab-status-running { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.bdlab-status-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.bdlab-status-failed { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* Real Spark Terminal */
+.bdlab-terminal {
+  background: #090d16;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.bdlab-terminal-header {
+  background: #1e293b;
+  padding: 8px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.bdlab-terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.bdlab-t-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.bdlab-t-red { background: #ef4444; }
+.bdlab-t-yellow { background: #f59e0b; }
+.bdlab-t-green { background: #10b981; }
+
+.bdlab-terminal-body {
+  padding: 16px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  max-height: 480px;
+  overflow-y: auto;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.bdlab-log-info { color: #38bdf8; }
+.bdlab-log-warn { color: #fbbf24; }
+.bdlab-log-error { color: #f87171; }
+.bdlab-log-success { color: #4ade80; }
+.bdlab-log-spark { color: #a78bfa; font-weight: 700; }
+
+/* ── KPI Metrics Cards (Processing Results) ──────────────────────────────────── */
+.bdlab-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.bdlab-kpi-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bdlab-kpi-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bdlab-kpi-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bdlab-kpi-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* ── Scala Code Viewer ───────────────────────────────────────────────────────── */
+.bdlab-code-viewer {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bdlab-code-head {
+  background: #1e293b;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.bdlab-code-pre {
+  margin: 0;
+  padding: 16px;
+  max-height: 520px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #f1f5f9;
+}
+
+/* Academic Concept Callouts */
+.bdlab-concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.bdlab-concept-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #0284c7;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.bdlab-concept-card h4 {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0369a1;
+}
+
+.bdlab-concept-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* ── Bar Charts & Visuals ────────────────────────────────────────────────────── */
+.bdlab-chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.bdlab-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.bdlab-bar-label {
+  width: 90px;
+  font-weight: 700;
+  color: #0f172a;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+.bdlab-bar-track {
+  flex: 1;
+  height: 22px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bdlab-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.bdlab-bar-val {
+  width: 80px;
+  text-align: right;
+  font-weight: 700;
+  color: #475569;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+/* ── Architecture Cards (Kafka & Cassandra) ─────────────────────────────────── */
+.bdlab-arch-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bdlab-arch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #e2e8f0;
+  color: #475569;
+  width: fit-content;
+}
+
+.bdlab-arch-badge.planned {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* Helper Buttons */
+.bdlab-btn-secondary {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bdlab-btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.bdlab-btn-primary {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bdlab-btn-primary:hover {
+  background: #0369a1;
+}
+
+/* Health status badges */
+.bdlab-health-optimal { color: #16a34a; font-weight: 800; }
+.bdlab-health-stable { color: #0284c7; font-weight: 800; }
+.bdlab-health-degraded { color: #d97706; font-weight: 800; }
+.bdlab-health-critical { color: #dc2626; font-weight: 800; }
+
+/* ── Live Simulation Telemetry Banner ────────────────────────────────────────── */
+.bdlab-sim-banner {
+  background: linear-gradient(90deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1px solid #bfdbfe;
+  border-left: 5px solid #0284c7;
+  border-radius: 8px;
+  padding: 12px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bdlab-sim-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bdlab-sim-tag {
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bdlab-sim-tag .pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: bdlabPulse 1.6s infinite;
+}
+
+@keyframes bdlabPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.bdlab-sim-desc {
+  font-size: 12.5px;
+  color: #334155;
+  margin: 0;
+}
+
+.bdlab-sim-desc b {
+  color: #0369a1;
+}
+
+/* ── Filter Toolbar ─────────────────────────────────────────────────────────── */
+.bdlab-filter-toolbar {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.bdlab-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bdlab-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bdlab-filter-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.bdlab-select {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bdlab-select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.bdlab-search-input {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: #0f172a;
+  outline: none;
+  width: 170px;
+  transition: all 0.2s ease;
+}
+
+.bdlab-search-input:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+  width: 210px;
+}
+
+/* ── Device Cards Grid ───────────────────────────────────────────────────────── */
+.bdlab-device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.bdlab-device-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.bdlab-device-card:hover {
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.08);
+}
+
+.bdlab-device-card.selected {
+  border: 2px solid #0284c7;
+  background: #f0f9ff;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.12);
+}
+
+.bdlab-device-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.bdlab-device-id {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bdlab-device-type {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.bdlab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.bdlab-badge-optimal {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.bdlab-badge-stable {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.bdlab-badge-degraded {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.bdlab-badge-critical {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.bdlab-device-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.bdlab-metric-item {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 4px;
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bdlab-metric-k {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.bdlab-metric-v {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: monospace;
+}
+
+/* ── Selected Device Inspector Panel ─────────────────────────────────────────── */
+.bdlab-inspector-panel {
+  background: #ffffff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.06);
+}
+
+.bdlab-inspector-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.bdlab-inspector-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bdlab-inspector-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bdlab-inspector-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.bdlab-stat-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bdlab-stat-box.highlight {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.bdlab-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.bdlab-stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: monospace;
+}
+
+.bdlab-stat-sub {
+  font-size: 11px;
+  color: #475569;
+}
+
+/* ── Benchmark / Secondary Drawer ────────────────────────────────────────────── */
+.bdlab-collapsible-drawer {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.bdlab-drawer-summary {
+  padding: 12px 16px;
+  background: #f8fafc;
+  font-weight: 700;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.bdlab-drawer-summary:hover {
+  background: #f1f5f9;
+  color: #0284c7;
+}
+
+.bdlab-drawer-body {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ── Device-Wise Historical Analytics Styles ───────────────────────────────── */
+.bdlab-history-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.bdlab-history-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.bdlab-time-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bdlab-time-pill {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bdlab-time-pill:hover {
+  background: #f1f5f9;
+  color: #0284c7;
+  border-color: #93c5fd;
+}
+
+.bdlab-time-pill.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+}
+
+.bdlab-history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+.bdlab-history-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.bdlab-history-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bdlab-history-card-head h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bdlab-history-card-head span.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.bdlab-sparkline-svg {
+  width: 100%;
+  height: 140px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  overflow: visible;
+}
+
+.bdlab-timeline-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.bdlab-timeline-block {
+  width: 14px;
+  height: 18px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.bdlab-timeline-block:hover {
+  transform: scale(1.3);
+}
+
+.bdlab-table-container {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.bdlab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.bdlab-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  padding: 7px 10px;
+  text-align: left;
+  border-bottom: 1px solid #cbd5e1;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.bdlab-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-family: monospace;
+}
+
+.bdlab-table tr:hover {
+  background: #f8fafc;
+}
+
+.bdlab-spark-validation-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bdlab-spark-validation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.bdlab-spark-validation-item {
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bdlab-spark-validation-k {
+  font-size: 10px;
+  font-weight: 700;
+  color: #15803d;
+  text-transform: uppercase;
+}
+
+.bdlab-spark-validation-v {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: monospace;
+}
+
+/* ── Underwater Node Analytics Styles ─────────────────────────────── */
+.bdlab-review3-banner {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+}
+
+.bdlab-review3-banner h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bdlab-exec-demo-panel {
+  background: #ffffff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.05);
+  margin-bottom: 14px;
+}
+
+.bdlab-demo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.bdlab-demo-header h4 {
+  margin: 4px 0 0 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bdlab-demo-header p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.bdlab-demo-badge {
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.bdlab-demo-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.bdlab-demo-spec-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.spec-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.spec-val {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.spec-sub {
+  font-size: 11px;
+  color: #475569;
+}
+
+.spec-link-btn {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+}
+
+.bdlab-demo-stages-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stages-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #166534;
+}
+
+.bdlab-demo-stages-stepper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.stage-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all 0.2s ease;
+}
+
+.stage-card.done {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.stage-card.active {
+  border-color: #38bdf8;
+  background: #f0f9ff;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.stage-num {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.stage-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.stage-desc {
+  font-size: 10px;
+  color: #475569;
+  font-family: monospace;
+}
+
+.bdlab-code-mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.bdlab-code-mapping-table th {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 700;
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid #cbd5e1;
+}
+
+.bdlab-code-mapping-table td {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.bdlab-code-mapping-table tr:hover {
+  background: #f8fafc;
+}
+

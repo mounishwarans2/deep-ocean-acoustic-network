@@ -1,0 +1,2 @@
+node_id,timestamp,depth_m,temperature_c,pressure_mpa,raw_sensor_hpa,battery_voltage_v,battery_level,signal_strength,latency_ms,packet_loss,communication_status,node_status,source,measurement_type
+ESP32-UW01,2026-11-09 14:47:14,120.5,21.4,20.35,1013.25,3.92,95,-68,140,2.5,OPTIMAL,ACTIVE,wokwi-esp32-firmware,SIMULATED_VIRTUAL_HARDWARE

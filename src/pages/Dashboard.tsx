@@ -24,26 +24,35 @@ import { Sim3DPage } from './Sim3DPage';
 import { OceanSensorsPage } from './OceanSensorsPage';
 import { PrototypePage } from './PrototypePage';
 import { AboutProjectPage } from './AboutProjectPage';
+import { CircuitConnectionsPage } from './CircuitConnectionsPage';
 
-export type Page = 'overview' | 'snc' | 'energy' | 'acoustic' | 'environment' | 'health' | 'alerts' | 'history' | 'bigdata' | 'sim3d' | 'sensors' | 'prototype' | 'about';
+export type Page = 'overview' | 'circuits' | 'hardware' | 'snc' | 'energy' | 'acoustic' | 'environment' | 'health' | 'alerts' | 'history' | 'bigdata' | 'sim3d' | 'sensors' | 'prototype' | 'about';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
-const NAV_ITEMS: { id: Page; label: string }[] = [
+// Row 1: Core System Telemetry & Operational Dashboards
+const NAV_ROW_1: { id: Page; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'circuits', label: '🔌 Circuit Connections' },
   { id: 'snc', label: 'SNC Analytics' },
   { id: 'energy', label: 'Energy' },
   { id: 'acoustic', label: 'Acoustic' },
   { id: 'environment', label: 'Environment' },
   { id: 'health', label: 'Device Health' },
   { id: 'alerts', label: 'Alerts' },
+];
+
+// Row 2: Deep Analytics, Simulation, Sensors, Hardware & Knowledge
+const NAV_ROW_2: { id: Page; label: string }[] = [
   { id: 'history', label: 'Historical' },
-  { id: 'bigdata', label: 'Big Data' },
+  { id: 'bigdata', label: '⚡ Big Data Lab' },
   { id: 'sim3d', label: '3D Simulation' },
   { id: 'sensors', label: '🌊 Ocean Sensors' },
   { id: 'prototype', label: '🔬 Exploded View' },
   { id: 'about', label: '📖 About the Project' },
 ];
+
+const NAV_ITEMS: { id: Page; label: string }[] = [...NAV_ROW_1, ...NAV_ROW_2];
 
 const VALID_PAGES = new Set<string>(NAV_ITEMS.map(i => i.id));
 
@@ -51,6 +60,8 @@ const VALID_PAGES = new Set<string>(NAV_ITEMS.map(i => i.id));
 // every other tab has its own URL so browser history, Back, and refresh work.
 const PAGE_PATHS: Record<Page, string> = {
   overview: '',
+  circuits: 'circuit-connections',
+  hardware: 'live-hardware',
   snc: 'snc-analytics',
   energy: 'energy',
   acoustic: 'acoustic',
@@ -65,9 +76,12 @@ const PAGE_PATHS: Record<Page, string> = {
   about: 'about-project',
 };
 
-const PATH_PAGES: Record<string, Page> = Object.fromEntries(
-  Object.entries(PAGE_PATHS).map(([page, slug]) => [slug, page as Page]),
-);
+const PATH_PAGES: Record<string, Page> = {
+  ...Object.fromEntries(
+    Object.entries(PAGE_PATHS).map(([page, slug]) => [slug, page as Page]),
+  ),
+  'live-hardware': 'circuits',
+};
 
 /** Active tab is derived from the URL — refresh preserves it, Back walks it. */
 function pageFromPath(pathname: string): Page {
@@ -221,6 +235,8 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
     const props = { state, selectedDeviceId, onSelectDevice: setSelectedDeviceId };
     switch (page) {
       case 'overview': return <OverviewPage {...props} />;
+      case 'circuits':
+      case 'hardware': return <CircuitConnectionsPage onNavigateToSpark={() => goPage('bigdata')} />;
       case 'snc': return <SNCPage {...props} />;
       case 'energy': return <EnergyPage {...props} />;
       case 'acoustic': return <AcousticPage {...props} />;
@@ -338,22 +354,35 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
         </div>
       </header>
 
-      <nav className="nav">
-        {NAV_ITEMS.map(item => (
+      <nav className="nav" aria-label="Main Navigation">
+        <div className="nav-row nav-row-1">
+          {NAV_ROW_1.map(item => (
+            <div
+              key={item.id}
+              className={`nav-item ${page === item.id ? 'active' : ''}`}
+              onClick={() => goPage(item.id)}
+            >
+              {item.label}
+            </div>
+          ))}
+        </div>
+        <div className="nav-row nav-row-2">
+          {NAV_ROW_2.map(item => (
+            <div
+              key={item.id}
+              className={`nav-item ${page === item.id ? 'active' : ''}`}
+              onClick={() => goPage(item.id)}
+            >
+              {item.label}
+            </div>
+          ))}
+          <div className="nav-row-spacer" />
           <div
-            key={item.id}
-            className={`nav-item ${page === item.id ? 'active' : ''}`}
-            onClick={() => goPage(item.id)}
+            className="nav-item nav-item-failure"
+            onClick={handleSystemFailure}
           >
-            {item.label}
+            System Failure
           </div>
-        ))}
-        <div style={{ flex: 1 }} />
-        <div
-          className="nav-item nav-item-failure"
-          onClick={handleSystemFailure}
-        >
-          System Failure
         </div>
       </nav>
 

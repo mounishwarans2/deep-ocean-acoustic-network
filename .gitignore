@@ -28,3 +28,27 @@ server/node_modules
 *.njsproj
 *.sln
 *.sw?
+
+# SBT / Scala build caches
+target/
+spark-pipeline/target/
+spark-pipeline/project/target/
+spark-pipeline/project/project/
+.bsp/
+.metals/
+.bloop/
+
+# Hardware simulation build duplicates & maps
+hardware-simulation/marislink_esp32_node/build/
+hardware-simulation/build/*.map
+hardware-simulation/build/*.merged.bin
+
+# Server uploads
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Python caches and temporary scratch files
+__pycache__/
+*.pyc
+scripts/clean_tail.txt
+scripts/raw_esp32_wires.txt
