@@ -76,6 +76,7 @@ const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
     name: 'Embedded Controller DevKit v1',
     category: 'MCU',
     modelNumber: 'Dual-Core 32-Bit LX6 (30-Pin)',
+    imageSrc: '/assets/hardware/esp32.png',
     x: 80,
     y: 140,
     width: 170,
@@ -127,6 +128,7 @@ const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
     name: 'SSD1306 0.96" OLED Display',
     category: 'DISPLAY',
     modelNumber: 'SSD1306 128x64 I2C',
+    imageSrc: '/assets/hardware/oled.png',
     x: 400,
     y: 60,
     width: 200,
@@ -149,6 +151,7 @@ const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
     name: 'BMP280 Barometric & Temp Transducer',
     category: 'SENSOR',
     modelNumber: 'Bosch BMP280 Breakout',
+    imageSrc: '/assets/hardware/bmp280.png',
     x: 690,
     y: 70,
     width: 140,
@@ -171,6 +174,7 @@ const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
     name: 'Battery Voltage Divider Potentiometer',
     category: 'ACTUATOR',
     modelNumber: '10kΩ Precision Rotary Potentiometer',
+    imageSrc: '/assets/hardware/pot_battery.png',
     x: 370,
     y: 260,
     width: 130,
@@ -191,6 +195,7 @@ const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
     name: 'Acoustic RSSI Signal Attenuator',
     category: 'ACTUATOR',
     modelNumber: '10kΩ Rotary Attenuator',
+    imageSrc: '/assets/hardware/pot_signal.png',
     x: 540,
     y: 260,
     width: 130,
@@ -211,6 +216,7 @@ const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
     name: 'Acoustic Modem Transponder Interface',
     category: 'SENSOR',
     modelNumber: 'UW-Acoustic Modem Driver v2.1',
+    imageSrc: '/assets/hardware/modem_uart.png',
     x: 710,
     y: 260,
     width: 150,
@@ -232,6 +238,7 @@ const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
     name: 'Acoustic Status Indicators & 220Ω Resistors',
     category: 'ACTUATOR',
     modelNumber: '3-LED Array with Ballast Resistors',
+    imageSrc: '/assets/hardware/led_indicators_panel.png',
     x: 420,
     y: 430,
     width: 380,
@@ -549,6 +556,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'INTERFACE',
     modelNumber: 'SubConn 4-Pin Circular (+24V Bus)',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/interface_wetmate_power.png',
     x: 50,
     y: 65,
     width: 180,
@@ -569,11 +577,11 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'POWER',
     modelNumber: 'Solid-State Betavoltaic Power Cell',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/pwr_micro_nuclear_battery.png',
     x: 275,
     y: 65,
     width: 195,
     height: 95,
-    imageSrc: '/assets/hardware/pwr_micro_nuclear_battery.webp?v=5',
     description: 'Proposed long-duration solid-state micro-nuclear power source under conceptual architectural evaluation for multi-decade seabed deployment. Not physically present in benchtop prototype.',
     roleInMarislink: 'Proposed ultra-long-duration architectural primary energy source designed to trickle-charge the LiPo energy buffer without requiring periodic retrieval.',
     protocol: 'Autonomous Low-Voltage DC Supply',
@@ -590,11 +598,11 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'POWER',
     modelNumber: 'Aluminum Laminated Pouch Cell Stack',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/pwr_lipo_backup_battery.png',
     x: 510,
     y: 65,
     width: 195,
     height: 95,
-    imageSrc: '/assets/hardware/pwr_lipo_backup_battery.webp?v=5',
     description: 'High-discharge multi-cell Lithium Polymer (LiPo) laminated pouch battery pack engineered to buffer peak transient surge currents during high-power acoustic transmission pulses.',
     roleInMarislink: 'Supplies rapid transient discharge currents to the 100W acoustic power amplifier, preventing voltage sag on sensitive digital processor rails.',
     protocol: 'High-Rate Secondary DC Energy Buffer',
@@ -611,6 +619,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'POWER',
     modelNumber: 'LTC4412 Ideal Diode Multiplexer',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/pwr_path_mgmt.png',
     x: 275,
     y: 255,
     width: 195,
@@ -634,6 +643,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'POWER',
     modelNumber: 'TI BQ76952 Cell Balancer & Monitor',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/pwr_bms.png',
     x: 510,
     y: 255,
     width: 195,
@@ -655,6 +665,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'POWER',
     modelNumber: '12V, 5V, 3.3V Synchronous Buck',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/pwr_dcdc_converters.png',
     x: 275,
     y: 445,
     width: 195,
@@ -678,6 +689,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'POWER',
     modelNumber: 'TI INA226 High-Side I2C Sensor',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/pwr_monitor_ic.png',
     x: 510,
     y: 445,
     width: 195,
@@ -702,6 +714,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'SENSOR',
     modelNumber: 'Keller 33X Titanium (60 MPa)',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/sensor_subsea_pressure.png',
     x: 45,
     y: 670,
     width: 145,
@@ -724,6 +737,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'SENSOR',
     modelNumber: 'PT1000 4-Wire Platinum Probe',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/sensor_ocean_temp.png',
     x: 225,
     y: 670,
     width: 145,
@@ -745,6 +759,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'SENSOR',
     modelNumber: 'Bosch BMI088 + BMM150 Sensor',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/sensor_imu_9dof.png',
     x: 405,
     y: 670,
     width: 145,
@@ -767,6 +782,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'SENSOR',
     modelNumber: 'Optical / Conductive Bilge Grid',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/sensor_leak_hull.png',
     x: 585,
     y: 670,
     width: 145,
@@ -790,6 +806,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'MCU',
     modelNumber: 'Cortex-M7/M4 Real-Time SNC Core',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/mcu_stm32h7.png',
     x: 800,
     y: 175,
     width: 235,
@@ -829,6 +846,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'AI_PROCESSOR',
     modelNumber: 'VE2302 Adaptive Neural Engine',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/ai_jetson_orin.png',
     x: 1090,
     y: 175,
     width: 245,
@@ -857,6 +875,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'ACOUSTIC',
     modelNumber: 'Omnidirectional Acoustic Sensor',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/acoustics_hydrophone.png',
     x: 1420,
     y: 55,
     width: 180,
@@ -877,6 +896,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'ACOUSTIC',
     modelNumber: 'AD8429 40dB Subsea Front-End',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/acoustics_lna.png',
     x: 1655,
     y: 55,
     width: 180,
@@ -900,6 +920,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'ACOUSTIC',
     modelNumber: 'TI ADS127L11 (400 kSPS SPI)',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/acoustics_adc.png',
     x: 1890,
     y: 55,
     width: 180,
@@ -925,6 +946,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'ACOUSTIC',
     modelNumber: 'AD5791 24-Bit / 1 MSPS DDS',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/acoustics_dac.png',
     x: 1420,
     y: 285,
     width: 180,
@@ -948,6 +970,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'ACOUSTIC',
     modelNumber: 'Class-D Resonant Step-Up Amp',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/acoustics_power_amp.png',
     x: 1655,
     y: 285,
     width: 185,
@@ -971,6 +994,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'ACOUSTIC',
     modelNumber: 'PZT-4 Resonant Ceramic Stack',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/acoustics_transducer.png',
     x: 1895,
     y: 285,
     width: 180,
@@ -993,6 +1017,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'STORAGE',
     modelNumber: '32GB Black-Box Flight Log',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/storage_microsd.png',
     x: 820,
     y: 670,
     width: 195,
@@ -1016,6 +1041,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'STORAGE',
     modelNumber: '256GB Spectrogram & Model Store',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/storage_emmc_nvme.png',
     x: 1090,
     y: 670,
     width: 220,
@@ -1039,6 +1065,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'INTERFACE',
     modelNumber: 'SubConn 8-Pin Subsea Ethernet',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/interface_wetmate_data.png',
     x: 1420,
     y: 520,
     width: 180,
@@ -1060,6 +1087,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'INTERFACE',
     modelNumber: 'USB-C Receptacle + SWD Header',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/interface_debug_port.png',
     x: 1635,
     y: 520,
     width: 180,
@@ -1083,6 +1111,7 @@ const UNDERWATER_COMPONENTS: CircuitComponent[] = [
     category: 'INDICATOR',
     modelNumber: 'IP68 4-Channel Inspection Array',
     status: 'ARCHITECTURAL',
+    imageSrc: '/assets/hardware/led_indicators_panel.png',
     x: 1880,
     y: 520,
     width: 190,
@@ -1770,6 +1799,7 @@ const ARDUINO_COMPONENTS: CircuitComponent[] = [
     category: 'MCU',
     modelNumber: 'ATmega328P DIP (Tinkercad Native)',
     status: 'SIMULATED',
+    imageSrc: '/assets/hardware/arduino_uno.png',
     x: 50,
     y: 110,
     width: 260,
@@ -1806,6 +1836,7 @@ const ARDUINO_COMPONENTS: CircuitComponent[] = [
     category: 'BREADBOARD',
     modelNumber: '400 Tie-Point Solderless',
     status: 'SIMULATED',
+    imageSrc: '/assets/hardware/breadboard_half.png',
     x: 340,
     y: 100,
     width: 370,
@@ -1831,6 +1862,7 @@ const ARDUINO_COMPONENTS: CircuitComponent[] = [
     category: 'SENSOR',
     modelNumber: 'Analog Devices TMP36 (TO-92)',
     status: 'SIMULATED',
+    imageSrc: '/assets/hardware/tmp36.png',
     x: 500,
     y: 155,
     width: 70,
@@ -1853,6 +1885,7 @@ const ARDUINO_COMPONENTS: CircuitComponent[] = [
     category: 'DISPLAY',
     modelNumber: 'HD44780 + PCF8574 I2C Backpack',
     status: 'SIMULATED',
+    imageSrc: '/assets/hardware/lcd_1602.png',
     x: 740,
     y: 110,
     width: 270,
@@ -2235,6 +2268,21 @@ function ComponentShape({
 
   const catColor = getCategoryColor(comp.category);
 
+  const badgeWidth = Math.max(comp.width - 6, 135);
+  const badgeHeight = 38;
+  const badgeX = comp.x + (comp.width - badgeWidth) / 2;
+  const badgeY = comp.y + comp.height + 4;
+
+  const statusText = comp.status === 'ARCHITECTURAL'
+    ? 'PROPOSED ARCHITECTURAL'
+    : (comp.status || 'IMPLEMENTED');
+
+  const statusColor = statusText.includes('ARCHITECTURAL')
+    ? '#d97706'
+    : statusText === 'IMPLEMENTED'
+      ? '#0284c7'
+      : '#2563eb';
+
   return (
     <g
       id={`comp-${comp.id}`}
@@ -2245,46 +2293,52 @@ function ComponentShape({
       }}
       style={{ cursor: 'pointer' }}
     >
-      {/* Component Outer Card Body */}
-      <rect
-        x={comp.x}
-        y={comp.y}
-        width={comp.width}
-        height={comp.height}
-        rx={8}
-        fill="#ffffff"
-        stroke={isSelected ? '#0284c7' : '#cbd5e1'}
-        strokeWidth={isSelected ? 2.5 : 1.2}
-        filter="drop-shadow(0 2px 5px rgba(0,0,0,0.06))"
-        className="component-card-bg"
-      />
+      {/* Selection Halo around component when selected */}
+      {isSelected && (
+        <rect
+          x={comp.x - 4}
+          y={comp.y - 4}
+          width={comp.width + 8}
+          height={comp.height + 8}
+          rx={8}
+          fill="none"
+          stroke="#0284c7"
+          strokeWidth={2.5}
+          strokeDasharray="5 3"
+        />
+      )}
 
-      {/* Realistic Component Visual Image */}
+      {/* Realistic Hardware Component Image - rendered directly on canvas with drop-shadow */}
       {comp.imageSrc ? (
         <image
           href={comp.imageSrc}
-          x={comp.x + 8}
-          y={comp.y + 8}
-          width={comp.width - 16}
-          height={Math.max(comp.height - 16, 20)}
+          x={comp.x}
+          y={comp.y}
+          width={comp.width}
+          height={comp.height}
           preserveAspectRatio="xMidYMid meet"
           className="component-realistic-img"
+          style={{
+            filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.22))',
+            pointerEvents: 'none'
+          }}
         />
       ) : (
-        /* Fallback schematic representation */
+        /* Fallback schematic representation only if image is absent */
         <g>
           <rect
-            x={comp.x + 8}
-            y={comp.y + 8}
-            width={comp.width - 16}
-            height={comp.height - 16}
-            rx={4}
-            fill="#f1f5f9"
-            stroke="#e2e8f0"
+            x={comp.x}
+            y={comp.y}
+            width={comp.width}
+            height={comp.height}
+            rx={6}
+            fill="#f8fafc"
+            stroke="#cbd5e1"
+            strokeWidth={1.5}
           />
           <text
             x={comp.x + comp.width / 2}
-            y={comp.y + comp.height / 2 - 4}
+            y={comp.y + comp.height / 2}
             textAnchor="middle"
             fill={catColor}
             fontSize={11}
@@ -2296,7 +2350,17 @@ function ComponentShape({
         </g>
       )}
 
-      {/* Pins Layer */}
+      {/* Transparent Click Hitbox over component body */}
+      <rect
+        x={comp.x}
+        y={comp.y}
+        width={comp.width}
+        height={comp.height}
+        fill="transparent"
+        className="component-hitbox"
+      />
+
+      {/* Component Solder Terminals / Pin Dots Layer */}
       {comp.pins.map((pin) => {
         const pinColor = getPinColor(pin.type);
         const pinKey = `${comp.id}:${pin.id}`;
@@ -2311,11 +2375,11 @@ function ComponentShape({
               onSelectPin(comp, pin);
             }}
           >
-            {/* Hitbox */}
+            {/* Expanded Hitbox */}
             <circle
               cx={comp.x + pin.x}
               cy={comp.y + pin.y}
-              r={7}
+              r={8}
               fill="transparent"
               className="pin-hitbox"
             />
@@ -2329,15 +2393,21 @@ function ComponentShape({
               strokeWidth={1.2}
               className="pin-solder-dot"
             />
-            {/* Pin Label */}
+            {/* High-Contrast Pin Label */}
             <text
               x={comp.x + pin.x}
               y={comp.y + pin.y + (pin.y > comp.height / 2 ? 10 : -7)}
               textAnchor="middle"
-              fill="#475569"
+              fill="#0f172a"
               fontSize={7.5}
-              fontWeight="600"
+              fontWeight="700"
               fontFamily="system-ui, sans-serif"
+              style={{
+                paintOrder: 'stroke',
+                stroke: '#ffffff',
+                strokeWidth: 2,
+                strokeLinejoin: 'round'
+              }}
             >
               {pin.label}
             </text>
@@ -2345,41 +2415,59 @@ function ComponentShape({
         );
       })}
 
-      {/* Component Title & Model below component */}
-      <text
-        x={comp.x + comp.width / 2}
-        y={comp.y + comp.height + 14}
-        textAnchor="middle"
-        fill="#0f172a"
-        fontSize={9.5}
-        fontWeight="700"
-        fontFamily="system-ui, sans-serif"
-      >
-        {comp.name}
-      </text>
-      <text
-        x={comp.x + comp.width / 2}
-        y={comp.y + comp.height + 25}
-        textAnchor="middle"
-        fill="#64748b"
-        fontSize={8}
-        fontFamily="system-ui, sans-serif"
-      >
-        {comp.modelNumber}
-      </text>
-      {comp.status && (
+      {/* Floating Info Badge Card Below Component */}
+      <g className="component-info-card">
+        <rect
+          x={badgeX}
+          y={badgeY}
+          width={badgeWidth}
+          height={badgeHeight}
+          rx={5}
+          fill="#ffffff"
+          stroke={isSelected ? '#0284c7' : '#e2e8f0'}
+          strokeWidth={isSelected ? 1.8 : 1}
+          filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
+          className="component-card-bg"
+        />
+
+        {/* Line 1: Component Title */}
         <text
-          x={comp.x + comp.width / 2}
-          y={comp.y + comp.height + 34}
+          x={badgeX + badgeWidth / 2}
+          y={badgeY + 12}
           textAnchor="middle"
-          fill={comp.status === 'IMPLEMENTED' ? '#0284c7' : comp.status === 'ARCHITECTURAL' ? '#d97706' : '#2563eb'}
-          fontSize={7}
+          fill="#0f172a"
+          fontSize={comp.name.length > 28 ? 7.6 : 8.5}
+          fontWeight="700"
+          fontFamily="system-ui, sans-serif"
+        >
+          {comp.name}
+        </text>
+
+        {/* Line 2: Model & Specification */}
+        <text
+          x={badgeX + badgeWidth / 2}
+          y={badgeY + 22}
+          textAnchor="middle"
+          fill="#64748b"
+          fontSize={7.2}
+          fontFamily="system-ui, sans-serif"
+        >
+          {comp.modelNumber}
+        </text>
+
+        {/* Line 3: Architectural / Implementation Status */}
+        <text
+          x={badgeX + badgeWidth / 2}
+          y={badgeY + 31.5}
+          textAnchor="middle"
+          fill={statusColor}
+          fontSize={6.8}
           fontWeight="800"
           fontFamily="system-ui, sans-serif"
         >
-          [{comp.status}]
+          [{statusText}]
         </text>
-      )}
+      </g>
     </g>
   );
 }
@@ -2415,7 +2503,7 @@ function SystemWorkflowSection({ mode }: { mode: CircuitMode }) {
           <div className="workflow-mode-tag">
             Current Architecture Mode: <strong>
               {mode === 'complete_underwater' ? 'Complete MARISLINK Underwater Architecture (AMD Versal™ AI Edge + STM32H7)' :
-               mode === 'esp32_wokwi' ? 'Embedded Hardware Prototype (32-Bit LX6 + BMP280)' :
+               mode === 'esp32_wokwi' ? 'ESP32 Wokwi Production Prototype (32-Bit LX6 + BMP280)' :
                'Arduino Uno Tinkercad Model (Classroom Equivalent)'}
             </strong>
           </div>
@@ -2517,8 +2605,18 @@ export interface CircuitConnectionsPageProps {
 }
 
 export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnectionsPageProps) {
-  // Mode selection: default to complete_underwater
-  const [mode, setMode] = useState<CircuitMode>('complete_underwater');
+  // Mode selection: default to complete_underwater (or via query parameter)
+  const [mode, setMode] = useState<CircuitMode>(() => {
+    try {
+      const paramMode = new URLSearchParams(window.location.search).get('mode') as CircuitMode;
+      if (paramMode && ['complete_underwater', 'esp32_wokwi', 'arduino_tinkercad'].includes(paramMode)) {
+        return paramMode;
+      }
+    } catch {
+      // fallback
+    }
+    return 'complete_underwater';
+  });
 
   // Filter selection: default to ALL
   const [busFilter, setBusFilter] = useState<BusFilter>('ALL');
@@ -2856,7 +2954,7 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
               handleResetView();
             }}
           >
-            ⚡ Embedded Hardware Prototype (32-Bit LX6 + BMP280)
+            ⚡ ESP32 Wokwi Production Prototype (32-Bit LX6 + BMP280)
           </button>
           <button
             className={`mode-btn mode-arduino ${mode === 'arduino_tinkercad' ? 'active' : ''}`}
@@ -2873,7 +2971,7 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
       {/* ── Evaluator Technical Accuracy Notice ───────────────────────────── */}
       <div className="circuit-academic-notice">
         <span className="notice-badge implemented">IMPLEMENTED</span>
-        <strong>Verified Embedded Prototype:</strong> Mode A runs the compiled controller firmware on simulated hardware with live telemetry ingestion.
+        <strong>Verified Embedded Prototype:</strong> Mode A runs the compiled ESP32 firmware on simulated Wokwi hardware with live telemetry ingestion.
         <span className="notice-badge architectural" style={{ marginLeft: 14 }}>ARCHITECTURAL</span>
         <strong>Deep-Sea Production Design:</strong> Mode B models the full multi-rail power system, AMD Versal™ / NVIDIA AI, STM32H7 SNC controller, and hydrophone transceiver.
         <span className="notice-badge simulated" style={{ marginLeft: 14 }}>SIMULATED</span>
