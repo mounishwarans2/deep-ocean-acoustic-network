@@ -228,7 +228,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
             <span>🔌</span> LIVE HARDWARE MONITORING
           </h2>
           <p>
-            Virtual ESP32 Deep-Ocean Acoustic Node (Wokwi Electronic Simulation & Calibrated Transducer Integration)
+            Virtual Embedded Deep-Ocean Acoustic Node (Microcontroller Simulation & Calibrated Transducer Integration)
           </p>
 
           {/* Prominent Active Source Indicator */}
@@ -338,7 +338,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
       {/* ── Scientific Calibration & Honesty Notice ─────────────────────────── */}
       <div className="hw-calibration-banner">
         <strong>🔬 Physical Transducer & Deep-Ocean Calibration Note:</strong> The virtual hardware node simulates an{' '}
-        <strong>ESP32 DevKit v1</strong> integrated with a physical <strong>Bosch BMP280 MEMS sensor</strong>. A physical BMP280
+        <strong>Embedded Controller DevKit v1</strong> integrated with a physical <strong>Bosch BMP280 MEMS sensor</strong>. A physical BMP280
         measures atmospheric pressures between <strong>300 hPa and 1100 hPa</strong>. Because physical deep-sea pressure at 2000m depth is{' '}
         <strong>~20 MPa (200 atmospheres)</strong>, our embedded firmware reads the physical transducer in the test chamber and mathematically applies
         an oceanographic hydrostatic transfer function ($P = \rho \cdot g \cdot h$) to derive modeled deep-sea pressure and acoustic depth.
@@ -587,7 +587,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
         {showWokwiEmbed && (
           <div style={{ marginBottom: 16, background: '#0f172a', borderRadius: 8, padding: 14, color: '#f8fafc' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontWeight: 700, fontSize: 13 }}>Wokwi ESP32 Circuit Simulation</span>
+              <span style={{ fontWeight: 700, fontSize: 13 }}>Embedded Hardware Simulation</span>
               <a
                 href="https://wokwi.com"
                 target="_blank"
@@ -611,13 +611,13 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
           {/* Left: Circuit Schematic Layout */}
           <div className="hw-schematic-box">
             <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
-              Microcontroller & Connected Peripherals (ESP32 DevKit v1)
+              Microcontroller & Connected Peripherals (32-Bit LX6 Controller)
             </div>
 
             <div className="hw-module-cards">
               <div className="hw-module-item">
-                <div className="hw-module-title">ESP32 Core</div>
-                <div className="hw-module-val">ESP32-WROOM-32</div>
+                <div className="hw-module-title">Controller Core</div>
+                <div className="hw-module-val">Dual-Core 32-Bit LX6</div>
                 <div className="hw-module-desc">WiFi + Dual Core @ 240MHz</div>
               </div>
 
@@ -669,7 +669,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
             {/* Simulated SSD1306 OLED Screen (High-Clarity Reviewer Layout) */}
             <div style={{ background: '#000000', borderRadius: 8, padding: 12, border: '3px solid #334155', color: '#00e5ff', fontFamily: 'monospace', fontSize: 11.5, lineHeight: 1.45 }}>
               <div style={{ background: '#00e5ff', color: '#000000', padding: '2px 6px', fontWeight: 800, display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span>MARISLINK ESP32-UW01</span>
+                <span>MARISLINK UW-NODE-01</span>
                 <span>#{latest ? String(latest.sequence).padStart(3, '0') : '000'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ffffff', fontWeight: 700 }}>
@@ -699,7 +699,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
             <table className="hw-pinout-table">
               <thead>
                 <tr>
-                  <th>ESP32 Pin</th>
+                  <th>Controller Pin</th>
                   <th>Peripherals</th>
                   <th>Signal Type</th>
                   <th>Live Reading / Status</th>
@@ -782,7 +782,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
           <div className="hw-pipe-step">
             <div className="hw-pipe-num">2</div>
             <div className="hw-pipe-content">
-              <div className="hw-pipe-title">ESP32 Firmware</div>
+              <div className="hw-pipe-title">Embedded Firmware</div>
               <div className="hw-pipe-desc">Embedded C/C++ applies hydrostatic transfer equation ($P=\rho gh$), updates OLED, & drives LEDs.</div>
               <div className="hw-pipe-tag">Xtensa Dual-Core 240MHz</div>
             </div>
@@ -830,7 +830,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
             <span style={{ fontSize: 20 }}>📘</span>
             <div>
               <div style={{ fontWeight: 800, fontSize: 14, color: '#0f172a' }}>
-                Evaluator's Technical Guide: How the ESP32 Reads Sensors & Updates Display
+                Evaluator's Technical Guide: How the Embedded Controller Reads Sensors & Updates Display
               </div>
               <div style={{ fontSize: 11.5, color: '#64748b' }}>
                 Clear explanation of embedded firmware, electronic buses, and oceanographic calibration for evaluation.
@@ -846,9 +846,9 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
           <div className="hw-guide-grid">
             <div className="hw-guide-item">
               <div className="hw-guide-badge">STAGE 1: I2C BUS COMMUNICATION</div>
-              <div className="hw-guide-title">How the ESP32 Reads the BMP Sensor</div>
+              <div className="hw-guide-title">How the Controller Reads the BMP Sensor</div>
               <div className="hw-guide-text">
-                The ESP32 communicates with the BMP280 barometric sensor over a two-wire <strong>I2C serial bus</strong> using <strong>GPIO 21 (SDA - Serial Data)</strong> and <strong>GPIO 22 (SCL - Serial Clock)</strong>. The firmware calls <code>bmp.readTemperature()</code> and <code>bmp.readPressure()</code> to fetch calibrated digital words from the sensor’s onboard registers at standard 400 kHz bus clock.
+                The microcontroller communicates with the BMP280 barometric sensor over a two-wire <strong>I2C serial bus</strong> using <strong>GPIO 21 (SDA - Serial Data)</strong> and <strong>GPIO 22 (SCL - Serial Clock)</strong>. The firmware calls <code>bmp.readTemperature()</code> and <code>bmp.readPressure()</code> to fetch calibrated digital words from the sensor’s onboard registers at standard 400 kHz bus clock.
               </div>
             </div>
 
@@ -856,7 +856,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
               <div className="hw-guide-badge">STAGE 2: 12-BIT SAR ADC SAMPLING</div>
               <div className="hw-guide-title">How Battery & Signal Potentiometers Are Measured</div>
               <div className="hw-guide-text">
-                The two potentiometers act as adjustable voltage dividers (0 to 3.3V). The ESP32’s internal <strong>12-bit Analog-to-Digital Converter (ADC)</strong> samples <strong>GPIO 34</strong> (Battery) and <strong>GPIO 35</strong> (Acoustic RSSI), returning values from <code>0</code> to <code>4095</code>. The firmware maps these counts directly to LiPo battery voltage (3.00V–4.20V) and acoustic transceiver strength (-95 to -55 dBm).
+                The two potentiometers act as adjustable voltage dividers (0 to 3.3V). The controller’s internal <strong>12-bit Analog-to-Digital Converter (ADC)</strong> samples <strong>GPIO 34</strong> (Battery) and <strong>GPIO 35</strong> (Acoustic RSSI), returning values from <code>0</code> to <code>4095</code>. The firmware maps these counts directly to LiPo battery voltage (3.00V–4.20V) and acoustic transceiver strength (-95 to -55 dBm).
               </div>
             </div>
 
@@ -864,7 +864,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
               <div className="hw-guide-badge">STAGE 3: HYDROSTATIC PHYSICS MODEL</div>
               <div className="hw-guide-title">Atmospheric MEMS to Deep-Ocean Calibration</div>
               <div className="hw-guide-text">
-                Standard physical MEMS sensors measure atmospheric pressure (1013 hPa). At 2000m ocean depth, hydrostatic pressure is ~20.1 MPa (200 atmospheres). The ESP32 applies hydrostatic physics: <code>P = (rho * g * h) / 10^6</code>, transmitting both the physical chamber reading and calibrated oceanographic values to ensure scientific transparency.
+                Standard physical MEMS sensors measure atmospheric pressure (1013 hPa). At 2000m ocean depth, hydrostatic pressure is ~20.1 MPa (200 atmospheres). The embedded controller applies hydrostatic physics: <code>P = (rho * g * h) / 10^6</code>, transmitting both the physical chamber reading and calibrated oceanographic values to ensure scientific transparency.
               </div>
             </div>
 
@@ -935,7 +935,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
         <div className="hw-section-title">
           <span>Recent Virtual Telemetry Stream (Last {history.length} Packets)</span>
           <span style={{ fontSize: 12, color: '#64748b' }}>
-            Node ID: <strong>ESP32-UW01</strong>
+            Node ID: <strong>UW-NODE-01</strong>
           </span>
         </div>
 
@@ -999,7 +999,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
       <div className="hw-quickstart-card">
         <strong style={{ color: '#0f172a', fontSize: 13 }}>🚀 How to Run the Real-Time Virtual Hardware Stream:</strong>
         <div>
-          To start the virtual ESP32 hardware streaming continuous live telemetry into MARISLINK:
+          To start the virtual embedded hardware streaming continuous live telemetry into MARISLINK:
         </div>
         <div>
           <span className="hw-code-block">npm run hardware:node</span>
@@ -1007,7 +1007,7 @@ export function LiveHardwarePage({ onNavigateToSpark }: LiveHardwarePageProps) {
           <span className="hw-code-block" style={{ marginLeft: 12 }}>node hardware-simulation/run-virtual-node.js</span>
         </div>
         <div style={{ color: '#64748b' }}>
-          This runs the virtual ESP32 sensor engine, calculating calibrated BMP280 dynamics and streaming packets directly into the MARISLINK backend (Port 5000), immediately feeding both this live dashboard and the Apache Spark pipeline!
+          This runs the virtual embedded sensor engine, calculating calibrated BMP280 dynamics and streaming packets directly into the MARISLINK backend (Port 5000), immediately feeding both this live dashboard and the Apache Spark pipeline!
         </div>
       </div>
     </div>

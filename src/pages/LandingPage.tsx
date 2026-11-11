@@ -21,7 +21,7 @@ const COMPONENTS = [
 ];
 
 const BADGES = [
-  'PROGRAMMING INTELLIGENCE', 'Virtual IoT Hardware (ESP32)', 'PRISM Routing', 'SNC Analytics',
+  'PROGRAMMING INTELLIGENCE', 'Virtual Hardware Simulation', 'PRISM Routing', 'SNC Analytics',
   'Acoustic Communication', 'Adaptive Routing', 'Deep Ocean Monitoring',
 ];
 

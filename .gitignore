@@ -52,3 +52,5 @@ __pycache__/
 *.pyc
 scripts/clean_tail.txt
 scripts/raw_esp32_wires.txt
+.vercel
+.env*

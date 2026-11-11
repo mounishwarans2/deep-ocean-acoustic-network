@@ -1151,7 +1151,7 @@ export function BigDataLabPage({ state }: Props) {
                             cursor: 'pointer',
                           }}
                         >
-                          {nid} {inspectedDeviceId === nid ? '✓' : ''}
+                          {nid === 'ESP32-UW01' ? 'UW-NODE-01' : nid} {inspectedDeviceId === nid ? '✓' : ''}
                         </button>
                       ))}
                     </div>
@@ -2526,10 +2526,10 @@ export function BigDataLabPage({ state }: Props) {
                                 setActiveTab('devices');
                               }}
                               style={{ cursor: 'pointer' }}
-                              title={`Click to inspect detailed time-series telemetry and Spark history for ${node.nodeId}`}
+                              title={`Click to inspect detailed time-series telemetry and Spark history for ${node.nodeId === 'ESP32-UW01' ? 'UW-NODE-01' : node.nodeId}`}
                             >
                               <td>
-                                <b>{node.nodeId} ↗</b>
+                                <b>{node.nodeId === 'ESP32-UW01' ? 'UW-NODE-01' : node.nodeId} ↗</b>
                                 {node.nodeId === 'ESP32-UW01' && (
                                   <span style={{ marginLeft: 6, fontSize: 10, background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: 4, fontWeight: 700, border: '1px solid #bae6fd' }}>
                                     VIRTUAL HARDWARE

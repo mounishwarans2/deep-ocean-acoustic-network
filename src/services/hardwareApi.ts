@@ -1,5 +1,5 @@
-// MARISLINK: Virtual Hardware & IoT Telemetry Client
-// Interfaces with /api/hardware endpoints for live ESP32 Wokwi streaming
+// MARISLINK: Virtual Hardware & Telemetry Client
+// Interfaces with /api/hardware endpoints for live embedded microcontroller streaming
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 

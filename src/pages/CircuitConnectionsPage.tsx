@@ -3,14 +3,17 @@ import './CircuitConnectionsPage.css';
 
 // ── TYPES & INTERFACES ────────────────────────────────────────────────────────
 
+export type CircuitMode = 'complete_underwater' | 'esp32_wokwi' | 'arduino_tinkercad';
+
+export type BusFilter = 'ALL' | 'POWER' | 'GROUND' | 'I2C' | 'SPI' | 'UART' | 'ADC' | 'DAC' | 'ADC/DAC' | 'GPIO' | 'PWM' | 'GPIO/PWM' | 'USB' | 'PCIe' | 'USB/PCIe';
+
 export interface PinDefinition {
   id: string;
-  name: string;
-  x: number;
-  y: number;
-  type: 'POWER' | 'GROUND' | 'I2C' | 'SPI' | 'UART' | 'ADC' | 'DAC' | 'GPIO' | 'PWM' | 'ANALOG' | 'PCIE';
-  voltage?: string;
-  description?: string;
+  label: string;
+  x: number; // coordinate relative to component top-left
+  y: number; // coordinate relative to component top-left
+  type: 'POWER' | 'GROUND' | 'I2C' | 'SPI' | 'UART' | 'ADC' | 'DAC' | 'GPIO' | 'PWM' | 'USB' | 'PCIe';
+  description: string;
 }
 
 export interface CircuitComponent {
@@ -24,964 +27,2163 @@ export interface CircuitComponent {
   width: number;
   height: number;
   description: string;
-  operatingVoltage: string;
-  communicationProtocol: string;
   roleInMarislink: string;
+  protocol: string;
+  operatingVoltage: string;
+  currentDraw: string;
+  powerRequirements?: string;
+  inputPins?: string[];
+  outputPins?: string[];
+  connectedDevices?: string[];
+  technicalExplanation?: string;
+  tinkercadEquivNote?: string;
   imageSrc?: string;
   pins: PinDefinition[];
-  connectedTo: string[];
 }
 
 export interface CircuitWire {
   id: string;
+  name: string;
+  busType: 'POWER' | 'GROUND' | 'I2C' | 'SPI' | 'UART' | 'ADC' | 'DAC' | 'ADC/DAC' | 'GPIO' | 'PWM' | 'GPIO/PWM' | 'USB' | 'PCIe' | 'USB/PCIe';
   sourceComponentId: string;
   sourcePinId: string;
   destComponentId: string;
   destPinId: string;
-  busType: 'POWER' | 'GROUND' | 'I2C' | 'SPI' | 'UART' | 'ADC' | 'GPIO' | 'ACOUSTIC';
   color: string;
-  voltage: string;
-  signalDescription: string;
-  points?: { x: number; y: number }[];
+  colorName?: string;
+  voltage?: string;
+  signalDirection?: 'SOURCE_TO_DEST' | 'DEST_TO_SOURCE' | 'BIDIRECTIONAL';
+  connectionPurpose?: string;
+  signalDescription?: string;
+  waypoints?: [number, number][];
 }
 
-export type BusFilter = 'ALL' | 'POWER' | 'GROUND' | 'I2C' | 'SPI' | 'UART' | 'ADC' | 'GPIO' | 'ACOUSTIC';
+export interface CircuitGroup {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  accent: string;
+}
 
-// ── UNIFIED MARISLINK HARDWARE PROTOTYPE COMPONENTS ────────────────────────────
 
-const UNIFIED_PROTOTYPE_COMPONENTS: CircuitComponent[] = [
-  // ── 1. POWER SUBSYSTEM (Far Left) ──────────────────────────────────────────
+const PROTOTYPE_COMPONENTS: CircuitComponent[] = [
   {
-    id: 'pwr_lipo_battery',
-    name: 'Lithium Polymer (LiPo) Battery Pack',
-    category: 'POWER',
-    modelNumber: '3.7V 2500mAh Aluminum Pouch Cell',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/pwr_lipo_backup_battery.webp',
-    x: 60,
-    y: 70,
-    width: 220,
-    height: 160,
-    description: 'High-energy-density rechargeable LiPo cell stack supplying primary dc bus voltage with low internal series resistance for high-burst acoustic modulation.',
-    operatingVoltage: '3.7V Nominal (3.0V cut-off - 4.2V float)',
-    communicationProtocol: 'Analog 2-wire DC power bus',
-    roleInMarislink: 'Main system energy storage, providing continuous power to the ESP32 and buffering peak transmission current for the acoustic modem driver.',
-    connectedTo: ['pwr_mgmt_bms'],
+    id: 'controller',
+    name: 'Embedded Controller DevKit v1',
+    category: 'MCU',
+    modelNumber: 'Dual-Core 32-Bit LX6 (30-Pin)',
+    x: 80,
+    y: 140,
+    width: 170,
+    height: 380,
+    description: 'Central node processor featuring dual-core Xtensa 32-bit LX6 at 240 MHz, integrated 2.4 GHz WiFi, and hardware I2C/ADC controllers.',
+    roleInMarislink: 'Executes underwater sensor polling, runs hydrostatic pressure calibration, renders OLED status graphics, and dispatches JSON telemetry packets.',
+    protocol: 'I2C Master (400 kHz), 12-Bit SAR ADC, UART (115200 baud), GPIO',
+    operatingVoltage: '3.3V DC (5V via USB/VIN)',
+    currentDraw: '~80 - 160 mA',
+    tinkercadEquivNote: 'In Tinkercad Circuits, standard 8-bit Arduino Uno R3 is used as the conceptual classroom equivalent.',
     pins: [
-      { id: 'bat_pos', name: 'BAT+', x: 240, y: 120, type: 'POWER', voltage: '+3.7V', description: 'LiPo cell positive output' },
-      { id: 'bat_neg', name: 'BAT-', x: 240, y: 160, type: 'GROUND', voltage: '0V', description: 'LiPo cell negative ground' },
+      // Left Header (Pin 1 to 15, Top to Bottom)
+      { id: '3v3', label: '3V3', x: 8, y: 38, type: 'POWER', description: '3.3V Regulated Output Rail' },
+      { id: 'en', label: 'EN', x: 8, y: 60, type: 'GPIO', description: 'Chip Enable / Active-Low Reset' },
+      { id: 'vp', label: 'VP (D36)', x: 8, y: 82, type: 'ADC', description: 'ADC1_CH0 / Sensor VP' },
+      { id: 'vn', label: 'VN (D39)', x: 8, y: 104, type: 'ADC', description: 'ADC1_CH3 / Sensor VN' },
+      { id: 'd34', label: 'D34 (A6)', x: 8, y: 126, type: 'ADC', description: 'ADC1_CH6: Battery Monitor Input (0-3.3V)' },
+      { id: 'd35', label: 'D35 (A7)', x: 8, y: 148, type: 'ADC', description: 'ADC1_CH7: Acoustic RSSI Attenuator (0-3.3V)' },
+      { id: 'd32', label: 'D32', x: 8, y: 170, type: 'GPIO', description: 'General Purpose I/O Pin 32' },
+      { id: 'd33', label: 'D33', x: 8, y: 192, type: 'GPIO', description: 'General Purpose I/O Pin 33' },
+      { id: 'd25', label: 'D25', x: 8, y: 214, type: 'GPIO', description: 'DAC1 / GPIO Pin 25' },
+      { id: 'd26', label: 'D26', x: 8, y: 236, type: 'GPIO', description: 'DAC2 / GPIO Pin 26' },
+      { id: 'd27', label: 'D27', x: 8, y: 258, type: 'GPIO', description: 'General Purpose I/O Pin 27' },
+      { id: 'd14', label: 'D14', x: 8, y: 280, type: 'GPIO', description: 'General Purpose I/O Pin 14' },
+      { id: 'd12', label: 'D12', x: 8, y: 302, type: 'GPIO', description: 'General Purpose I/O Pin 12' },
+      { id: 'd13', label: 'D13', x: 8, y: 324, type: 'GPIO', description: 'General Purpose I/O Pin 13' },
+      { id: 'gnd_l', label: 'GND', x: 8, y: 346, type: 'GROUND', description: 'System Ground (Left Rail)' },
+
+      // Right Header (Pin 16 to 30, Top to Bottom)
+      { id: 'gnd_r', label: 'GND', x: 162, y: 38, type: 'GROUND', description: 'System Ground (Right Rail)' },
+      { id: 'd23', label: 'D23', x: 162, y: 60, type: 'GPIO', description: 'VSPI MOSI / GPIO 23' },
+      { id: 'd22', label: 'D22', x: 162, y: 82, type: 'I2C', description: 'I2C SCL (Serial Clock - 400 kHz)' },
+      { id: 'tx0', label: 'TX0', x: 162, y: 104, type: 'UART', description: 'UART0 TX (Transmit Debug / Modem)' },
+      { id: 'rx0', label: 'RX0', x: 162, y: 126, type: 'UART', description: 'UART0 RX (Receive Debug / Modem)' },
+      { id: 'd21', label: 'D21', x: 162, y: 148, type: 'I2C', description: 'I2C SDA (Serial Data - 400 kHz)' },
+      { id: 'd19', label: 'D19', x: 162, y: 170, type: 'GPIO', description: 'VSPI MISO / GPIO 19' },
+      { id: 'd18', label: 'D18', x: 162, y: 192, type: 'GPIO', description: 'VSPI SCK / GPIO 18' },
+      { id: 'd5', label: 'D5', x: 162, y: 214, type: 'GPIO', description: 'VSPI CS / GPIO 5' },
+      { id: 'tx2', label: 'TX2', x: 162, y: 236, type: 'UART', description: 'UART2 TX / GPIO 17' },
+      { id: 'rx2', label: 'RX2', x: 162, y: 258, type: 'UART', description: 'UART2 RX / GPIO 16' },
+      { id: 'd4', label: 'D4', x: 162, y: 280, type: 'GPIO', description: 'GPIO 4: Acoustic Sync Lock Yellow LED' },
+      { id: 'd2', label: 'D2', x: 162, y: 302, type: 'GPIO', description: 'GPIO 2: Acoustic TX Burst Green LED' },
+      { id: 'd15', label: 'D15', x: 162, y: 324, type: 'GPIO', description: 'GPIO 15: Critical Fault Red Alert LED' },
+      { id: 'vin', label: 'VIN', x: 162, y: 346, type: 'POWER', description: '5V External DC / USB Input Rail' },
     ],
   },
   {
-    id: 'pwr_mgmt_bms',
-    name: 'Power Management & Charging Module',
-    category: 'POWER',
-    modelNumber: 'TP4056 BMS + 3.3V Synchronous Buck',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/pwr_bms.webp',
-    x: 60,
-    y: 280,
-    width: 220,
-    height: 160,
-    description: 'Integrated battery management system providing CC/CV charging, over-discharge cutoff (2.5V), short-circuit protection, and synchronous step-down 3.3V dc rails.',
-    operatingVoltage: '3.7V IN -> 3.3V / 5.0V Regulated OUT',
-    communicationProtocol: 'Hardware PMIC power rail switching',
-    roleInMarislink: 'Regulates battery voltage to provide a clean, ripple-free 3.3V system rail for the ESP32, sensors, and OLED display.',
-    connectedTo: ['pwr_lipo_battery', 'esp32', 'pot_battery', 'storage_microsd'],
-    pins: [
-      { id: 'bat_in_pos', name: 'BAT_IN+', x: 90, y: 310, type: 'POWER', voltage: '+3.7V', description: 'Battery positive charging input' },
-      { id: 'bat_in_neg', name: 'BAT_IN-', x: 90, y: 350, type: 'GROUND', voltage: '0V', description: 'Battery ground input' },
-      { id: 'vout_3v3', name: 'VOUT_3V3', x: 240, y: 320, type: 'POWER', voltage: '+3.3V', description: 'Regulated 3.3V clean power rail' },
-      { id: 'gnd_out', name: 'GND', x: 240, y: 360, type: 'GROUND', voltage: '0V', description: 'Common system ground' },
-    ],
-  },
-  {
-    id: 'storage_microsd',
-    name: 'Industrial SLC MicroSD Card Module',
-    category: 'STORAGE',
-    modelNumber: 'SPI Black-Box Telemetry Logger',
-    status: 'ARCHITECTURAL',
-    imageSrc: '/assets/hardware/storage_microsd.webp',
-    x: 60,
-    y: 490,
-    width: 220,
-    height: 160,
-    description: 'High-endurance SPI MicroSD module recording date-stamped CSV telemetry and acoustic packet payloads locally during deep-sea node blackouts.',
+    id: 'oled',
+    name: 'SSD1306 0.96" OLED Display',
+    category: 'DISPLAY',
+    modelNumber: 'SSD1306 128x64 I2C',
+    x: 400,
+    y: 60,
+    width: 200,
+    height: 140,
+    description: 'High-contrast monochrome organic LED display module presenting real-time telemetry, node state, depth, and graphical battery gauge.',
+    roleInMarislink: 'Serves as on-node local instrumentation monitor for underwater technicians during submersible deployment and diagnostic checkout.',
+    protocol: 'I2C (Address: 0x3C)',
     operatingVoltage: '3.3V DC',
-    communicationProtocol: 'Hardware SPI (MOSI: D23, MISO: D19, SCK: D18, CS: D5)',
-    roleInMarislink: 'Black-box flight recorder persisting sensor time-series data locally before multi-hop acoustic transmission.',
-    connectedTo: ['pwr_mgmt_bms', 'esp32'],
+    currentDraw: '~20 mA',
+    tinkercadEquivNote: 'In Tinkercad, a standard 16x2 Character LCD (LCD1602 with I2C PCF8574 backpack) serves as the display equivalent.',
     pins: [
-      { id: 'vcc', name: 'VCC', x: 240, y: 520, type: 'POWER', voltage: '3.3V', description: 'Power supply input' },
-      { id: 'gnd', name: 'GND', x: 240, y: 540, type: 'GROUND', voltage: '0V', description: 'Common ground' },
-      { id: 'mosi', name: 'MOSI', x: 240, y: 560, type: 'SPI', description: 'SPI Master Out Slave In (ESP32 D23)' },
-      { id: 'miso', name: 'MISO', x: 240, y: 580, type: 'SPI', description: 'SPI Master In Slave Out (ESP32 D19)' },
-      { id: 'sck', name: 'SCK', x: 240, y: 600, type: 'SPI', description: 'SPI Clock (ESP32 D18)' },
-      { id: 'cs', name: 'CS', x: 240, y: 620, type: 'SPI', description: 'SPI Chip Select (ESP32 D5)' },
+      { id: 'gnd', label: 'GND', x: 35, y: 15, type: 'GROUND', description: 'Ground Supply' },
+      { id: 'vcc', label: 'VCC', x: 75, y: 15, type: 'POWER', description: '3.3V Positive Power' },
+      { id: 'scl', label: 'SCL', x: 125, y: 15, type: 'I2C', description: 'I2C Serial Clock (Clock Line)' },
+      { id: 'sda', label: 'SDA', x: 165, y: 15, type: 'I2C', description: 'I2C Serial Data (Data Line)' },
     ],
   },
-
-  // ── 2. SENSOR INPUTS & MONITORS (Center-Left) ──────────────────────────────
+  {
+    id: 'bmp280',
+    name: 'BMP280 Barometric & Temp Transducer',
+    category: 'SENSOR',
+    modelNumber: 'Bosch BMP280 Breakout',
+    x: 690,
+    y: 70,
+    width: 140,
+    height: 120,
+    description: 'Precision MEMS barometric pressure and temperature transducer measuring ambient chamber conditions.',
+    roleInMarislink: 'Measures environmental temperature and atmospheric pressure; the embedded controller calculates deep hydrostatic pressure ($P = \\rho g h$) from this baseline.',
+    protocol: 'I2C (Address: 0x76 / 0x77)',
+    operatingVoltage: '3.3V DC',
+    currentDraw: '~2.7 µA @ 1 Hz',
+    tinkercadEquivNote: 'In Tinkercad, the TMP36 analog temperature sensor (0-1.75V on A1) and a potentiometer simulate temperature and pressure.',
+    pins: [
+      { id: 'vcc', label: 'VCC', x: 22, y: 105, type: 'POWER', description: '3.3V Power Supply' },
+      { id: 'gnd', label: 'GND', x: 54, y: 105, type: 'GROUND', description: 'Common Ground' },
+      { id: 'scl', label: 'SCL', x: 86, y: 105, type: 'I2C', description: 'I2C Clock Line' },
+      { id: 'sda', label: 'SDA', x: 118, y: 105, type: 'I2C', description: 'I2C Data Line' },
+    ],
+  },
   {
     id: 'pot_battery',
     name: 'Battery Voltage Divider Potentiometer',
-    category: 'SENSOR',
+    category: 'ACTUATOR',
     modelNumber: '10kΩ Precision Rotary Potentiometer',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/pot_battery.webp',
-    x: 350,
-    y: 70,
-    width: 180,
-    height: 150,
-    description: 'Rotary precision voltage divider connected to ESP32 ADC1 (GPIO 34) simulating dynamic LiPo discharge curves from 4.2V (100%) to 3.0V (0%).',
-    operatingVoltage: '0 - 3.3V Analog Out',
-    communicationProtocol: 'Analog Voltage (0-3.3V -> 12-bit ADC)',
-    roleInMarislink: 'Simulates real-time battery voltage monitoring in the Wokwi embedded firmware.',
-    connectedTo: ['pwr_mgmt_bms', 'esp32'],
+    x: 370,
+    y: 260,
+    width: 130,
+    height: 130,
+    description: 'Rotary potentiometer functioning as an adjustable voltage divider simulating LiPo battery state (3.00V to 4.20V discharge).',
+    roleInMarislink: 'Enables evaluators to adjust battery level interactively to trigger low-battery alarms (<20%) and verify failsafe logic.',
+    protocol: 'Analog DC Voltage (0 - 3.3V)',
+    operatingVoltage: '3.3V DC',
+    currentDraw: '0.33 mA max',
     pins: [
-      { id: 'vcc', name: '1 (VCC)', x: 370, y: 195, type: 'POWER', voltage: '3.3V', description: 'High-side voltage reference' },
-      { id: 'sig', name: '2 (SIG)', x: 440, y: 195, type: 'ADC', voltage: '0-3.3V', description: 'Wiper output to ESP32 GPIO 34 (ADC1_CH6)' },
-      { id: 'gnd', name: '3 (GND)', x: 510, y: 195, type: 'GROUND', voltage: '0V', description: 'Ground reference' },
+      { id: 'vcc', label: '1 (VCC)', x: 25, y: 115, type: 'POWER', description: 'High Reference (3.3V)' },
+      { id: 'sig', label: '2 (SIG)', x: 65, y: 115, type: 'ADC', description: 'Wiper Analog Output (to Embedded Controller D34)' },
+      { id: 'gnd', label: '3 (GND)', x: 105, y: 115, type: 'GROUND', description: 'Low Reference (Ground)' },
     ],
   },
   {
     id: 'pot_signal',
     name: 'Acoustic RSSI Signal Attenuator',
-    category: 'SENSOR',
-    modelNumber: '10kΩ Rotary Signal Monitor',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/pot_signal.webp',
-    x: 350,
-    y: 245,
-    width: 180,
-    height: 150,
-    description: 'Precision rotary attenuator connected to ESP32 ADC1 (GPIO 35) simulating variable underwater acoustic channel attenuation (-95 dBm to -55 dBm).',
-    operatingVoltage: '0 - 3.3V Analog Out',
-    communicationProtocol: 'Analog Voltage (0-3.3V -> 12-bit ADC)',
-    roleInMarislink: 'Simulates ocean acoustic channel fading and link quality in the Wokwi embedded firmware.',
-    connectedTo: ['esp32'],
-    pins: [
-      { id: 'vcc', name: '1 (VCC)', x: 370, y: 370, type: 'POWER', voltage: '3.3V', description: 'Reference voltage' },
-      { id: 'sig', name: '2 (SIG)', x: 440, y: 370, type: 'ADC', voltage: '0-3.3V', description: 'Wiper output to ESP32 GPIO 35 (ADC1_CH7)' },
-      { id: 'gnd', name: '3 (GND)', x: 510, y: 370, type: 'GROUND', voltage: '0V', description: 'Ground' },
-    ],
-  },
-  {
-    id: 'bmp280',
-    name: 'BMP280 Environmental Sensor Breakout',
-    category: 'SENSOR',
-    modelNumber: 'Bosch BMP280 (Temperature & Depth)',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/bmp280.webp',
-    x: 350,
-    y: 420,
-    width: 180,
-    height: 150,
-    description: 'MEMS digital barometric pressure and temperature sensor sampled at 1 Hz via hardware I2C address 0x76. Oceanographic calibration maps readings to hydrostatic depth.',
-    operatingVoltage: '3.3V DC',
-    communicationProtocol: 'Hardware I2C (Address 0x76, 400 kHz)',
-    roleInMarislink: 'Captures ocean temperature and simulated depth profiles, feeding the deterministic telemetry loop.',
-    connectedTo: ['esp32'],
-    pins: [
-      { id: 'vcc', name: 'VCC', x: 370, y: 535, type: 'POWER', voltage: '3.3V', description: '3.3V power input' },
-      { id: 'gnd', name: 'GND', x: 415, y: 535, type: 'GROUND', voltage: '0V', description: 'Common ground' },
-      { id: 'scl', name: 'SCL', x: 465, y: 535, type: 'I2C', description: 'I2C Clock (ESP32 D22)' },
-      { id: 'sda', name: 'SDA', x: 510, y: 535, type: 'I2C', description: 'I2C Data (ESP32 D21)' },
-    ],
-  },
-  {
-    id: 'sensor_leak',
-    name: 'Hull Water-Leak Ingress Detector',
-    category: 'SENSOR',
-    modelNumber: 'Conductive Bilge Sensor Grid',
-    status: 'ARCHITECTURAL',
-    imageSrc: '/assets/hardware/sensor_leak_hull.webp',
-    x: 350,
-    y: 590,
-    width: 180,
+    category: 'ACTUATOR',
+    modelNumber: '10kΩ Rotary Attenuator',
+    x: 540,
+    y: 260,
+    width: 130,
     height: 130,
-    description: 'Gold-plated interdigital conductive grid placed at the enclosure bottom to detect saltwater ingress immediately and trip emergency acoustic beacons.',
+    description: 'Rotary potentiometer simulating acoustic signal strength variation (-95 dBm to -55 dBm) caused by deep-sea multipath fading.',
+    roleInMarislink: 'Allows simulation of acoustic channel degradation, demonstrating packet loss increases and latency variations.',
+    protocol: 'Analog DC Voltage (0 - 3.3V)',
     operatingVoltage: '3.3V DC',
-    communicationProtocol: 'Digital Active-Low Interrupt (ESP32 GPIO 32)',
-    roleInMarislink: 'Monitors watertight integrity of the titanium pressure vessel; triggers emergency alerts.',
-    connectedTo: ['esp32'],
+    currentDraw: '0.33 mA max',
     pins: [
-      { id: 'vcc', name: 'VCC', x: 370, y: 690, type: 'POWER', voltage: '3.3V', description: '3.3V bias supply' },
-      { id: 'gnd', name: 'GND', x: 440, y: 690, type: 'GROUND', voltage: '0V', description: 'Ground' },
-      { id: 'alert', name: 'ALERT', x: 510, y: 690, type: 'GPIO', description: 'Digital Leak Alert to ESP32 D32' },
+      { id: 'vcc', label: '1 (VCC)', x: 25, y: 115, type: 'POWER', description: 'High Reference (3.3V)' },
+      { id: 'sig', label: '2 (SIG)', x: 65, y: 115, type: 'ADC', description: 'Wiper Analog Output (to Embedded Controller D35)' },
+      { id: 'gnd', label: '3 (GND)', x: 105, y: 115, type: 'GROUND', description: 'Low Reference (Ground)' },
     ],
   },
-
-  // ── 3. MAIN CONTROLLER (Center) ────────────────────────────────────────────
-  {
-    id: 'esp32',
-    name: 'ESP32 DevKit v1 Microcontroller',
-    category: 'MCU',
-    modelNumber: 'ESP32-WROOM-32 (30-Pin)',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/esp32.webp',
-    x: 620,
-    y: 150,
-    width: 180,
-    height: 420,
-    description: 'Central node processor featuring dual-core Xtensa 32-bit LX6 at 240 MHz, 520 KB SRAM, and hardware I2C/ADC/SPI/UART controllers. Runs compiled C/C++ firmware.',
-    operatingVoltage: '3.3V DC (5V USB/VIN input)',
-    communicationProtocol: 'Hardware I2C (0x3C OLED, 0x76 BMP280), ADC1 (GPIO 34/35), UART2 (115200 baud), SPI (SD)',
-    roleInMarislink: 'Core edge node controller. Handles sensor acquisition, depth calibration, OLED graphics, SNC packet framing, and acoustic modem serialization.',
-    connectedTo: ['pwr_mgmt_bms', 'pot_battery', 'pot_signal', 'bmp280', 'sensor_leak', 'oled', 'led_indicators', 'modem_uart', 'storage_microsd', 'diagnostic_interface'],
-    pins: [
-      // Left Pins (Inputs, Power, Left Sensors)
-      { id: '3v3', name: '3V3', x: 620, y: 185, type: 'POWER', voltage: '3.3V', description: '3.3V Power Rail Output / Regulated Input' },
-      { id: 'en', name: 'EN', x: 620, y: 210, type: 'GPIO', description: 'Chip Enable / Active High Reset' },
-      { id: 'vp', name: 'VP', x: 620, y: 235, type: 'ADC', description: 'GPIO 36 / ADC1_CH0' },
-      { id: 'vn', name: 'VN', x: 620, y: 260, type: 'ADC', description: 'GPIO 39 / ADC1_CH3' },
-      { id: 'd34', name: 'D34', x: 620, y: 285, type: 'ADC', voltage: '0-3.3V', description: 'PIN_POT_BATTERY: Battery Voltage Divider Input' },
-      { id: 'd35', name: 'D35', x: 620, y: 310, type: 'ADC', voltage: '0-3.3V', description: 'PIN_POT_SIGNAL: Acoustic RSSI Signal Attenuator Input' },
-      { id: 'd32', name: 'D32', x: 620, y: 335, type: 'GPIO', description: 'Digital Input: Enclosure Water Leak Alert' },
-      { id: 'd33', name: 'D33', x: 620, y: 360, type: 'GPIO', description: 'GPIO 33' },
-      { id: 'd25', name: 'D25', x: 620, y: 385, type: 'DAC', description: 'GPIO 25 / DAC1' },
-      { id: 'd26', name: 'D26', x: 620, y: 410, type: 'DAC', description: 'GPIO 26 / DAC2' },
-      { id: 'd27', name: 'D27', x: 620, y: 435, type: 'GPIO', description: 'GPIO 27' },
-      { id: 'd14', name: 'D14', x: 620, y: 460, type: 'GPIO', description: 'GPIO 14' },
-      { id: 'd12', name: 'D12', x: 620, y: 485, type: 'GPIO', description: 'GPIO 12' },
-      { id: 'd13', name: 'D13', x: 620, y: 510, type: 'GPIO', description: 'GPIO 13' },
-      { id: 'gnd_l', name: 'GND', x: 620, y: 535, type: 'GROUND', voltage: '0V', description: 'Common System Ground (Left Rail)' },
-
-      // Right Pins (Outputs, Bus Lines, Transceivers)
-      { id: 'vin', name: 'VIN', x: 800, y: 185, type: 'POWER', voltage: '5V', description: '5V External / USB Input Power' },
-      { id: 'gnd_r', name: 'GND', x: 800, y: 210, type: 'GROUND', voltage: '0V', description: 'Common System Ground (Right Rail)' },
-      { id: 'd15', name: 'D15', x: 800, y: 235, type: 'GPIO', description: 'PIN_LED_ALERT: Critical Fault / Ingress Indicator' },
-      { id: 'd2', name: 'D2', x: 800, y: 260, type: 'GPIO', description: 'PIN_LED_TX: Acoustic Burst TX Indicator' },
-      { id: 'd4', name: 'D4', x: 800, y: 285, type: 'GPIO', description: 'PIN_LED_SYNC: Acoustic Sync Lock Indicator' },
-      { id: 'rx2', name: 'RX2', x: 800, y: 310, type: 'UART', description: 'GPIO 16: Hardware Serial UART2 RX (from Acoustic Modem TX)' },
-      { id: 'tx2', name: 'TX2', x: 800, y: 335, type: 'UART', description: 'GPIO 17: Hardware Serial UART2 TX (to Acoustic Modem RX)' },
-      { id: 'd5', name: 'D5', x: 800, y: 360, type: 'SPI', description: 'GPIO 5: SPI Chip Select (MicroSD CS)' },
-      { id: 'd18', name: 'D18', x: 800, y: 385, type: 'SPI', description: 'GPIO 18: SPI SCK Clock (MicroSD SCK)' },
-      { id: 'd19', name: 'D19', x: 800, y: 410, type: 'SPI', description: 'GPIO 19: SPI MISO Data (MicroSD MISO)' },
-      { id: 'd21', name: 'D21', x: 800, y: 435, type: 'I2C', description: 'PIN_SDA: Hardware I2C Serial Data (OLED & BMP280)' },
-      { id: 'rx0', name: 'RX0', x: 800, y: 460, type: 'UART', description: 'GPIO 3: Hardware Serial UART0 RX (USB Diagnostic)' },
-      { id: 'tx0', name: 'TX0', x: 800, y: 485, type: 'UART', description: 'GPIO 1: Hardware Serial UART0 TX (USB Diagnostic)' },
-      { id: 'd22', name: 'D22', x: 800, y: 510, type: 'I2C', description: 'PIN_SCL: Hardware I2C Serial Clock (OLED & BMP280)' },
-      { id: 'd23', name: 'D23', x: 800, y: 535, type: 'SPI', description: 'GPIO 23: SPI MOSI Data (MicroSD MOSI)' },
-    ],
-  },
-
-  // ── 4. DISPLAY & STATUS INDICATORS (Center-Right) ──────────────────────────
-  {
-    id: 'oled',
-    name: 'SSD1306 0.96" OLED Display',
-    category: 'DISPLAY',
-    modelNumber: 'SSD1306 128x64 Monochrome I2C',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/oled.webp',
-    x: 870,
-    y: 70,
-    width: 220,
-    height: 160,
-    description: 'High-contrast monochrome OLED module presenting real-time ocean depth, ambient temperature, battery voltage percentage, and link metrics directly on the device.',
-    operatingVoltage: '3.3V DC',
-    communicationProtocol: 'Hardware I2C (Address 0x3C, 400 kHz)',
-    roleInMarislink: 'Local GUI monitor driven by Adafruit SSD1306 library displaying node status and telemetry graphs.',
-    connectedTo: ['esp32'],
-    pins: [
-      { id: 'gnd', name: 'GND', x: 910, y: 95, type: 'GROUND', voltage: '0V', description: 'Common ground' },
-      { id: 'vcc', name: 'VCC', x: 960, y: 95, type: 'POWER', voltage: '3.3V', description: '3.3V power' },
-      { id: 'scl', name: 'SCL', x: 1010, y: 95, type: 'I2C', description: 'I2C Clock line' },
-      { id: 'sda', name: 'SDA', x: 1060, y: 95, type: 'I2C', description: 'I2C Data line' },
-    ],
-  },
-  {
-    id: 'led_indicators',
-    name: 'Acoustic Status Indicators & 220Ω Resistors',
-    category: 'INDICATOR',
-    modelNumber: '3-LED Array (TX / SYNC / FAULT)',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/led_indicators_panel.webp',
-    x: 870,
-    y: 280,
-    width: 220,
-    height: 160,
-    description: 'Tri-color high-efficiency indicator array: Green (GPIO 2: Acoustic TX burst), Yellow (GPIO 4: Carrier sync lock), and Red (GPIO 15: Critical alert). Ballast resistors protect GPIOs.',
-    operatingVoltage: '3.3V DC (with 220Ω current limit)',
-    communicationProtocol: 'GPIO Digital / PWM Control',
-    roleInMarislink: 'Physical optical indication of underwater communication activity, synchronization, and error states.',
-    connectedTo: ['esp32'],
-    pins: [
-      { id: 'tx_green', name: 'TX (Green A)', x: 910, y: 405, type: 'GPIO', description: 'Anode to ESP32 GPIO 2 via 220Ω' },
-      { id: 'sync_yellow', name: 'SYNC (Yellow A)', x: 960, y: 405, type: 'GPIO', description: 'Anode to ESP32 GPIO 4 via 220Ω' },
-      { id: 'alert_red', name: 'FAULT (Red A)', x: 1010, y: 405, type: 'GPIO', description: 'Anode to ESP32 GPIO 15 via 220Ω' },
-      { id: 'cathodes_gnd', name: 'GND (Cathodes)', x: 1060, y: 405, type: 'GROUND', voltage: '0V', description: 'Common cathode return to ground' },
-    ],
-  },
-  {
-    id: 'diagnostic_interface',
-    name: 'Diagnostic & Telemetry Programming Port',
-    category: 'INTERFACE',
-    modelNumber: 'USB-C Receptacle + UART Bridge',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/interface_debug_port.webp',
-    x: 870,
-    y: 490,
-    width: 220,
-    height: 160,
-    description: 'Hardware USB-UART bridge connecting ESP32 UART0 (TX0/RX0) to host workstation for live serial telemetry streaming and firmware flashing.',
-    operatingVoltage: '5V VBUS / 3.3V Logic',
-    communicationProtocol: 'USB 2.0 Full-Speed / UART0 (115200 baud)',
-    roleInMarislink: 'Gateway bridge delivering live simulated and bench telemetry into the MARISLINK web portal.',
-    connectedTo: ['esp32'],
-    pins: [
-      { id: 'vbus', name: 'VBUS', x: 910, y: 615, type: 'POWER', voltage: '+5V', description: '5V USB Bus input' },
-      { id: 'gnd', name: 'GND', x: 960, y: 615, type: 'GROUND', voltage: '0V', description: 'Common ground' },
-      { id: 'tx_bridge', name: 'TX_BRIDGE', x: 1010, y: 615, type: 'UART', description: 'Bridge TX to ESP32 RX0' },
-      { id: 'rx_bridge', name: 'RX_BRIDGE', x: 1060, y: 615, type: 'UART', description: 'Bridge RX to ESP32 TX0' },
-    ],
-  },
-
-  // ── 5. ACOUSTIC COMMUNICATION SUBSYSTEM (Right) ────────────────────────────
   {
     id: 'modem_uart',
-    name: 'Acoustic Modem / Transponder Interface',
-    category: 'COMMUNICATION',
+    name: 'Acoustic Modem Transponder Interface',
+    category: 'SENSOR',
     modelNumber: 'UW-Acoustic Modem Driver v2.1',
-    status: 'IMPLEMENTED',
-    imageSrc: '/assets/hardware/modem_uart.webp',
-    x: 1140,
+    x: 710,
     y: 260,
-    width: 210,
-    height: 180,
-    description: 'Hardware acoustic transponder modem interface with serial framing for deep-sea acoustic packet modulation (FSK/PSK) and receiver demodulation.',
-    operatingVoltage: '3.3V Logic / 12V Boost for Power Amp',
-    communicationProtocol: 'Hardware Serial UART (115200 baud) & Analog Acoustic Transducer Differential Drive',
-    roleInMarislink: 'Translates digital packets from ESP32 into modulated acoustic carrier waveforms and demodulates incoming hydrophone signals.',
-    connectedTo: ['esp32', 'acoustics_power_amp', 'acoustics_lna'],
+    width: 150,
+    height: 130,
+    description: 'Hardware acoustic transponder modem interface with serial framing for deep-sea acoustic packet modulation.',
+    roleInMarislink: 'Translates electronic digital telemetry bytes into acoustic sound wave bursts across underwater transducer arrays.',
+    protocol: 'UART Serial (115200 baud, 8N1)',
+    operatingVoltage: '5.0V / 3.3V Logic',
+    currentDraw: '~45 mA Idle / 250 mA TX',
     pins: [
-      { id: 'vcc', name: 'VCC', x: 1170, y: 285, type: 'POWER', voltage: '3.3V', description: '3.3V logic supply' },
-      { id: 'gnd', name: 'GND', x: 1170, y: 320, type: 'GROUND', voltage: '0V', description: 'Common ground' },
-      { id: 'rx', name: 'RX', x: 1170, y: 355, type: 'UART', description: 'UART serial data in from ESP32 TX2' },
-      { id: 'tx', name: 'TX', x: 1170, y: 390, type: 'UART', description: 'UART serial data out to ESP32 RX2' },
-      { id: 'analog_out', name: 'ANALOG_OUT', x: 1300, y: 325, type: 'ANALOG', description: 'Modulated analog output to acoustic power amp' },
-      { id: 'analog_in', name: 'ANALOG_IN', x: 1300, y: 375, type: 'ANALOG', description: 'Amplified analog input from receiver LNA' },
+      { id: 'vcc', label: 'VCC', x: 22, y: 115, type: 'POWER', description: 'Power Input Rail' },
+      { id: 'gnd', label: 'GND', x: 58, y: 115, type: 'GROUND', description: 'Signal Ground' },
+      { id: 'tx', label: 'TX', x: 94, y: 115, type: 'UART', description: 'Modem Serial Output (to Embedded Controller RX0)' },
+      { id: 'rx', label: 'RX', x: 130, y: 115, type: 'UART', description: 'Modem Serial Input (from Embedded Controller TX0)' },
     ],
   },
   {
-    id: 'acoustics_lna',
-    name: 'Low-Noise Receiver Preamplifier (LNA)',
-    category: 'ACOUSTIC',
-    modelNumber: 'AD8429 40dB Subsea Front-End',
-    status: 'ARCHITECTURAL',
-    imageSrc: '/assets/hardware/acoustics_lna.webp',
-    x: 1360,
-    y: 80,
-    width: 190,
-    height: 140,
-    description: 'Ultra-low-noise differential instrumentation amplifier (1 nV/√Hz) with active bandpass filtering for microvolt hydrophone acoustic wave reception.',
-    operatingVoltage: '3.3V DC',
-    communicationProtocol: 'Analog Differential Audio/Ultrasonic (10 kHz - 200 kHz)',
-    roleInMarislink: 'Boosts weak deep-sea acoustic signals received by the hydrophone before routing to the modem demodulator.',
-    connectedTo: ['acoustics_hydrophone', 'modem_uart'],
+    id: 'leds_panel',
+    name: 'Acoustic Status Indicators & 220Ω Resistors',
+    category: 'ACTUATOR',
+    modelNumber: '3-LED Array with Ballast Resistors',
+    x: 420,
+    y: 430,
+    width: 380,
+    height: 120,
+    description: 'Diagnostic LED module with current-limiting 220 Ohm ballast resistors for visual confirmation of acoustic activity.',
+    roleInMarislink: 'Green flashes on TX packet burst (GPIO 2); Yellow locks on carrier sync (GPIO 4); Red alerts on low battery / critical faults (GPIO 15).',
+    protocol: 'Active-High Digital I/O (3.3V)',
+    operatingVoltage: '2.0V - 3.2V Forward Voltage',
+    currentDraw: '~15 mA per LED',
     pins: [
-      { id: 'out_amp', name: 'OUT_AMP', x: 1380, y: 130, type: 'ANALOG', description: 'Amplified analog output to modem' },
-      { id: 'vcc', name: 'VCC', x: 1380, y: 190, type: 'POWER', voltage: '3.3V', description: 'Power supply' },
-      { id: 'gnd', name: 'GND', x: 1430, y: 190, type: 'GROUND', voltage: '0V', description: 'Ground reference' },
-      { id: 'hyd_in', name: 'HYD_IN', x: 1510, y: 150, type: 'ANALOG', description: 'Differential input from hydrophone' },
+      { id: 'tx_anode', label: 'TX (Green A)', x: 50, y: 95, type: 'GPIO', description: 'Green LED Anode (from GPIO 2 via 220Ω)' },
+      { id: 'sync_anode', label: 'SYNC (Yellow A)', x: 170, y: 95, type: 'GPIO', description: 'Yellow LED Anode (from GPIO 4 via 220Ω)' },
+      { id: 'alert_anode', label: 'ALERT (Red A)', x: 290, y: 95, type: 'GPIO', description: 'Red LED Anode (from GPIO 15 via 220Ω)' },
+      { id: 'common_gnd', label: 'GND (Cathodes)', x: 350, y: 95, type: 'GROUND', description: 'Common Ground Return' },
     ],
   },
+];
+
+const PROTOTYPE_WIRES: CircuitWire[] = [
+  // ── Power & Ground Rails ──────────────────────────────────────────────────
+  {
+    id: 'w-pwr-oled',
+    name: '3.3V VCC Power to OLED Display',
+    busType: 'POWER',
+    sourceComponentId: 'controller',
+    sourcePinId: '3v3',
+    destComponentId: 'oled',
+    destPinId: 'vcc',
+    color: '#ef4444',
+    colorName: 'Red (+3.3V)',
+    voltage: '+3.3V DC Regulated',
+    signalDescription: 'Supplies regulated 3.3V DC positive power from the Controller onboard regulator to the SSD1306 OLED controller.',
+    waypoints: [[78, 148], [50, 148], [50, 30], [390, 30], [390, 80]]
+  },
+  {
+    id: 'w-pwr-bmp',
+    name: '3.3V VCC Power to BMP280 Sensor',
+    busType: 'POWER',
+    sourceComponentId: 'oled',
+    sourcePinId: 'vcc',
+    destComponentId: 'bmp280',
+    destPinId: 'vcc',
+    color: '#ef4444',
+    colorName: 'Red (+3.3V)',
+    voltage: '+3.3V DC Regulated',
+    signalDescription: 'Daisy-chains +3.3V DC power rail to the Bosch BMP280 transducer module.',
+    waypoints: [[390, 80], [390, 30], [610, 30], [610, 80]]
+  },
+  {
+    id: 'w-pwr-pot-bat',
+    name: '3.3V VCC to Battery Potentiometer',
+    busType: 'POWER',
+    sourceComponentId: 'controller',
+    sourcePinId: '3v3',
+    destComponentId: 'pot_battery',
+    destPinId: 'vcc',
+    color: '#ef4444',
+    colorName: 'Red (+3.3V)',
+    voltage: '+3.3V DC',
+    signalDescription: 'High voltage reference for the battery level simulation divider potentiometer.',
+    waypoints: [[78, 148], [50, 148], [50, 260], [345, 260], [345, 340]]
+  },
+  {
+    id: 'w-pwr-pot-sig',
+    name: '3.3V VCC to RSSI Potentiometer',
+    busType: 'POWER',
+    sourceComponentId: 'pot_battery',
+    sourcePinId: 'vcc',
+    destComponentId: 'pot_signal',
+    destPinId: 'vcc',
+    color: '#ef4444',
+    colorName: 'Red (+3.3V)',
+    voltage: '+3.3V DC',
+    signalDescription: 'High voltage reference for acoustic RSSI attenuator.',
+    waypoints: [[345, 340], [345, 260], [475, 260], [475, 340]]
+  },
+  {
+    id: 'w-gnd-oled',
+    name: 'Common Ground Return to OLED Display',
+    busType: 'GROUND',
+    sourceComponentId: 'controller',
+    sourcePinId: 'gnd_l',
+    destComponentId: 'oled',
+    destPinId: 'gnd',
+    color: '#0f172a',
+    colorName: 'Black (GND)',
+    voltage: '0.0V Ground Reference',
+    signalDescription: 'Common reference ground return for OLED display screen logic.',
+    waypoints: [[78, 456], [35, 456], [35, 45], [365, 45], [365, 80]]
+  },
+  {
+    id: 'w-gnd-bmp',
+    name: 'Common Ground Return to BMP280',
+    busType: 'GROUND',
+    sourceComponentId: 'oled',
+    sourcePinId: 'gnd',
+    destComponentId: 'bmp280',
+    destPinId: 'gnd',
+    color: '#0f172a',
+    colorName: 'Black (GND)',
+    voltage: '0.0V Ground Reference',
+    signalDescription: 'Ground return for BMP280 temperature and pressure measurement circuitry.',
+    waypoints: [[365, 80], [365, 45], [635, 45], [635, 80]]
+  },
+  {
+    id: 'w-gnd-pots',
+    name: 'Ground to Dual Potentiometers',
+    busType: 'GROUND',
+    sourceComponentId: 'controller',
+    sourcePinId: 'gnd_l',
+    destComponentId: 'pot_battery',
+    destPinId: 'gnd',
+    color: '#0f172a',
+    colorName: 'Black (GND)',
+    voltage: '0.0V Ground Reference',
+    signalDescription: 'Ground reference connection for analog divider potentiometers.',
+    waypoints: [[60, 486], [60, 410], [475, 410], [475, 375]],
+  },
+  {
+    id: 'w-gnd-leds',
+    name: 'Common Ground Return for LED Array',
+    busType: 'GROUND',
+    sourceComponentId: 'controller',
+    sourcePinId: 'gnd_r',
+    destComponentId: 'leds_panel',
+    destPinId: 'common_gnd',
+    color: '#0f172a',
+    colorName: 'Black (GND)',
+    voltage: '0.0V Ground Reference',
+    signalDescription: 'Cathode return path from 220 Ohm current-limiting resistors to Controller system ground.',
+    waypoints: [[270, 178], [330, 178], [330, 560], [770, 560], [770, 525]],
+  },
+
+  // ── I2C Serial Bus (SDA / SCL @ 400 kHz) ──────────────────────────────────
+  {
+    id: 'w-i2c-scl',
+    name: 'I2C Serial Clock (SCL) Bus',
+    busType: 'I2C',
+    sourceComponentId: 'controller',
+    sourcePinId: 'd22',
+    destComponentId: 'oled',
+    destPinId: 'scl',
+    color: '#eab308',
+    colorName: 'Yellow (I2C SCL)',
+    voltage: '3.3V Clock Pulses (400 kHz)',
+    signalDescription: 'Hardware I2C Clock Line. Coordinates bus timing for both SSD1306 OLED (0x3C) and BMP280 (0x76).',
+    waypoints: [[242, 222], [300, 222], [300, 45], [525, 45], [525, 75]],
+  },
+  {
+    id: 'w-i2c-scl-bmp',
+    name: 'I2C SCL Daisy-Chain to BMP280',
+    busType: 'I2C',
+    sourceComponentId: 'oled',
+    sourcePinId: 'scl',
+    destComponentId: 'bmp280',
+    destPinId: 'scl',
+    color: '#eab308',
+    colorName: 'Yellow (I2C SCL)',
+    voltage: '3.3V Clock Pulses (400 kHz)',
+    signalDescription: 'Extends the master I2C clock line to the BMP280 transducer.',
+    waypoints: [[415, 80], [415, 230], [660, 230], [660, 80]]
+  },
+  {
+    id: 'w-i2c-sda',
+    name: 'I2C Serial Data (SDA) Bus',
+    busType: 'I2C',
+    sourceComponentId: 'controller',
+    sourcePinId: 'd21',
+    destComponentId: 'oled',
+    destPinId: 'sda',
+    color: '#0284c7',
+    colorName: 'Blue (I2C SDA)',
+    voltage: '3.3V Bidirectional Data',
+    signalDescription: 'Hardware I2C Data Line. Carries bidirectional digital telemetry frames and sensor register readouts.',
+    waypoints: [[242, 288], [315, 288], [315, 55], [565, 55], [565, 75]],
+  },
+  {
+    id: 'w-i2c-sda-bmp',
+    name: 'I2C SDA Daisy-Chain to BMP280',
+    busType: 'I2C',
+    sourceComponentId: 'oled',
+    sourcePinId: 'sda',
+    destComponentId: 'bmp280',
+    destPinId: 'sda',
+    color: '#0284c7',
+    colorName: 'Blue (I2C SDA)',
+    voltage: '3.3V Bidirectional Data',
+    signalDescription: 'Extends the master I2C data line to the BMP280 barometric and temperature transducer.',
+    waypoints: [[440, 80], [440, 215], [685, 215], [685, 80]]
+  },
+
+  // ── Analog ADC Input Lines ────────────────────────────────────────────────
+  {
+    id: 'w-adc-battery',
+    name: 'ADC Battery Monitoring Input',
+    busType: 'ADC',
+    sourceComponentId: 'pot_battery',
+    sourcePinId: 'sig',
+    destComponentId: 'controller',
+    destPinId: 'd34',
+    color: '#f97316',
+    colorName: 'Orange (ADC Input)',
+    voltage: '0.0V - 3.3V Analog Voltage',
+    signalDescription: 'Analog output from the LiPo voltage divider sampled by 12-Bit SAR ADC (ADC1_CH6: 0-4095 counts).',
+    waypoints: [[375, 340], [375, 245], [60, 245], [60, 236], [78, 236]]
+  },
+  {
+    id: 'w-adc-signal',
+    name: 'ADC Acoustic RSSI Attenuation Input',
+    busType: 'ADC',
+    sourceComponentId: 'pot_signal',
+    sourcePinId: 'sig',
+    destComponentId: 'controller',
+    destPinId: 'd35',
+    color: '#a855f7',
+    colorName: 'Purple (ADC Input)',
+    voltage: '0.0V - 3.3V Analog Voltage',
+    signalDescription: 'Analog wiper voltage sampled by ADC1_CH7 on GPIO 35, calibrated to acoustic transceiver RSSI (-95 to -55 dBm).',
+    waypoints: [[605, 375], [605, 350], [285, 350], [285, 288], [88, 288]],
+  },
+
+  // ── Digital GPIO Control Lines (Status LEDs) ──────────────────────────────
+  {
+    id: 'w-gpio-tx-led',
+    name: 'GPIO 2 TX Burst Indicator Line',
+    busType: 'GPIO',
+    sourceComponentId: 'controller',
+    sourcePinId: 'd2',
+    destComponentId: 'leds_panel',
+    destPinId: 'tx_anode',
+    color: '#22c55e',
+    colorName: 'Green (Digital GPIO 2)',
+    voltage: '3.3V Active-High Pulse',
+    signalDescription: 'Controller GPIO Pin 2 output driving the green acoustic TX burst indicator through an inline 220 Ohm ballast resistor.',
+    waypoints: [[242, 442], [340, 442], [340, 500], [470, 500], [470, 525]],
+  },
+  {
+    id: 'w-gpio-sync-led',
+    name: 'GPIO 4 Carrier Sync Lock Line',
+    busType: 'GPIO',
+    sourceComponentId: 'controller',
+    sourcePinId: 'd4',
+    destComponentId: 'leds_panel',
+    destPinId: 'sync_anode',
+    color: '#ca8a04',
+    colorName: 'Amber (Digital GPIO 4)',
+    voltage: '3.3V Active-High Constant',
+    signalDescription: 'Controller GPIO Pin 4 driving yellow acoustic carrier synchronization lock LED through an inline 220 Ohm resistor.',
+    waypoints: [[242, 420], [355, 420], [355, 490], [590, 490], [590, 525]],
+  },
+  {
+    id: 'w-gpio-alert-led',
+    name: 'GPIO 15 Critical Alert Fault Line',
+    busType: 'GPIO',
+    sourceComponentId: 'controller',
+    sourcePinId: 'd15',
+    destComponentId: 'leds_panel',
+    destPinId: 'alert_anode',
+    color: '#dc2626',
+    colorName: 'Crimson (Digital GPIO 15)',
+    voltage: '3.3V Active-High (Failsafe)',
+    signalDescription: 'Controller GPIO Pin 15 driving red fault indicator on low battery (<20%), acoustic carrier loss, or critical pressure excursion.',
+    waypoints: [[242, 464], [370, 464], [370, 480], [710, 480], [710, 525]],
+  },
+
+  // ── UART Transceiver Interface Lines ──────────────────────────────────────
+  {
+    id: 'w-uart-tx',
+    name: 'UART0 TX0 Telemetry Transmit Line',
+    busType: 'UART',
+    sourceComponentId: 'controller',
+    sourcePinId: 'tx0',
+    destComponentId: 'modem_uart',
+    destPinId: 'rx',
+    color: '#0d9488',
+    colorName: 'Teal (UART TX0)',
+    voltage: '3.3V TTL Serial',
+    signalDescription: 'Controller hardware serial TX0 (115200 baud) streaming framed telemetry packets into the acoustic transponder modem.',
+    waypoints: [[232, 280], [300, 280], [300, 305], [625, 305], [625, 340]]
+  },
+  {
+    id: 'w-uart-rx',
+    name: 'UART0 RX0 Telemetry Receive Line',
+    busType: 'UART',
+    sourceComponentId: 'modem_uart',
+    sourcePinId: 'tx',
+    destComponentId: 'controller',
+    destPinId: 'rx0',
+    color: '#64748b',
+    colorName: 'Slate (UART RX0)',
+    voltage: '3.3V TTL Serial',
+    signalDescription: 'Receives acoustic downlink commands and telemetry acknowledgments from ocean surface stations.',
+    waypoints: [[655, 340], [655, 320], [310, 320], [310, 302], [232, 302]]
+  },
+];
+
+// ── ARDUINO UNO TINKERCAD-EQUIVALENT DATA ────────────────────────────────────
+
+export const UNDERWATER_GROUPS: CircuitGroup[] = [
+  { id: 'group_pwr', name: 'A. POWER MANAGEMENT', x: 30, y: 30, width: 710, height: 550, color: 'rgba(239, 68, 68, 0.03)', accent: '#ef4444' },
+  { id: 'group_sensors', name: 'B. SENSOR INPUTS', x: 30, y: 615, width: 730, height: 215, color: 'rgba(6, 182, 212, 0.03)', accent: '#06b6d4' },
+  { id: 'group_processing', name: 'C. MAIN PROCESSING', x: 770, y: 150, width: 600, height: 430, color: 'rgba(59, 130, 246, 0.04)', accent: '#3b82f6' },
+  { id: 'group_rx', name: 'D. ACOUSTIC RECEIVER', x: 1390, y: 30, width: 700, height: 215, color: 'rgba(168, 85, 247, 0.03)', accent: '#a855f7' },
+  { id: 'group_tx', name: 'E. ACOUSTIC TRANSMITTER', x: 1390, y: 270, width: 700, height: 215, color: 'rgba(236, 72, 153, 0.03)', accent: '#ec4899' },
+  { id: 'group_storage', name: 'F. STORAGE', x: 790, y: 615, width: 550, height: 215, color: 'rgba(16, 185, 129, 0.03)', accent: '#10b981' },
+  { id: 'group_interfaces', name: 'G. EXTERNAL INTERFACES', x: 1390, y: 520, width: 440, height: 215, color: 'rgba(245, 158, 11, 0.03)', accent: '#f59e0b' },
+  { id: 'group_indicators', name: 'H. STATUS INDICATORS', x: 1850, y: 520, width: 240, height: 215, color: 'rgba(34, 197, 94, 0.03)', accent: '#22c55e' },
+];
+
+const UNDERWATER_COMPONENTS: CircuitComponent[] = [
+  // ── A. POWER MANAGEMENT ────────────────────────────────────────────────────
+  {
+    id: 'interface_wetmate_power',
+    name: 'Wet-Mate Power Connector',
+    category: 'INTERFACE',
+    modelNumber: 'SubConn 4-Pin Circular (+24V Bus)',
+    status: 'ARCHITECTURAL',
+    x: 50,
+    y: 65,
+    width: 180,
+    height: 95,
+    description: 'High-current underwater wet-mateable circular connector for surface tether or charging station dock power.',
+    roleInMarislink: 'Transfers external +24V DC auxiliary electrical power to subsea node for battery charging and tethered operations.',
+    protocol: 'Direct DC Power Bus (Up to 15A continuous)',
+    operatingVoltage: '24V DC External Bus',
+    currentDraw: 'Input Sink (Up to 15A)',
+    pins: [
+      { id: 'v_bus_in', label: '+24V', x: 145, y: 35, type: 'POWER', description: 'External 24V DC Auxiliary Power Line' },
+      { id: 'gnd', label: 'GND', x: 145, y: 65, type: 'GROUND', description: 'External Power Ground Return' }
+    ]
+  },
+  {
+    id: 'pwr_primary_battery',
+    name: 'MICRO NUCLEAR BATTERY – CONCEPTUAL',
+    category: 'POWER',
+    modelNumber: 'Solid-State Betavoltaic Power Cell',
+    status: 'ARCHITECTURAL',
+    x: 275,
+    y: 65,
+    width: 195,
+    height: 95,
+    imageSrc: '/assets/hardware/pwr_micro_nuclear_battery.webp?v=5',
+    description: 'Proposed long-duration solid-state micro-nuclear power source under conceptual architectural evaluation for multi-decade seabed deployment. Not physically present in benchtop prototype.',
+    roleInMarislink: 'Proposed ultra-long-duration architectural primary energy source designed to trickle-charge the LiPo energy buffer without requiring periodic retrieval.',
+    protocol: 'Autonomous Low-Voltage DC Supply',
+    operatingVoltage: 'Low-Voltage DC Output (Proposed)',
+    currentDraw: 'Continuous Micro-Power Trickle Feed',
+    pins: [
+      { id: 'vout_pos', label: '+', x: 61, y: 16, type: 'POWER', description: 'Micro Nuclear Battery Positive DC Terminal (+)' },
+      { id: 'vout_neg', label: '—', x: 134, y: 16, type: 'GROUND', description: 'Micro Nuclear Battery Negative Ground Return (-)' }
+    ]
+  },
+  {
+    id: 'pwr_backup_battery',
+    name: 'LITHIUM POLYMER (LiPo) BACKUP BATTERY PACK',
+    category: 'POWER',
+    modelNumber: 'Aluminum Laminated Pouch Cell Stack',
+    status: 'ARCHITECTURAL',
+    x: 510,
+    y: 65,
+    width: 195,
+    height: 95,
+    imageSrc: '/assets/hardware/pwr_lipo_backup_battery.webp?v=5',
+    description: 'High-discharge multi-cell Lithium Polymer (LiPo) laminated pouch battery pack engineered to buffer peak transient surge currents during high-power acoustic transmission pulses.',
+    roleInMarislink: 'Supplies rapid transient discharge currents to the 100W acoustic power amplifier, preventing voltage sag on sensitive digital processor rails.',
+    protocol: 'High-Rate Secondary DC Energy Buffer',
+    operatingVoltage: 'DC Output Rail (Multi-Cell Pouch Buffer)',
+    currentDraw: 'High-Rate Pulse Burst Capability (To BMS)',
+    pins: [
+      { id: 'bat_pos', label: 'B+', x: 150, y: 14, type: 'POWER', description: 'LiPo Pouch Positive Power Lead (XT60 Terminal)' },
+      { id: 'bat_neg', label: 'B-', x: 168, y: 14, type: 'GROUND', description: 'LiPo Pouch Negative Ground Return (XT60 Terminal)' }
+    ]
+  },
+  {
+    id: 'pwr_path_mgmt',
+    name: 'Power Path Controller',
+    category: 'POWER',
+    modelNumber: 'LTC4412 Ideal Diode Multiplexer',
+    status: 'ARCHITECTURAL',
+    x: 275,
+    y: 255,
+    width: 195,
+    height: 95,
+    description: 'Low-loss ideal diode-OR controller that switches seamlessly between external wet-mate power, micro nuclear battery (conceptual), and backup LiPo buffer.',
+    roleInMarislink: 'Eliminates cross-charging between disparate battery sources and prevents battery discharge into external ports.',
+    protocol: 'Autonomous Hardware Power Multiplexing',
+    operatingVoltage: '9V - 28V DC Input Range',
+    currentDraw: '<15 µA Quiescent Current',
+    pins: [
+      { id: 'pri_in', label: 'PRI_IN', x: 28, y: 30, type: 'POWER', description: 'Micro Nuclear Battery (Conceptual) Power Input' },
+      { id: 'sec_in', label: 'SEC_IN', x: 165, y: 30, type: 'POWER', description: 'BMS Buffered Secondary Battery Input' },
+      { id: 'ext_in', label: 'EXT_IN', x: 28, y: 65, type: 'POWER', description: 'External Wet-Mate Power Input' },
+      { id: 'sys_out', label: 'SYS_OUT', x: 97, y: 80, type: 'POWER', description: 'Multiplexed Main System DC Power Bus' },
+      { id: 'gnd', label: 'GND', x: 165, y: 65, type: 'GROUND', description: 'Common Ground Reference' }
+    ]
+  },
+  {
+    id: 'pwr_bms',
+    name: 'Smart Battery Mgmt (BMS)',
+    category: 'POWER',
+    modelNumber: 'TI BQ76952 Cell Balancer & Monitor',
+    status: 'ARCHITECTURAL',
+    x: 510,
+    y: 255,
+    width: 195,
+    height: 95,
+    description: 'Autonomous multi-cell battery monitor and protector featuring active cell balancing and I2C status telemetry.',
+    roleInMarislink: 'Guards the LiPo energy buffer against overvoltage, undervoltage, thermal runaway, and short circuits.',
+    protocol: 'I2C / Autonomous Hardware Protection',
+    operatingVoltage: '14.8V Pack Bus',
+    currentDraw: '<40 µA Sleep',
+    pins: [
+      { id: 'b_in', label: 'BAT_IN', x: 45, y: 25, type: 'POWER', description: 'Raw Battery Cells Connection' },
+      { id: 'p_pos', label: 'P+', x: 155, y: 25, type: 'POWER', description: 'Protected Power Output (+)' },
+      { id: 'p_neg', label: 'P-', x: 155, y: 70, type: 'GROUND', description: 'Protected System Return (-)' }
+    ]
+  },
+  {
+    id: 'pwr_dcdc_converters',
+    name: 'Multi-Rail DC-DC Regulators',
+    category: 'POWER',
+    modelNumber: '12V, 5V, 3.3V Synchronous Buck',
+    status: 'ARCHITECTURAL',
+    x: 275,
+    y: 445,
+    width: 195,
+    height: 95,
+    description: 'High-efficiency multi-output buck regulator generating +12V for the acoustic amplifier, +5V for analog sensors, and +3.3V for microcontrollers and FPGA cores.',
+    roleInMarislink: 'Converts primary and secondary DC voltage into regulated +12V, +5V, and +3.3V rails for system electronics.',
+    protocol: 'DC-DC Switching Power Conversion (>92% Efficiency)',
+    operatingVoltage: '14.4V Main Bus Input',
+    currentDraw: 'Supplies up to 60W combined peak power',
+    pins: [
+      { id: 'vin', label: 'VIN', x: 97, y: 15, type: 'POWER', description: 'Main DC Voltage Input from Power Path Manager' },
+      { id: 'v12_out', label: '+12V', x: 168, y: 28, type: 'POWER', description: '+12V Regulated Rail (Acoustic Power Amp)' },
+      { id: 'v5_out', label: '+5V', x: 168, y: 52, type: 'POWER', description: '+5V Regulated Rail (Sensors & Analog LNA)' },
+      { id: 'v33_out', label: '+3.3V', x: 168, y: 76, type: 'POWER', description: '+3.3V Regulated Rail (STM32 & AI Processor)' },
+      { id: 'gnd', label: 'GND', x: 28, y: 52, type: 'GROUND', description: 'Common System Power Ground' }
+    ]
+  },
+  {
+    id: 'pwr_monitor_ic',
+    name: 'Digital Power Monitor IC',
+    category: 'POWER',
+    modelNumber: 'TI INA226 High-Side I2C Sensor',
+    status: 'ARCHITECTURAL',
+    x: 510,
+    y: 445,
+    width: 195,
+    height: 95,
+    description: 'High-accuracy digital current and voltage monitor measuring system bus energy consumption with 16-bit resolution.',
+    roleInMarislink: 'Reports real-time node power draw to the STM32 controller to dynamically throttle transmission rates during low-battery states.',
+    protocol: 'I2C (Address: 0x40, 400 kHz)',
+    operatingVoltage: '3.3V Logic / 0 - 36V Common-Mode Sense',
+    currentDraw: '330 µA Operating Current',
+    pins: [
+      { id: 'vin_sense', label: 'VIN+', x: 28, y: 35, type: 'POWER', description: 'Shunt Resistor Voltage Sense Line' },
+      { id: 'sda', label: 'SDA', x: 165, y: 35, type: 'I2C', description: 'I2C Serial Data Telemetry Line' },
+      { id: 'scl', label: 'SCL', x: 165, y: 65, type: 'I2C', description: 'I2C Serial Clock Line' },
+      { id: 'gnd', label: 'GND', x: 28, y: 65, type: 'GROUND', description: 'Ground Reference' }
+    ]
+  },
+
+  // ── B. SENSOR INPUTS ───────────────────────────────────────────────────────
+  {
+    id: 'sensor_subsea_pressure',
+    name: 'Deep-Sea Pressure Transducer',
+    category: 'SENSOR',
+    modelNumber: 'Keller 33X Titanium (60 MPa)',
+    status: 'ARCHITECTURAL',
+    x: 45,
+    y: 670,
+    width: 145,
+    height: 85,
+    description: 'Titanium-encapsulated oceanographic hydrostatic pressure sensor calibrated for depths down to 6,000 meters.',
+    roleInMarislink: 'Measures water column depth, tidal fluctuations, and submerged vehicle buoyancy profiling.',
+    protocol: 'I2C / RS-485 Modbus (0.01% FS Accuracy)',
+    operatingVoltage: '5V DC Supply',
+    currentDraw: '4 mA',
+    pins: [
+      { id: 'vcc', label: '5V', x: 25, y: 28, type: 'POWER', description: '5V Power Supply Input' },
+      { id: 'i2c_sda', label: 'SDA', x: 120, y: 28, type: 'I2C', description: 'Digital Pressure Telemetry Data' },
+      { id: 'i2c_scl', label: 'SCL', x: 120, y: 58, type: 'I2C', description: 'Digital Pressure Clock Line' },
+      { id: 'gnd', label: 'GND', x: 25, y: 58, type: 'GROUND', description: 'Sensor Ground' }
+    ]
+  },
+  {
+    id: 'sensor_ocean_temp',
+    name: 'Precision Ocean Temp RTD',
+    category: 'SENSOR',
+    modelNumber: 'PT1000 4-Wire Platinum Probe',
+    status: 'ARCHITECTURAL',
+    x: 225,
+    y: 670,
+    width: 145,
+    height: 85,
+    description: 'Fast-response 4-wire platinum resistance temperature detector in 316L stainless steel sheath for thermocline analysis.',
+    roleInMarislink: 'Measures water temperature used by the SNC engine to compute acoustic sound speed profiles (SSP).',
+    protocol: 'Analog 4-Wire RTD Resistance Sensing',
+    operatingVoltage: 'Constant 1 mA Excitation Current',
+    currentDraw: '<1 mA',
+    pins: [
+      { id: 'rtd_in_p', label: 'EXC+', x: 25, y: 28, type: 'POWER', description: 'Precision RTD Excitation Current Feed' },
+      { id: 'rtd_sig_pos', label: 'SIG+', x: 120, y: 28, type: 'ADC', description: 'Differential Temperature Analog Signal (+)' },
+      { id: 'rtd_sig_neg', label: 'SIG-', x: 120, y: 58, type: 'ADC', description: 'Differential Temperature Analog Signal (-)' }
+    ]
+  },
+  {
+    id: 'sensor_imu_9dof',
+    name: '9-DoF Subsea Attitude IMU',
+    category: 'SENSOR',
+    modelNumber: 'Bosch BMI088 + BMM150 Sensor',
+    status: 'ARCHITECTURAL',
+    x: 405,
+    y: 670,
+    width: 145,
+    height: 85,
+    description: 'Precision low-drift inertial measurement unit providing pitch, roll, yaw, and acoustic node mooring tilt vectors.',
+    roleInMarislink: 'Detects sea-floor node orientation ensuring acoustic beam alignment with surface buoys.',
+    protocol: 'I2C / SPI (400 kHz)',
+    operatingVoltage: '3.3V DC',
+    currentDraw: '1.2 mA',
+    pins: [
+      { id: 'vcc', label: '3V3', x: 25, y: 28, type: 'POWER', description: '3.3V Power Rail' },
+      { id: 'i2c_sda', label: 'SDA', x: 120, y: 28, type: 'I2C', description: 'I2C Motion Telemetry Data' },
+      { id: 'i2c_scl', label: 'SCL', x: 120, y: 58, type: 'I2C', description: 'I2C Motion Clock Line' },
+      { id: 'gnd', label: 'GND', x: 25, y: 58, type: 'GROUND', description: 'Ground Reference' }
+    ]
+  },
+  {
+    id: 'sensor_leak_hull',
+    name: 'Hull Water-Leak Detector',
+    category: 'SENSOR',
+    modelNumber: 'Optical / Conductive Bilge Grid',
+    status: 'ARCHITECTURAL',
+    x: 585,
+    y: 670,
+    width: 145,
+    height: 85,
+    description: 'Redundant conductive grid and optical reflection probe placed in the subsea pressure canister bilge.',
+    roleInMarislink: 'Triggers emergency emergency acoustic distress beacon and immediate node shutdown if water ingress occurs.',
+    protocol: 'Hardware Interrupt / Active-Low Logic',
+    operatingVoltage: '3.3V DC',
+    currentDraw: '<50 µA',
+    pins: [
+      { id: 'vcc', label: '3V3', x: 25, y: 28, type: 'POWER', description: '3.3V Supply' },
+      { id: 'leak_alert_gpio', label: 'ALERT', x: 120, y: 43, type: 'GPIO', description: 'Critical Anomaly Ingress Alarm Line' },
+      { id: 'gnd', label: 'GND', x: 25, y: 58, type: 'GROUND', description: 'Ground' }
+    ]
+  },
+
+  // ── C. MAIN PROCESSING ─────────────────────────────────────────────────────
+  {
+    id: 'mcu_stm32h7',
+    name: 'STM32H747 Dual-Core MCU',
+    category: 'MCU',
+    modelNumber: 'Cortex-M7/M4 Real-Time SNC Core',
+    status: 'ARCHITECTURAL',
+    x: 800,
+    y: 175,
+    width: 235,
+    height: 300,
+    description: 'Primary real-time microcontroller running the MARISLINK Swarm-Node-Controller (SNC) deterministic protocol stack.',
+    roleInMarislink: 'Executes sensor data acquisition, TDMA acoustic channel scheduling, and manages peripheral communications.',
+    protocol: 'I2C, SPI, UART, CAN, SDIO, Ethernet, High-Speed USB',
+    operatingVoltage: '3.3V Logic Rail',
+    currentDraw: '110 mA Normal Operating',
+    pins: [
+      { id: 'vdd_3v3', label: '3V3', x: 18, y: 35, type: 'POWER', description: '3.3V Core Power Input' },
+      { id: 'gnd', label: 'GND', x: 18, y: 60, type: 'GROUND', description: 'Digital Ground' },
+      { id: 'i2c1_sda', label: 'I2C_SDA', x: 18, y: 95, type: 'I2C', description: 'Sensor Bus Data (Pressure, IMU, INA226)' },
+      { id: 'i2c1_scl', label: 'I2C_SCL', x: 18, y: 120, type: 'I2C', description: 'Sensor Bus Clock Line' },
+      { id: 'adc1_in0', label: 'ADC_RTD', x: 18, y: 155, type: 'ADC', description: 'Analog RTD Temperature Sensor Input' },
+      { id: 'gpio_leak_int', label: 'INT_LEAK', x: 18, y: 180, type: 'GPIO', description: 'Emergency Water Leak Interrupt Pin' },
+      { id: 'swdio', label: 'SWDIO', x: 18, y: 215, type: 'GPIO', description: 'SWD Serial Wire Debug Data' },
+      { id: 'swclk', label: 'SWCLK', x: 18, y: 240, type: 'GPIO', description: 'SWD Serial Wire Debug Clock' },
+      { id: 'eth_rxd0', label: 'ETH_RX', x: 18, y: 275, type: 'UART', description: '100BASE-TX Ethernet PHY Interface' },
+      { id: 'uart1_tx', label: 'TX_AI', x: 215, y: 35, type: 'UART', description: 'High-Speed Serial Command to AMD Versal' },
+      { id: 'uart1_rx', label: 'RX_AI', x: 215, y: 60, type: 'UART', description: 'High-Speed Serial Telemetry from AMD Versal' },
+      { id: 'fmc_bus', label: 'FMC_PCIE', x: 215, y: 95, type: 'SPI', description: 'High-Throughput Parallel Inter-Chip Bus' },
+      { id: 'spi1_miso', label: 'SPI1_RX', x: 215, y: 130, type: 'SPI', description: 'Acoustic ADC Digitized Data Input' },
+      { id: 'spi1_sck', label: 'SPI1_CLK', x: 215, y: 150, type: 'SPI', description: 'Acoustic ADC SPI Clock Line' },
+      { id: 'spi1_cs', label: 'SPI1_CS', x: 215, y: 170, type: 'SPI', description: 'Acoustic ADC Chip Select' },
+      { id: 'spi2_mosi', label: 'SPI2_TX', x: 215, y: 200, type: 'SPI', description: 'Acoustic Modulation DAC Data Out' },
+      { id: 'spi2_sck', label: 'SPI2_CLK', x: 215, y: 220, type: 'SPI', description: 'Acoustic Modulation DAC Clock Line' },
+      { id: 'spi2_cs', label: 'SPI2_CS', x: 215, y: 240, type: 'SPI', description: 'Acoustic Modulation DAC Chip Select' },
+      { id: 'sdio_d0', label: 'SDIO', x: 118, y: 285, type: 'SPI', description: 'High-Speed SDIO 4-Bit Storage Interface' },
+      { id: 'gpio_pwr_led', label: 'LED_PWR', x: 215, y: 265, type: 'GPIO', description: 'Power Status LED Driver' },
+      { id: 'gpio_comm_led', label: 'LED_COMM', x: 215, y: 285, type: 'GPIO', description: 'Acoustic Communication LED Driver' }
+    ]
+  },
+  {
+    id: 'ai_jetson_orin',
+    name: 'AMD Versal™ AI Edge SoC',
+    category: 'AI_PROCESSOR',
+    modelNumber: 'VE2302 Adaptive Neural Engine',
+    status: 'ARCHITECTURAL',
+    x: 1090,
+    y: 175,
+    width: 245,
+    height: 300,
+    description: 'High-performance adaptive processor combining vector AI Engines with programmable logic for deep subsea acoustic signal processing.',
+    roleInMarislink: 'Executes real-time CNN acoustic signal denoising, multipath Doppler compensation, and anomaly spectrogram inference.',
+    protocol: 'PCIe Gen4, AXI4-Stream, High-Speed DMA',
+    operatingVoltage: '3.3V I/O / 0.85V Core',
+    currentDraw: '1.2A Peak Processing Burst',
+    pins: [
+      { id: 'vdd_core', label: 'VDD_CORE', x: 25, y: 35, type: 'POWER', description: 'Core Power Supply from DC-DC Regulator' },
+      { id: 'gnd', label: 'GND', x: 25, y: 60, type: 'GROUND', description: 'Common Digital Ground' },
+      { id: 'uart_rx', label: 'RX_MCU', x: 25, y: 95, type: 'UART', description: 'Command Control Stream from STM32 Core' },
+      { id: 'uart_tx', label: 'TX_MCU', x: 25, y: 120, type: 'UART', description: 'Neural Inference Result Stream to STM32' },
+      { id: 'pcie_lane0', label: 'PCIE_EP', x: 25, y: 155, type: 'SPI', description: 'PCIe Endpoint Bus to STM32 Controller' },
+      { id: 'pcie_nvme', label: 'PCIE_NVME', x: 122, y: 285, type: 'SPI', description: 'PCIe Gen3 x2 Bus to NVMe SSD Storage' },
+      { id: 'ai_demod_out', label: 'DEMOD_SYM', x: 220, y: 120, type: 'SPI', description: 'Demodulated High-Speed Acoustic Symbols' },
+      { id: 'ai_mod_in', label: 'MOD_SYM', x: 220, y: 180, type: 'SPI', description: 'Modulated Multi-Carrier Acoustic Baseband' }
+    ]
+  },
+
+  // ── D. ACOUSTIC RECEIVER ───────────────────────────────────────────────────
   {
     id: 'acoustics_hydrophone',
     name: 'Teledyne TC4013 Hydrophone',
     category: 'ACOUSTIC',
     modelNumber: 'Omnidirectional Acoustic Sensor',
     status: 'ARCHITECTURAL',
-    imageSrc: '/assets/hardware/acoustics_hydrophone.webp',
-    x: 1360,
-    y: 250,
-    width: 190,
-    height: 140,
-    description: 'Deep-submergence piezoelectric ceramic hydrophone sensor with omnidirectional receiving pattern (1 Hz - 170 kHz) and -211 dBV sensitivity.',
-    operatingVoltage: 'Passive Piezoelectric Voltage Generator',
-    communicationProtocol: 'Analog Piezoelectric Signal',
-    roleInMarislink: 'Primary underwater acoustic receiving sensor capturing multi-hop swarm transmissions through seawater.',
-    connectedTo: ['acoustics_lna'],
+    x: 1420,
+    y: 55,
+    width: 180,
+    height: 90,
+    description: 'Precision miniature oceanographic hydrophone providing omnidirectional reception across a flat frequency band from 1 Hz to 170 kHz.',
+    roleInMarislink: 'Converts incoming underwater acoustic sound waves into microvolt-level differential electrical signals.',
+    protocol: 'Piezoelectric Ceramic Sensing (-211 dB re 1V/µPa)',
+    operatingVoltage: 'Passive Voltage Projector (No Bias Required)',
+    currentDraw: '0 mA Passive',
     pins: [
-      { id: 'sig_pos', name: 'SIG+', x: 1380, y: 300, type: 'ANALOG', description: 'Piezoelectric ceramic positive terminal' },
-      { id: 'sig_neg', name: 'SIG- / SHIELD', x: 1380, y: 345, type: 'GROUND', description: 'Shield and reference ground' },
-    ],
+      { id: 'sig_out', label: 'SIG_OUT', x: 150, y: 35, type: 'ADC', description: 'Hydrophone Differential Audio Output (+)' },
+      { id: 'gnd_shield', label: 'SHIELD', x: 150, y: 65, type: 'GROUND', description: 'Waterproof Coaxial Shield Ground Return' }
+    ]
+  },
+  {
+    id: 'acoustics_lna',
+    name: 'Low-Noise Preamplifier (LNA)',
+    category: 'ACOUSTIC',
+    modelNumber: 'AD8429 40dB Subsea Front-End',
+    status: 'ARCHITECTURAL',
+    x: 1655,
+    y: 55,
+    width: 180,
+    height: 90,
+    description: 'Shielded ultralow-noise analog preamplifier providing 40 dB gain with 0.8 nV/√Hz input noise density.',
+    roleInMarislink: 'Boosts weak deep-sea acoustic signals received by the hydrophone to full-scale ADC input range.',
+    protocol: 'Differential Analog Audio Amplification (10 Hz - 200 kHz)',
+    operatingVoltage: '5V Regulated Dual-Supply',
+    currentDraw: '12 mA',
+    pins: [
+      { id: 'in_pos', label: 'IN+', x: 25, y: 35, type: 'ADC', description: 'Differential Acoustic Input from Hydrophone' },
+      { id: 'in_neg', label: 'IN-', x: 25, y: 65, type: 'GROUND', description: 'Shield / Ground Input Reference' },
+      { id: 'out_pos', label: 'OUT+', x: 155, y: 35, type: 'ADC', description: 'Amplified Differential Output to ADC (+)' },
+      { id: 'out_neg', label: 'OUT-', x: 155, y: 65, type: 'ADC', description: 'Amplified Differential Output to ADC (-)' },
+      { id: 'vcc_5v', label: '5V', x: 90, y: 15, type: 'POWER', description: '5V Analog Power Supply' }
+    ]
+  },
+  {
+    id: 'acoustics_adc',
+    name: '24-Bit Acoustic Delta-Sigma ADC',
+    category: 'ACOUSTIC',
+    modelNumber: 'TI ADS127L11 (400 kSPS SPI)',
+    status: 'ARCHITECTURAL',
+    x: 1890,
+    y: 55,
+    width: 180,
+    height: 90,
+    description: 'Ultra-low distortion 24-bit delta-sigma ADC with 111 dB SNR converting amplified acoustic analog waveforms into digital bitstreams.',
+    roleInMarislink: 'Digitizes incoming acoustic communication frames for DSP demodulation by the STM32 and AMD Versal processor.',
+    protocol: 'SPI (20 MHz Clock Rate)',
+    operatingVoltage: '3.3V Digital / 5V Analog',
+    currentDraw: '18 mA',
+    pins: [
+      { id: 'ain_pos', label: 'AIN+', x: 25, y: 35, type: 'ADC', description: 'Differential Analog Input (+) from LNA' },
+      { id: 'ain_neg', label: 'AIN-', x: 25, y: 65, type: 'ADC', description: 'Differential Analog Input (-) from LNA' },
+      { id: 'spi_dout', label: 'DOUT', x: 115, y: 75, type: 'SPI', description: 'Digitized 24-Bit Acoustic Sample Stream (SPI MISO)' },
+      { id: 'spi_sck', label: 'SCK', x: 70, y: 75, type: 'SPI', description: 'High-Speed SPI Clock Input' },
+      { id: 'spi_cs', label: 'CS', x: 25, y: 75, type: 'SPI', description: 'ADC Frame Chip Select' }
+    ]
+  },
+
+  // ── E. ACOUSTIC TRANSMITTER ────────────────────────────────────────────────
+  {
+    id: 'acoustics_dac',
+    name: 'Acoustic Modulation DAC',
+    category: 'ACOUSTIC',
+    modelNumber: 'AD5791 24-Bit / 1 MSPS DDS',
+    status: 'ARCHITECTURAL',
+    x: 1420,
+    y: 285,
+    width: 180,
+    height: 95,
+    description: 'High-speed digital-to-analog converter generating clean modulated multi-frequency FSK/OFDM acoustic carrier waveforms.',
+    roleInMarislink: 'Synthesizes transmission symbols computed by the SNC swarm routing stack into analog acoustic drive signals.',
+    protocol: 'SPI Waveform Streaming (Up to 35 MHz)',
+    operatingVoltage: '3.3V Logic / ±10V Analog',
+    currentDraw: '15 mA',
+    pins: [
+      { id: 'spi_din', label: 'DIN', x: 25, y: 35, type: 'SPI', description: 'Baseband Modulated Data Input (SPI MOSI)' },
+      { id: 'spi_sck', label: 'SCK', x: 25, y: 55, type: 'SPI', description: 'DAC Sample Clock' },
+      { id: 'spi_cs', label: 'CS', x: 25, y: 75, type: 'SPI', description: 'DAC Chip Select' },
+      { id: 'vout_analog', label: 'AOUT', x: 155, y: 45, type: 'DAC', description: 'Synthesized Analog Acoustic Waveform Output' },
+      { id: 'gnd', label: 'GND', x: 155, y: 70, type: 'GROUND', description: 'Ground Reference' }
+    ]
   },
   {
     id: 'acoustics_power_amp',
-    name: '100W Acoustic Power Driver & Matching',
+    name: '100W Acoustic Power Driver',
     category: 'ACOUSTIC',
     modelNumber: 'Class-D Resonant Step-Up Amp',
     status: 'ARCHITECTURAL',
-    imageSrc: '/assets/hardware/acoustics_power_amp.webp',
-    x: 1360,
-    y: 420,
-    width: 190,
-    height: 140,
-    description: 'High-efficiency Class-D acoustic power amplifier with toroidal impedance matching transformer stepping up signal voltage to 150 Vrms for the transducer.',
-    operatingVoltage: '12V DC input (stepped up to 150Vrms)',
-    communicationProtocol: 'Resonant Acoustic Carrier PWM / Drive',
-    roleInMarislink: 'Drives the Tonpilz projector transducer with high acoustic source level (185 dB re 1µPa @ 1m) for multi-kilometer transmission.',
-    connectedTo: ['modem_uart', 'acoustics_transducer'],
+    x: 1655,
+    y: 285,
+    width: 185,
+    height: 95,
+    description: 'High-voltage subsea acoustic amplifier with step-up impedance matching transformer driving capacitive piezoelectric transducers.',
+    roleInMarislink: 'Boosts 1V analog waveform from DAC up to 200Vrms high-voltage drive to propagate sound waves across 10 km underwater ranges.',
+    protocol: 'Step-Up High-Voltage Resonant Driver (10 kHz - 35 kHz)',
+    operatingVoltage: '12V DC Supply Input (Steps up to 200V RMS)',
+    currentDraw: 'Peak 8A Burst during Acoustic Transmit',
     pins: [
-      { id: 'in_mod', name: 'IN_MOD', x: 1380, y: 460, type: 'ANALOG', description: 'Modulated carrier input from acoustic modem' },
-      { id: 'gnd', name: 'GND', x: 1380, y: 510, type: 'GROUND', voltage: '0V', description: 'Power ground' },
-      { id: 'hv_out_pos', name: 'HV_OUT+', x: 1510, y: 465, type: 'ANALOG', description: 'High-voltage drive output positive' },
-      { id: 'hv_out_neg', name: 'HV_OUT-', x: 1510, y: 505, type: 'ANALOG', description: 'High-voltage drive output return' },
-    ],
+      { id: 'sig_in', label: 'SIG_IN', x: 25, y: 35, type: 'DAC', description: 'Analog Audio Drive Signal from Modulation DAC' },
+      { id: 'sig_gnd', label: 'GND', x: 25, y: 65, type: 'GROUND', description: 'Signal Ground Reference' },
+      { id: 'vcc_12v', label: '12V_IN', x: 92, y: 15, type: 'POWER', description: '+12V High-Current Supply Rail from DC-DC Converter' },
+      { id: 'hv_out_pos', label: 'HV+', x: 160, y: 35, type: 'POWER', description: 'High-Voltage 200Vrms Transducer Drive (+)' },
+      { id: 'hv_out_neg', label: 'HV-', x: 160, y: 65, type: 'GROUND', description: 'High-Voltage Transducer Return (-)' }
+    ]
   },
   {
     id: 'acoustics_transducer',
-    name: 'Tonpilz PZT Acoustic Projector Transducer',
+    name: 'Tonpilz Acoustic Projector',
     category: 'ACOUSTIC',
     modelNumber: 'PZT-4 Resonant Ceramic Stack',
     status: 'ARCHITECTURAL',
-    imageSrc: '/assets/hardware/acoustics_transducer.webp',
-    x: 1360,
-    y: 590,
-    width: 190,
-    height: 140,
-    description: 'Prestressed PZT-4 piezoelectric ring resonator with tailored tail mass and head mass for high acoustic power output across 20 kHz - 45 kHz carrier bands.',
-    operatingVoltage: '150 Vrms High-Voltage Differential',
-    communicationProtocol: 'Compressional Acoustic Pressure Waves (1500 m/s in seawater)',
-    roleInMarislink: 'Primary physical acoustic transmitter converting electrical waveforms into compression waves traveling through the water column.',
-    connectedTo: ['acoustics_power_amp'],
+    x: 1895,
+    y: 285,
+    width: 180,
+    height: 95,
+    description: 'High-acoustic-power Tonpilz transducer featuring prestressed PZT ceramic rings, aluminum head mass, and heavy brass tail mass.',
+    roleInMarislink: 'Transmits high-intensity acoustic sound pressure pulses into the ocean water to communicate with swarm nodes.',
+    protocol: 'High-Voltage Piezoelectric Resonance (25 kHz Center Freq)',
+    operatingVoltage: '200V RMS Drive',
+    currentDraw: 'High-Power Transmit Projector (Source Level: 185 dB re 1µPa @ 1m)',
     pins: [
-      { id: 'pzt_pos', name: 'PZT+', x: 1380, y: 635, type: 'ANALOG', description: 'Transducer positive terminal' },
-      { id: 'pzt_neg', name: 'PZT-', x: 1380, y: 675, type: 'GROUND', description: 'Transducer return terminal' },
-    ],
+      { id: 'pzt_pos', label: 'PZT+', x: 25, y: 35, type: 'POWER', description: 'High-Voltage Acoustic Projector Terminal (+)' },
+      { id: 'pzt_neg', label: 'PZT-', x: 25, y: 65, type: 'GROUND', description: 'High-Voltage Acoustic Projector Return (-)' }
+    ]
   },
+
+  // ── F. STORAGE ─────────────────────────────────────────────────────────────
+  {
+    id: 'storage_microsd',
+    name: 'Industrial SLC MicroSD Card',
+    category: 'STORAGE',
+    modelNumber: '32GB Black-Box Flight Log',
+    status: 'ARCHITECTURAL',
+    x: 820,
+    y: 670,
+    width: 195,
+    height: 85,
+    description: 'High-endurance Single-Level Cell (SLC) NAND flash memory card rated for continuous subsea black-box mission flight recording.',
+    roleInMarislink: 'Provides non-volatile telemetry storage logging depth, temperature, water-leak logs, and communication health.',
+    protocol: 'SDIO 4-Bit High-Speed Bus (50 MHz)',
+    operatingVoltage: '3.3V DC',
+    currentDraw: '25 mA Active Write',
+    pins: [
+      { id: 'vcc', label: '3V3', x: 35, y: 30, type: 'POWER', description: '3.3V Flash Memory Power Supply' },
+      { id: 'dat0', label: 'DAT0', x: 95, y: 15, type: 'SPI', description: 'SDIO Data Line 0' },
+      { id: 'clk', label: 'CLK', x: 125, y: 15, type: 'SPI', description: 'SDIO High-Speed Clock Line' },
+      { id: 'cmd', label: 'CMD', x: 155, y: 15, type: 'SPI', description: 'SDIO Command / Response Line' },
+      { id: 'gnd', label: 'GND', x: 35, y: 60, type: 'GROUND', description: 'Ground' }
+    ]
+  },
+  {
+    id: 'storage_emmc_nvme',
+    name: 'Industrial NVMe M.2 SSD',
+    category: 'STORAGE',
+    modelNumber: '256GB Spectrogram & Model Store',
+    status: 'ARCHITECTURAL',
+    x: 1090,
+    y: 670,
+    width: 220,
+    height: 85,
+    description: 'Wide-temperature industrial solid-state drive with hardware power-loss protection (PLP) for mass acoustic spectrogram archives.',
+    roleInMarislink: 'Stores raw digitized acoustic hydrophone time-series data and deep learning model weights for the AMD Versal AI engine.',
+    protocol: 'PCIe Gen3 x2 (NVMe 1.4, Up to 1.5 GB/s)',
+    operatingVoltage: '3.3V DC',
+    currentDraw: '450 mA Active Write Burst',
+    pins: [
+      { id: 'vcc_3v3', label: '3V3', x: 35, y: 30, type: 'POWER', description: '3.3V Power Rail' },
+      { id: 'pcie_lane0', label: 'PCIe_RX', x: 110, y: 15, type: 'SPI', description: 'High-Speed PCIe Differential Data Line' },
+      { id: 'gnd', label: 'GND', x: 35, y: 60, type: 'GROUND', description: 'Ground Reference' }
+    ]
+  },
+
+  // ── G. EXTERNAL INTERFACES ─────────────────────────────────────────────────
+  {
+    id: 'interface_wetmate_data',
+    name: 'Wet-Mate Data Connector',
+    category: 'INTERFACE',
+    modelNumber: 'SubConn 8-Pin Subsea Ethernet',
+    status: 'ARCHITECTURAL',
+    x: 1420,
+    y: 520,
+    width: 180,
+    height: 90,
+    description: 'Pressure-balanced underwater data connector facilitating Gigabit/Fast Ethernet links to surface vessels or AUV docking stations.',
+    roleInMarislink: 'Enables high-speed bulk data offloading of historical acoustic recordings when recovered or docked.',
+    protocol: '100BASE-TX / 1000BASE-T Ethernet',
+    operatingVoltage: '1.2V - 3.3V Differential Signaling',
+    currentDraw: 'Passive Connector (500V Insulation Breakdown)',
+    pins: [
+      { id: 'eth_rx_p', label: 'RX+', x: 140, y: 35, type: 'UART', description: 'Ethernet Differential Receive Pair (+)' },
+      { id: 'eth_tx_p', label: 'TX+', x: 140, y: 60, type: 'UART', description: 'Ethernet Differential Transmit Pair (+)' },
+      { id: 'shield', label: 'SHIELD', x: 35, y: 48, type: 'GROUND', description: 'Connector Marine Chassis Shield Ground' }
+    ]
+  },
+  {
+    id: 'interface_debug_port',
+    name: 'Diagnostic & SWD Port',
+    category: 'INTERFACE',
+    modelNumber: 'USB-C Receptacle + SWD Header',
+    status: 'ARCHITECTURAL',
+    x: 1635,
+    y: 520,
+    width: 180,
+    height: 90,
+    description: 'Internal diagnostic port accessible during laboratory calibration before subsea canister pressure sealing.',
+    roleInMarislink: 'Enables firmware flashing, real-time debugging, and benchtop hardware-in-the-loop validation.',
+    protocol: 'SWD / JTAG (ARM Cortex) + USB 2.0 Full-Speed CDC',
+    operatingVoltage: '3.3V Logic / 5V USB VBUS',
+    currentDraw: 'Diagnostic Tap (<10 mA)',
+    pins: [
+      { id: 'swdio', label: 'SWDIO', x: 35, y: 35, type: 'GPIO', description: 'Serial Wire Debug Data Line to STM32' },
+      { id: 'swclk', label: 'SWCLK', x: 35, y: 60, type: 'GPIO', description: 'Serial Wire Debug Clock Line to STM32' },
+      { id: 'vbus', label: 'VBUS', x: 140, y: 48, type: 'POWER', description: '5V USB VBUS Sense Input' }
+    ]
+  },
+
+  // ── H. STATUS INDICATORS ───────────────────────────────────────────────────
+  {
+    id: 'led_indicators_panel',
+    name: 'Marine Optical Status Beacons',
+    category: 'INDICATOR',
+    modelNumber: 'IP68 4-Channel Inspection Array',
+    status: 'ARCHITECTURAL',
+    x: 1880,
+    y: 520,
+    width: 190,
+    height: 90,
+    description: 'Four hermetically sealed high-luminance optical indicator lenses visible through pressure hull viewport.',
+    roleInMarislink: 'Visual inspection beacon for divers and ROV cameras confirming power state, acoustic sync, and fault warnings.',
+    protocol: 'Direct Microcontroller GPIO Sink/Source Drivers',
+    operatingVoltage: '3.3V Logic (Current-Limited via 330Ω Resistors)',
+    currentDraw: '20 mA per Channel',
+    pins: [
+      { id: 'pwr_in', label: 'PWR', x: 35, y: 28, type: 'GPIO', description: 'Green LED: System Power Good Indicator' },
+      { id: 'sync_in', label: 'SYNC', x: 75, y: 28, type: 'GPIO', description: 'Yellow LED: Acoustic Network Time Sync Lock' },
+      { id: 'comm_in', label: 'COMM', x: 115, y: 28, type: 'GPIO', description: 'Blue LED: Acoustic Active Transmission Burst' },
+      { id: 'alert_in', label: 'ALERT', x: 155, y: 28, type: 'GPIO', description: 'Red LED: Critical Leak or Hardware Anomaly Alarm' },
+      { id: 'gnd', label: 'GND', x: 95, y: 65, type: 'GROUND', description: 'Common Indicator Cathode Return' }
+    ]
+  }
 ];
 
-// ── UNIFIED MARISLINK CIRCUIT WIRES ───────────────────────────────────────────
-
-const UNIFIED_PROTOTYPE_WIRES: CircuitWire[] = [
-  // ── Power Subsystem Wires ──
+const UNDERWATER_WIRES: CircuitWire[] = [
+  // ── 1. Receiver Signal Path (Hydrophone -> LNA -> ADC -> STM32 Processing) ──
   {
-    id: 'w_lipo_pos',
-    sourceComponentId: 'pwr_lipo_battery',
-    sourcePinId: 'bat_pos',
-    destComponentId: 'pwr_mgmt_bms',
-    destPinId: 'bat_in_pos',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.7V',
-    signalDescription: 'LiPo cell positive rail feeding TP4056 BMS power input.',
-    points: [{ x: 240, y: 120 }, { x: 280, y: 120 }, { x: 280, y: 260 }, { x: 40, y: 260 }, { x: 40, y: 310 }, { x: 90, y: 310 }],
+    id: 'w-hydro-lna-sig',
+    name: 'Hydrophone Raw Acoustic Audio to Low-Noise Amplifier',
+    busType: 'ADC/DAC',
+    sourceComponentId: 'acoustics_hydrophone',
+    sourcePinId: 'sig_out',
+    destComponentId: 'acoustics_lna',
+    destPinId: 'in_pos',
+    color: '#ec4899',
+    colorName: 'Pink (Acoustic Analog)',
+    voltage: '<50 mV (Microvolt Acoustic Pressure)',
+    connectionPurpose: 'Transfers microvolt acoustic signal from hydrophone to 40 dB low-noise amplifier',
+    signalDescription: 'Raw differential analog hydrophone audio voltage generated by incoming ocean sound waves',
+    waypoints: [[1570, 90], [1680, 90]]
   },
   {
-    id: 'w_lipo_neg',
-    sourceComponentId: 'pwr_lipo_battery',
-    sourcePinId: 'bat_neg',
-    destComponentId: 'pwr_mgmt_bms',
-    destPinId: 'bat_in_neg',
+    id: 'w-hydro-lna-gnd',
+    name: 'Hydrophone Coaxial Shield to Amplifier Ground',
     busType: 'GROUND',
+    sourceComponentId: 'acoustics_hydrophone',
+    sourcePinId: 'gnd_shield',
+    destComponentId: 'acoustics_lna',
+    destPinId: 'in_neg',
     color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'LiPo battery ground return to BMS.',
-    points: [{ x: 240, y: 160 }, { x: 265, y: 160 }, { x: 265, y: 270 }, { x: 50, y: 270 }, { x: 50, y: 350 }, { x: 90, y: 350 }],
+    colorName: 'Black (Ground Reference)',
+    voltage: '0V DC',
+    connectionPurpose: 'Shields low-level acoustic audio from EMI and provides reference ground',
+    signalDescription: 'Subsea braided coaxial cable ground return reference',
+    waypoints: [[1570, 120], [1680, 120]]
   },
   {
-    id: 'w_bms_pwr_esp',
-    sourceComponentId: 'pwr_mgmt_bms',
-    sourcePinId: 'vout_3v3',
-    destComponentId: 'esp32',
-    destPinId: '3v3',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: 'Regulated 3.3V power rail feeding ESP32 microcontroller core.',
-    points: [{ x: 240, y: 320 }, { x: 300, y: 320 }, { x: 300, y: 40 }, { x: 580, y: 40 }, { x: 580, y: 185 }, { x: 620, y: 185 }],
+    id: 'w-lna-adc-p',
+    name: 'LNA Amplified Acoustic Output (+) to 24-Bit ADC',
+    busType: 'ADC/DAC',
+    sourceComponentId: 'acoustics_lna',
+    sourcePinId: 'out_pos',
+    destComponentId: 'acoustics_adc',
+    destPinId: 'ain_pos',
+    color: '#ec4899',
+    colorName: 'Pink (Acoustic Analog)',
+    voltage: '±2.5V Differential Analog',
+    connectionPurpose: 'Feeds amplified 40 dB acoustic audio into high-precision delta-sigma ADC',
+    signalDescription: 'Conditioned differential analog audio waveform spanning 10 Hz to 200 kHz',
+    waypoints: [[1810, 90], [1915, 90]]
   },
   {
-    id: 'w_bms_gnd_esp',
-    sourceComponentId: 'pwr_mgmt_bms',
-    sourcePinId: 'gnd_out',
-    destComponentId: 'esp32',
-    destPinId: 'gnd_l',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Common system ground return from BMS to ESP32.',
-    points: [{ x: 240, y: 360 }, { x: 290, y: 360 }, { x: 290, y: 730 }, { x: 590, y: 730 }, { x: 590, y: 535 }, { x: 620, y: 535 }],
-  },
-
-  // ── Battery Potentiometer (ADC GPIO 34) ──
-  {
-    id: 'w_bms_pot_bat_pwr',
-    sourceComponentId: 'pwr_mgmt_bms',
-    sourcePinId: 'vout_3v3',
-    destComponentId: 'pot_battery',
-    destPinId: 'vcc',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: '3.3V voltage reference for battery voltage divider simulation.',
-    points: [{ x: 240, y: 320 }, { x: 320, y: 320 }, { x: 320, y: 195 }, { x: 370, y: 195 }],
+    id: 'w-lna-adc-n',
+    name: 'LNA Amplified Acoustic Output (-) to 24-Bit ADC',
+    busType: 'ADC/DAC',
+    sourceComponentId: 'acoustics_lna',
+    sourcePinId: 'out_neg',
+    destComponentId: 'acoustics_adc',
+    destPinId: 'ain_neg',
+    color: '#ec4899',
+    colorName: 'Pink (Acoustic Analog)',
+    voltage: '±2.5V Differential Analog',
+    connectionPurpose: 'Differential negative phase input for common-mode noise rejection',
+    signalDescription: 'Balanced negative-phase analog acoustic audio stream',
+    waypoints: [[1810, 120], [1915, 120]]
   },
   {
-    id: 'w_bms_pot_bat_gnd',
-    sourceComponentId: 'pwr_mgmt_bms',
-    sourcePinId: 'gnd_out',
-    destComponentId: 'pot_battery',
-    destPinId: 'gnd',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Ground reference for battery voltage divider.',
-    points: [{ x: 240, y: 360 }, { x: 330, y: 360 }, { x: 330, y: 225 }, { x: 510, y: 225 }, { x: 510, y: 195 }],
-  },
-  {
-    id: 'w_pot_bat_sig',
-    sourceComponentId: 'pot_battery',
-    sourcePinId: 'sig',
-    destComponentId: 'esp32',
-    destPinId: 'd34',
-    busType: 'ADC',
-    color: '#f59e0b',
-    voltage: '0-3.3V',
-    signalDescription: 'PIN_POT_BATTERY: Analog wiper output to ESP32 ADC1 GPIO 34 (simulating LiPo battery level).',
-    points: [{ x: 440, y: 195 }, { x: 440, y: 215 }, { x: 560, y: 215 }, { x: 560, y: 285 }, { x: 620, y: 285 }],
-  },
-
-  // ── Signal RSSI Attenuator (ADC GPIO 35) ──
-  {
-    id: 'w_esp_pot_sig_pwr',
-    sourceComponentId: 'esp32',
-    sourcePinId: '3v3',
-    destComponentId: 'pot_signal',
-    destPinId: 'vcc',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: '3.3V reference to acoustic RSSI attenuator.',
-    points: [{ x: 620, y: 185 }, { x: 575, y: 185 }, { x: 575, y: 350 }, { x: 370, y: 350 }, { x: 370, y: 370 }],
-  },
-  {
-    id: 'w_esp_pot_sig_gnd',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'gnd_l',
-    destComponentId: 'pot_signal',
-    destPinId: 'gnd',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Ground return for acoustic RSSI attenuator.',
-    points: [{ x: 620, y: 535 }, { x: 565, y: 535 }, { x: 565, y: 400 }, { x: 510, y: 400 }, { x: 510, y: 370 }],
-  },
-  {
-    id: 'w_pot_sig_sig',
-    sourceComponentId: 'pot_signal',
-    sourcePinId: 'sig',
-    destComponentId: 'esp32',
-    destPinId: 'd35',
-    busType: 'ADC',
-    color: '#f59e0b',
-    voltage: '0-3.3V',
-    signalDescription: 'PIN_POT_SIGNAL: Analog wiper output to ESP32 ADC1 GPIO 35 (simulating acoustic channel RSSI).',
-    points: [{ x: 440, y: 370 }, { x: 440, y: 390 }, { x: 570, y: 390 }, { x: 570, y: 310 }, { x: 620, y: 310 }],
-  },
-
-  // ── BMP280 Environmental Sensor (I2C SDA: D21, SCL: D22) ──
-  {
-    id: 'w_bmp280_pwr',
-    sourceComponentId: 'esp32',
-    sourcePinId: '3v3',
-    destComponentId: 'bmp280',
-    destPinId: 'vcc',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: '3.3V VCC supply to Bosch BMP280 environmental sensor.',
-    points: [{ x: 620, y: 185 }, { x: 585, y: 185 }, { x: 585, y: 515 }, { x: 370, y: 515 }, { x: 370, y: 535 }],
-  },
-  {
-    id: 'w_bmp280_gnd',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'gnd_l',
-    destComponentId: 'bmp280',
-    destPinId: 'gnd',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Ground return for BMP280 sensor.',
-    points: [{ x: 620, y: 535 }, { x: 575, y: 535 }, { x: 575, y: 525 }, { x: 415, y: 525 }, { x: 415, y: 535 }],
-  },
-  {
-    id: 'w_bmp280_sda',
-    sourceComponentId: 'bmp280',
-    sourcePinId: 'sda',
-    destComponentId: 'esp32',
-    destPinId: 'd21',
-    busType: 'I2C',
+    id: 'w-adc-mcu-dout',
+    name: 'Digitized 24-Bit Acoustic Stream to STM32 SPI MISO',
+    busType: 'SPI',
+    sourceComponentId: 'acoustics_adc',
+    sourcePinId: 'spi_dout',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'spi1_miso',
     color: '#0284c7',
+    colorName: 'Blue (SPI Bus)',
     voltage: '3.3V Logic',
-    signalDescription: 'PIN_SDA: Hardware I2C Serial Data bus shared by BMP280 (0x76) and OLED (0x3C).',
-    points: [{ x: 510, y: 535 }, { x: 510, y: 565 }, { x: 580, y: 565 }, { x: 580, y: 710 }, { x: 825, y: 710 }, { x: 825, y: 435 }, { x: 800, y: 435 }],
+    connectionPurpose: 'Transfers digitized 400 kSPS 24-bit acoustic samples to STM32 core for DSP filtering',
+    signalDescription: 'High-speed serialized delta-sigma digital audio bitstream',
+    waypoints: [[2005, 130], [2090, 130], [2090, 35], [1045, 35], [1045, 305], [1015, 305]]
   },
   {
-    id: 'w_bmp280_scl',
-    sourceComponentId: 'bmp280',
-    sourcePinId: 'scl',
-    destComponentId: 'esp32',
-    destPinId: 'd22',
-    busType: 'I2C',
-    color: '#eab308',
-    voltage: '3.3V Logic',
-    signalDescription: 'PIN_SCL: Hardware I2C Serial Clock bus (400 kHz) to ESP32 GPIO 22.',
-    points: [{ x: 465, y: 535 }, { x: 465, y: 575 }, { x: 570, y: 575 }, { x: 570, y: 720 }, { x: 835, y: 720 }, { x: 835, y: 510 }, { x: 800, y: 510 }],
-  },
-
-  // ── Hull Water Leak Sensor (GPIO 32) ──
-  {
-    id: 'w_leak_pwr',
-    sourceComponentId: 'esp32',
-    sourcePinId: '3v3',
-    destComponentId: 'sensor_leak',
-    destPinId: 'vcc',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: '3.3V bias for bilge leak detection grid.',
-    points: [{ x: 620, y: 185 }, { x: 595, y: 185 }, { x: 595, y: 670 }, { x: 370, y: 670 }, { x: 370, y: 690 }],
-  },
-  {
-    id: 'w_leak_gnd',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'gnd_l',
-    destComponentId: 'sensor_leak',
-    destPinId: 'gnd',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Ground return for leak detection grid.',
-    points: [{ x: 620, y: 535 }, { x: 585, y: 535 }, { x: 585, y: 680 }, { x: 440, y: 680 }, { x: 440, y: 690 }],
-  },
-  {
-    id: 'w_leak_alert',
-    sourceComponentId: 'sensor_leak',
-    sourcePinId: 'alert',
-    destComponentId: 'esp32',
-    destPinId: 'd32',
-    busType: 'GPIO',
-    color: '#16a34a',
-    voltage: '3.3V Logic',
-    signalDescription: 'Digital interrupt alert signaling seawater ingress inside the pressure enclosure.',
-    points: [{ x: 510, y: 690 }, { x: 550, y: 690 }, { x: 550, y: 335 }, { x: 620, y: 335 }],
-  },
-
-  // ── SSD1306 OLED Display (I2C SDA: D21, SCL: D22) ──
-  {
-    id: 'w_oled_pwr',
-    sourceComponentId: 'esp32',
-    sourcePinId: '3v3',
-    destComponentId: 'oled',
-    destPinId: 'vcc',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: '3.3V power supply to SSD1306 OLED controller.',
-    points: [{ x: 620, y: 185 }, { x: 605, y: 185 }, { x: 605, y: 65 }, { x: 960, y: 65 }, { x: 960, y: 95 }],
-  },
-  {
-    id: 'w_oled_gnd',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'gnd_r',
-    destComponentId: 'oled',
-    destPinId: 'gnd',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Common ground for OLED display.',
-    points: [{ x: 800, y: 210 }, { x: 840, y: 210 }, { x: 840, y: 75 }, { x: 910, y: 75 }, { x: 910, y: 95 }],
-  },
-  {
-    id: 'w_oled_sda',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd21',
-    destComponentId: 'oled',
-    destPinId: 'sda',
-    busType: 'I2C',
+    id: 'w-mcu-adc-sck',
+    name: 'STM32 SPI Clock to Acoustic ADC',
+    busType: 'SPI',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'spi1_sck',
+    destComponentId: 'acoustics_adc',
+    destPinId: 'spi_sck',
     color: '#0284c7',
+    colorName: 'Blue (SPI Bus)',
     voltage: '3.3V Logic',
-    signalDescription: 'Hardware I2C SDA data bus to OLED display screen.',
-    points: [{ x: 800, y: 435 }, { x: 825, y: 435 }, { x: 825, y: 55 }, { x: 1060, y: 55 }, { x: 1060, y: 95 }],
+    connectionPurpose: 'Provides 20 MHz synchronous serial clock for acoustic sample retrieval',
+    signalDescription: 'Continuous SPI Master Clock generating frame timing',
+    waypoints: [[1015, 325], [1055, 325], [1055, 45], [1960, 45], [1960, 130]]
   },
   {
-    id: 'w_oled_scl',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd22',
-    destComponentId: 'oled',
-    destPinId: 'scl',
-    busType: 'I2C',
-    color: '#eab308',
+    id: 'w-mcu-adc-cs',
+    name: 'STM32 Chip Select to Acoustic ADC',
+    busType: 'SPI',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'spi1_cs',
+    destComponentId: 'acoustics_adc',
+    destPinId: 'spi_cs',
+    color: '#0284c7',
+    colorName: 'Blue (SPI Bus)',
     voltage: '3.3V Logic',
-    signalDescription: 'Hardware I2C SCL clock bus to OLED display screen.',
-    points: [{ x: 800, y: 510 }, { x: 835, y: 510 }, { x: 835, y: 45 }, { x: 1010, y: 45 }, { x: 1010, y: 95 }],
+    connectionPurpose: 'Activates ADC SPI interface during packet reception windows',
+    signalDescription: 'Active-Low SPI slave select line',
+    waypoints: [[1015, 345], [1065, 345], [1065, 55], [1915, 55], [1915, 130]]
   },
 
-  // ── Status Indicators 3-LED Array (D2, D4, D15) ──
+  // ── 2. Transmitter Signal Path (STM32/AI -> DAC -> Power Amp -> Transducer) ──
   {
-    id: 'w_led_tx',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd2',
-    destComponentId: 'led_indicators',
-    destPinId: 'tx_green',
-    busType: 'GPIO',
-    color: '#22c55e',
-    voltage: '3.3V Logic',
-    signalDescription: 'PIN_LED_TX: ESP32 GPIO 2 driving Green TX Burst indicator through 220Ω resistor.',
-    points: [{ x: 800, y: 260 }, { x: 855, y: 260 }, { x: 855, y: 405 }, { x: 910, y: 405 }],
-  },
-  {
-    id: 'w_led_sync',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd4',
-    destComponentId: 'led_indicators',
-    destPinId: 'sync_yellow',
-    busType: 'GPIO',
-    color: '#eab308',
-    voltage: '3.3V Logic',
-    signalDescription: 'PIN_LED_SYNC: ESP32 GPIO 4 driving Yellow Carrier Sync Lock indicator through 220Ω resistor.',
-    points: [{ x: 800, y: 285 }, { x: 845, y: 285 }, { x: 845, y: 420 }, { x: 960, y: 420 }, { x: 960, y: 405 }],
-  },
-  {
-    id: 'w_led_fault',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd15',
-    destComponentId: 'led_indicators',
-    destPinId: 'alert_red',
-    busType: 'GPIO',
-    color: '#ef4444',
-    voltage: '3.3V Logic',
-    signalDescription: 'PIN_LED_ALERT: ESP32 GPIO 15 driving Red Fault/Leak Alert indicator through 220Ω resistor.',
-    points: [{ x: 800, y: 235 }, { x: 865, y: 235 }, { x: 865, y: 430 }, { x: 1010, y: 430 }, { x: 1010, y: 405 }],
-  },
-  {
-    id: 'w_led_gnd',
-    sourceComponentId: 'led_indicators',
-    sourcePinId: 'cathodes_gnd',
-    destComponentId: 'esp32',
-    destPinId: 'gnd_r',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Common LED cathode return to ESP32 ground.',
-    points: [{ x: 1060, y: 405 }, { x: 1060, y: 440 }, { x: 820, y: 440 }, { x: 820, y: 210 }, { x: 800, y: 210 }],
-  },
-
-  // ── Diagnostic USB Interface (UART0 TX0/RX0) ──
-  {
-    id: 'w_diag_tx',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'tx0',
-    destComponentId: 'diagnostic_interface',
-    destPinId: 'rx_bridge',
-    busType: 'UART',
-    color: '#a855f7',
-    voltage: '3.3V Logic',
-    signalDescription: 'ESP32 UART0 TX streaming live JSON telemetry to host diagnostic bridge.',
-    points: [{ x: 800, y: 485 }, { x: 860, y: 485 }, { x: 860, y: 615 }, { x: 1060, y: 615 }],
-  },
-  {
-    id: 'w_diag_rx',
-    sourceComponentId: 'diagnostic_interface',
-    sourcePinId: 'tx_bridge',
-    destComponentId: 'esp32',
-    destPinId: 'rx0',
-    busType: 'UART',
-    color: '#a855f7',
-    voltage: '3.3V Logic',
-    signalDescription: 'Host programming and command injection to ESP32 UART0 RX.',
-    points: [{ x: 1010, y: 615 }, { x: 1010, y: 580 }, { x: 850, y: 580 }, { x: 850, y: 460 }, { x: 800, y: 460 }],
-  },
-
-  // ── MicroSD Card Storage (SPI Bus) ──
-  {
-    id: 'w_microsd_pwr',
-    sourceComponentId: 'pwr_mgmt_bms',
-    sourcePinId: 'vout_3v3',
-    destComponentId: 'storage_microsd',
-    destPinId: 'vcc',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: '3.3V power to industrial MicroSD module.',
-    points: [{ x: 240, y: 320 }, { x: 270, y: 320 }, { x: 270, y: 520 }, { x: 240, y: 520 }],
-  },
-  {
-    id: 'w_microsd_gnd',
-    sourceComponentId: 'pwr_mgmt_bms',
-    sourcePinId: 'gnd_out',
-    destComponentId: 'storage_microsd',
-    destPinId: 'gnd',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Ground return for MicroSD storage module.',
-    points: [{ x: 240, y: 360 }, { x: 280, y: 360 }, { x: 280, y: 540 }, { x: 240, y: 540 }],
-  },
-  {
-    id: 'w_microsd_mosi',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd23',
-    destComponentId: 'storage_microsd',
-    destPinId: 'mosi',
+    id: 'w-mcu-dac-mosi',
+    name: 'STM32 Acoustic Baseband Waveform to Modulation DAC',
     busType: 'SPI',
-    color: '#4f46e5',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'spi2_mosi',
+    destComponentId: 'acoustics_dac',
+    destPinId: 'spi_din',
+    color: '#0284c7',
+    colorName: 'Blue (SPI Bus)',
     voltage: '3.3V Logic',
-    signalDescription: 'SPI Master Out Slave In line (ESP32 D23 to MicroSD MOSI).',
-    points: [{ x: 800, y: 535 }, { x: 845, y: 535 }, { x: 845, y: 740 }, { x: 275, y: 740 }, { x: 275, y: 560 }, { x: 240, y: 560 }],
+    connectionPurpose: 'Streams digitally synthesized FSK/OFDM multi-carrier waveform data to DAC',
+    signalDescription: 'Serialized high-speed 24-bit DDS waveform synthesis samples',
+    waypoints: [[1015, 375], [1045, 375], [1045, 490], [1390, 490], [1390, 320], [1445, 320]]
   },
   {
-    id: 'w_microsd_miso',
-    sourceComponentId: 'storage_microsd',
-    sourcePinId: 'miso',
-    destComponentId: 'esp32',
-    destPinId: 'd19',
+    id: 'w-mcu-dac-sck',
+    name: 'STM32 DAC Sample Clock Line',
     busType: 'SPI',
-    color: '#4f46e5',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'spi2_sck',
+    destComponentId: 'acoustics_dac',
+    destPinId: 'spi_sck',
+    color: '#0284c7',
+    colorName: 'Blue (SPI Bus)',
     voltage: '3.3V Logic',
-    signalDescription: 'SPI Master In Slave Out line (MicroSD MISO to ESP32 D19).',
-    points: [{ x: 240, y: 580 }, { x: 265, y: 580 }, { x: 265, y: 730 }, { x: 815, y: 730 }, { x: 815, y: 410 }, { x: 800, y: 410 }],
+    connectionPurpose: 'Synchronizes DAC output update rate up to 1 MSPS',
+    signalDescription: 'Precise hardware SPI clock governing acoustic carrier frequency',
+    waypoints: [[1015, 395], [1055, 395], [1055, 500], [1400, 500], [1400, 340], [1445, 340]]
   },
   {
-    id: 'w_microsd_sck',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd18',
-    destComponentId: 'storage_microsd',
-    destPinId: 'sck',
+    id: 'w-mcu-dac-cs',
+    name: 'STM32 DAC Chip Select Enable',
     busType: 'SPI',
-    color: '#4f46e5',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'spi2_cs',
+    destComponentId: 'acoustics_dac',
+    destPinId: 'spi_cs',
+    color: '#0284c7',
+    colorName: 'Blue (SPI Bus)',
     voltage: '3.3V Logic',
-    signalDescription: 'SPI Serial Clock (ESP32 D18 to MicroSD SCK).',
-    points: [{ x: 800, y: 385 }, { x: 805, y: 385 }, { x: 805, y: 720 }, { x: 255, y: 720 }, { x: 255, y: 600 }, { x: 240, y: 600 }],
+    connectionPurpose: 'Frames transmission burst waveforms',
+    signalDescription: 'Active-Low hardware SPI chip select',
+    waypoints: [[1015, 415], [1065, 415], [1065, 510], [1410, 510], [1410, 360], [1445, 360]]
   },
   {
-    id: 'w_microsd_cs',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'd5',
-    destComponentId: 'storage_microsd',
-    destPinId: 'cs',
-    busType: 'SPI',
-    color: '#4f46e5',
-    voltage: '3.3V Logic',
-    signalDescription: 'SPI Chip Select (ESP32 D5 active-low select).',
-    points: [{ x: 800, y: 360 }, { x: 795, y: 360 }, { x: 795, y: 710 }, { x: 245, y: 710 }, { x: 245, y: 620 }, { x: 240, y: 620 }],
-  },
-
-  // ── Acoustic Communication Subsystem Wires ──
-  {
-    id: 'w_modem_pwr',
-    sourceComponentId: 'esp32',
-    sourcePinId: '3v3',
-    destComponentId: 'modem_uart',
-    destPinId: 'vcc',
-    busType: 'POWER',
-    color: '#ef4444',
-    voltage: '+3.3V',
-    signalDescription: '3.3V logic power supply to acoustic modem driver board.',
-    points: [{ x: 620, y: 185 }, { x: 580, y: 185 }, { x: 580, y: 30 }, { x: 1130, y: 30 }, { x: 1130, y: 285 }, { x: 1170, y: 285 }],
-  },
-  {
-    id: 'w_modem_gnd',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'gnd_r',
-    destComponentId: 'modem_uart',
-    destPinId: 'gnd',
-    busType: 'GROUND',
-    color: '#0f172a',
-    voltage: '0V',
-    signalDescription: 'Common ground return for acoustic modem.',
-    points: [{ x: 800, y: 210 }, { x: 815, y: 210 }, { x: 815, y: 270 }, { x: 1120, y: 270 }, { x: 1120, y: 320 }, { x: 1170, y: 320 }],
-  },
-  {
-    id: 'w_modem_tx',
-    sourceComponentId: 'esp32',
-    sourcePinId: 'tx2',
-    destComponentId: 'modem_uart',
-    destPinId: 'rx',
-    busType: 'UART',
-    color: '#8b5cf6',
-    voltage: '3.3V Logic',
-    signalDescription: 'ESP32 hardware serial UART2 TX (115200 baud) streaming framed telemetry packets into acoustic modem.',
-    points: [{ x: 800, y: 335 }, { x: 1120, y: 335 }, { x: 1120, y: 355 }, { x: 1170, y: 355 }],
-  },
-  {
-    id: 'w_modem_rx',
-    sourceComponentId: 'modem_uart',
-    sourcePinId: 'tx',
-    destComponentId: 'esp32',
-    destPinId: 'rx2',
-    busType: 'UART',
-    color: '#8b5cf6',
-    voltage: '3.3V Logic',
-    signalDescription: 'Demodulated acoustic packet payload data stream from modem into ESP32 UART2 RX.',
-    points: [{ x: 1170, y: 390 }, { x: 1110, y: 390 }, { x: 1110, y: 310 }, { x: 800, y: 310 }],
-  },
-  {
-    id: 'w_modem_tx_amp',
-    sourceComponentId: 'modem_uart',
-    sourcePinId: 'analog_out',
+    id: 'w-dac-amp-sig',
+    name: 'Synthesized Acoustic Waveform to Power Amplifier',
+    busType: 'ADC/DAC',
+    sourceComponentId: 'acoustics_dac',
+    sourcePinId: 'vout_analog',
     destComponentId: 'acoustics_power_amp',
-    destPinId: 'in_mod',
-    busType: 'ACOUSTIC',
-    color: '#0d9488',
-    voltage: '1.2 Vrms',
-    signalDescription: 'Modulated analog carrier output from modem driving the 100W resonant acoustic step-up power stage.',
-    points: [{ x: 1300, y: 325 }, { x: 1340, y: 325 }, { x: 1340, y: 460 }, { x: 1380, y: 460 }],
+    destPinId: 'sig_in',
+    color: '#ec4899',
+    colorName: 'Pink (Acoustic Analog)',
+    voltage: '1V RMS Analog',
+    connectionPurpose: 'Feeds clean modulated analog acoustic waveform into 100W resonant driver',
+    signalDescription: 'Reconstructed analog sine/OFDM multi-tone transmission signal',
+    waypoints: [[1575, 330], [1625, 330], [1625, 320], [1680, 320]]
   },
   {
-    id: 'w_amp_pzt_pos',
+    id: 'w-dac-amp-gnd',
+    name: 'DAC Analog Ground to Power Amplifier Reference',
+    busType: 'GROUND',
+    sourceComponentId: 'acoustics_dac',
+    sourcePinId: 'gnd',
+    destComponentId: 'acoustics_power_amp',
+    destPinId: 'sig_gnd',
+    color: '#0f172a',
+    colorName: 'Black (Ground Reference)',
+    voltage: '0V DC',
+    connectionPurpose: 'Low-noise audio signal ground reference',
+    signalDescription: 'Analog ground return between DAC and transducer driver',
+    waypoints: [[1575, 355], [1625, 355], [1625, 350], [1680, 350]]
+  },
+  {
+    id: 'w-amp-trans-p',
+    name: 'High-Voltage 200Vrms Drive to Tonpilz Transducer (+)',
+    busType: 'POWER',
     sourceComponentId: 'acoustics_power_amp',
     sourcePinId: 'hv_out_pos',
     destComponentId: 'acoustics_transducer',
     destPinId: 'pzt_pos',
-    busType: 'ACOUSTIC',
-    color: '#0d9488',
-    voltage: '150 Vrms',
-    signalDescription: 'High-voltage resonant drive pulse exciting the Tonpilz PZT piezoelectric ceramic stack.',
-    points: [{ x: 1510, y: 465 }, { x: 1550, y: 465 }, { x: 1550, y: 635 }, { x: 1380, y: 635 }],
+    color: '#ef4444',
+    colorName: 'Red (High-Voltage Acoustic Drive)',
+    voltage: '200V RMS (25 kHz Resonant AC)',
+    connectionPurpose: 'Drives piezoelectric ceramic PZT stack to project high-intensity underwater acoustic waves',
+    signalDescription: 'Transformer-coupled high-voltage AC acoustic power pulse',
+    waypoints: [[1815, 320], [1920, 320]]
   },
   {
-    id: 'w_amp_pzt_neg',
+    id: 'w-amp-trans-n',
+    name: 'High-Voltage Transducer Return Line (-)',
+    busType: 'GROUND',
     sourceComponentId: 'acoustics_power_amp',
     sourcePinId: 'hv_out_neg',
     destComponentId: 'acoustics_transducer',
     destPinId: 'pzt_neg',
-    busType: 'ACOUSTIC',
-    color: '#0d9488',
-    voltage: '0V Ref',
-    signalDescription: 'High-voltage acoustic transducer return line.',
-    points: [{ x: 1510, y: 505 }, { x: 1540, y: 505 }, { x: 1540, y: 675 }, { x: 1380, y: 675 }],
+    color: '#0f172a',
+    colorName: 'Black (Ground Reference)',
+    voltage: '0V DC',
+    connectionPurpose: 'Completes high-voltage resonant circuit through transducer PZT stack',
+    signalDescription: 'High-voltage return connection',
+    waypoints: [[1815, 350], [1920, 350]]
+  },
+
+  // ── 3. Sensor Acquisition Path (Environmental Sensors -> STM32 Controller) ──
+  {
+    id: 'w-press-mcu-sda',
+    name: 'Keller Subsea Pressure Transducer I2C Data to STM32',
+    busType: 'I2C',
+    sourceComponentId: 'sensor_subsea_pressure',
+    sourcePinId: 'i2c_sda',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'i2c1_sda',
+    color: '#06b6d4',
+    colorName: 'Cyan (I2C Bus)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Transfers digitized hydrostatic depth and water column pressure to STM32',
+    signalDescription: 'I2C Serial Data line carrying calibrated millibar/MPa pressure values',
+    waypoints: [[165, 698], [165, 645], [755, 645], [755, 270], [818, 270]]
   },
   {
-    id: 'w_hyd_lna_pos',
-    sourceComponentId: 'acoustics_hydrophone',
-    sourcePinId: 'sig_pos',
-    destComponentId: 'acoustics_lna',
-    destPinId: 'hyd_in',
-    busType: 'ACOUSTIC',
+    id: 'w-mcu-press-scl',
+    name: 'STM32 I2C Clock to Keller Pressure Transducer',
+    busType: 'I2C',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'i2c1_scl',
+    destComponentId: 'sensor_subsea_pressure',
+    destPinId: 'i2c_scl',
     color: '#06b6d4',
-    voltage: 'µV AC',
-    signalDescription: 'Teledyne TC4013 hydrophone acoustic signal into ultra-low-noise front-end LNA.',
-    points: [{ x: 1380, y: 300 }, { x: 1340, y: 300 }, { x: 1340, y: 150 }, { x: 1510, y: 150 }],
+    colorName: 'Cyan (I2C Bus)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Clock synchronization for pressure sensor polling',
+    signalDescription: 'I2C Serial Clock running at 400 kHz standard fast-mode',
+    waypoints: [[818, 295], [765, 295], [765, 655], [165, 655], [165, 728]]
   },
   {
-    id: 'w_lna_modem_rx',
-    sourceComponentId: 'acoustics_lna',
-    sourcePinId: 'out_amp',
-    destComponentId: 'modem_uart',
-    destPinId: 'analog_in',
-    busType: 'ACOUSTIC',
+    id: 'w-temp-mcu-rtd',
+    name: 'PT1000 Precision Temperature Analog RTD to STM32 ADC',
+    busType: 'ADC/DAC',
+    sourceComponentId: 'sensor_ocean_temp',
+    sourcePinId: 'rtd_sig_pos',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'adc1_in0',
+    color: '#f97316',
+    colorName: 'Orange (Analog ADC)',
+    voltage: '1.0V - 1.4V DC',
+    connectionPurpose: 'Feeds microvolt RTD temperature bridge voltage into 16-bit internal ADC',
+    signalDescription: 'Analog resistance proportional to ocean temperature (0.01°C resolution)',
+    waypoints: [[345, 698], [345, 640], [775, 640], [775, 330], [818, 330]]
+  },
+  {
+    id: 'w-imu-mcu-sda',
+    name: '9-DoF Subsea IMU I2C Data to STM32',
+    busType: 'I2C',
+    sourceComponentId: 'sensor_imu_9dof',
+    sourcePinId: 'i2c_sda',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'i2c1_sda',
     color: '#06b6d4',
-    voltage: '1.2 Vrms',
-    signalDescription: 'Filtered 40dB-amplified acoustic receive signal from LNA into acoustic modem demodulator.',
-    points: [{ x: 1380, y: 130 }, { x: 1330, y: 130 }, { x: 1330, y: 375 }, { x: 1300, y: 375 }],
+    colorName: 'Cyan (I2C Bus)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Transfers 3-axis acceleration, gyroscope, and magnetometer orientation to STM32',
+    signalDescription: 'I2C multi-sensor data bus reporting node tilt and orientation',
+    waypoints: [[525, 698], [525, 645], [755, 645], [755, 270], [818, 270]]
+  },
+  {
+    id: 'w-mcu-imu-scl',
+    name: 'STM32 I2C Clock to 9-DoF IMU',
+    busType: 'I2C',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'i2c1_scl',
+    destComponentId: 'sensor_imu_9dof',
+    destPinId: 'i2c_scl',
+    color: '#06b6d4',
+    colorName: 'Cyan (I2C Bus)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Synchronizes motion sensor registers at 400 kHz',
+    signalDescription: 'I2C Clock Line shared with environmental bus',
+    waypoints: [[818, 295], [765, 295], [765, 655], [525, 655], [525, 728]]
+  },
+  {
+    id: 'w-leak-mcu-alert',
+    name: 'Hull Water Leak Alarm Interrupt to STM32',
+    busType: 'GPIO/PWM',
+    sourceComponentId: 'sensor_leak_hull',
+    sourcePinId: 'leak_alert_gpio',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'gpio_leak_int',
+    color: '#22c55e',
+    colorName: 'Green (Digital GPIO/Interrupt)',
+    voltage: '3.3V Active-Low',
+    connectionPurpose: 'Hardware interrupt line triggering emergency failsafe routine if water breaches canister',
+    signalDescription: 'Emergency digital interrupt triggering distress acoustic ping and power shutdown',
+    waypoints: [[705, 713], [705, 640], [785, 640], [785, 355], [818, 355]]
+  },
+
+  // ── 4. Main Processing Inter-Processor Link (STM32H7 <-> AMD Versal AI Edge) ──
+  {
+    id: 'w-mcu-ai-tx',
+    name: 'STM32 Swarm Telemetry to AMD Versal AI Engine',
+    busType: 'UART',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'uart1_tx',
+    destComponentId: 'ai_jetson_orin',
+    destPinId: 'uart_rx',
+    color: '#a855f7',
+    colorName: 'Purple (High-Speed UART)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Transfers network packet headers and sensor matrices to AI processor for routing optimization',
+    signalDescription: 'High-speed UART serial channel running at 921,600 baud',
+    waypoints: [[1015, 210], [1065, 210], [1065, 270], [1115, 270]]
+  },
+  {
+    id: 'w-ai-mcu-tx',
+    name: 'AMD Versal Neural Inference Results to STM32',
+    busType: 'UART',
+    sourceComponentId: 'ai_jetson_orin',
+    sourcePinId: 'uart_tx',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'uart1_rx',
+    color: '#a855f7',
+    colorName: 'Purple (High-Speed UART)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Returns neural acoustic spectrogram classifications and optimal routing decisions to STM32',
+    signalDescription: 'High-speed UART serial response telemetry',
+    waypoints: [[1115, 295], [1055, 295], [1055, 235], [1015, 235]]
+  },
+  {
+    id: 'w-ai-mcu-fmc',
+    name: 'High-Bandwidth Inter-Chip Bus (PCIe / FMC DMA)',
+    busType: 'SPI',
+    sourceComponentId: 'ai_jetson_orin',
+    sourcePinId: 'pcie_lane0',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'fmc_bus',
+    color: '#0284c7',
+    colorName: 'Blue (High-Speed Parallel / PCIe)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Enables Direct Memory Access (DMA) streaming of raw acoustic FFT spectrograms',
+    signalDescription: 'High-throughput inter-processor DMA channel',
+    waypoints: [[1115, 330], [1045, 330], [1045, 270], [1015, 270]]
+  },
+
+  // ── 5. Storage Interfaces (Processors -> MicroSD & NVMe) ────────────────────
+  {
+    id: 'w-mcu-microsd',
+    name: 'STM32 SDIO Bus to Industrial SLC MicroSD',
+    busType: 'SPI',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'sdio_d0',
+    destComponentId: 'storage_microsd',
+    destPinId: 'dat0',
+    color: '#0284c7',
+    colorName: 'Blue (SDIO Storage Bus)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Logs continuous time-series flight telemetry, battery discharge, and node state',
+    signalDescription: 'High-speed SDIO 4-bit data bus operating at 50 MHz',
+    waypoints: [[918, 460], [918, 560], [915, 560], [915, 685]]
+  },
+  {
+    id: 'w-ai-nvme-pcie',
+    name: 'AMD Versal PCIe Gen3 x2 Link to Industrial NVMe SSD',
+    busType: 'SPI',
+    sourceComponentId: 'ai_jetson_orin',
+    sourcePinId: 'pcie_nvme',
+    destComponentId: 'storage_emmc_nvme',
+    destPinId: 'pcie_lane0',
+    color: '#0284c7',
+    colorName: 'Blue (PCIe Gen3 Storage)',
+    voltage: '3.3V Differential',
+    connectionPurpose: 'High-bandwidth storage of multi-gigabyte raw acoustic hydrophone audio recordings',
+    signalDescription: 'PCIe Gen3 x2 high-speed data stream writing at up to 1.5 GB/s',
+    waypoints: [[1212, 460], [1212, 560], [1200, 560], [1200, 685]]
+  },
+
+  // ── 6. Power Distribution Path (Batteries -> Path Mgr -> DC-DC -> Loads) ────
+  {
+    id: 'w-pri-bat-path',
+    name: 'Micro Nuclear Battery (+) Feed to Power Path Manager',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_primary_battery',
+    sourcePinId: 'vout_pos',
+    destComponentId: 'pwr_path_mgmt',
+    destPinId: 'pri_in',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: 'Low-Voltage DC (Conceptual)',
+    connectionPurpose: 'Feeds proposed conceptual micro nuclear battery trickle output into ideal diode controller',
+    signalDescription: 'Continuous long-duration low-voltage DC trickle rail',
+    waypoints: [[336, 81], [336, 195], [303, 195], [303, 285]]
+  },
+  {
+    id: 'w-pri-bat-gnd',
+    name: 'Micro Nuclear Battery Ground Return to Common Bus',
+    busType: 'GROUND',
+    sourceComponentId: 'pwr_primary_battery',
+    sourcePinId: 'vout_neg',
+    destComponentId: 'pwr_path_mgmt',
+    destPinId: 'gnd',
+    color: '#0f172a',
+    colorName: 'Black (Ground Return)',
+    voltage: '0.0V Ground Reference',
+    connectionPurpose: 'Completes ground return circuit for the conceptual micro nuclear battery trickle source.',
+    signalDescription: 'System ground return path for primary micro power unit.',
+    waypoints: [[409, 81], [409, 215], [440, 215], [440, 320]]
+  },
+  {
+    id: 'w-sec-bat-bms',
+    name: 'Rechargeable LiPo Backup Battery Pack to BMS Board',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_backup_battery',
+    sourcePinId: 'bat_pos',
+    destComponentId: 'pwr_bms',
+    destPinId: 'b_in',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: 'DC Buffer Rail',
+    connectionPurpose: 'Connects secondary high-current LiPo pouch buffer battery to BMS protection and balancing circuit',
+    signalDescription: 'High-rate multi-cell LiPo pouch buffer connection to BMS board',
+    waypoints: [[660, 79], [660, 195], [555, 195], [555, 280]]
+  },
+  {
+    id: 'w-bms-path-mgr',
+    name: 'Protected LiPo Buffer Power to Power Path Manager',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_bms',
+    sourcePinId: 'p_pos',
+    destComponentId: 'pwr_path_mgmt',
+    destPinId: 'sec_in',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+14.8V DC',
+    connectionPurpose: 'Supplies buffered surge power during high-energy acoustic transmission bursts',
+    signalDescription: 'BMS-protected high-current secondary power feed',
+    waypoints: [[665, 280], [665, 235], [440, 235], [440, 285]]
+  },
+  {
+    id: 'w-wetmate-path-mgr',
+    name: 'External Wet-Mate Power Feed to Power Path Manager',
+    busType: 'POWER',
+    sourceComponentId: 'interface_wetmate_power',
+    sourcePinId: 'v_bus_in',
+    destComponentId: 'pwr_path_mgmt',
+    destPinId: 'ext_in',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+24V DC',
+    connectionPurpose: 'Supplies external surface/docking power when submersible is plugged into wet-mate connector',
+    signalDescription: 'High-current external DC power line',
+    waypoints: [[195, 100], [245, 100], [245, 320], [303, 320]]
+  },
+  {
+    id: 'w-path-dcdc-main',
+    name: 'Multiplexed Main DC Bus to DC-DC Regulators',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_path_mgmt',
+    sourcePinId: 'sys_out',
+    destComponentId: 'pwr_dcdc_converters',
+    destPinId: 'vin',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+14.4V - +24V DC',
+    connectionPurpose: 'Feeds selected optimal system power source into multi-rail switching regulators',
+    signalDescription: 'Main unregulated DC system power bus',
+    waypoints: [[372, 335], [372, 460]]
+  },
+  {
+    id: 'w-dcdc-amp-12v',
+    name: 'DC-DC +12V Isolated Rail to Acoustic Power Amplifier',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_dcdc_converters',
+    sourcePinId: 'v12_out',
+    destComponentId: 'acoustics_power_amp',
+    destPinId: 'vcc_12v',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+12V DC Regulated',
+    connectionPurpose: 'Supplies high-current power to 100W acoustic transducer driver',
+    signalDescription: 'High-current regulated power rail designed for 8A transient pulses',
+    waypoints: [[443, 473], [480, 473], [480, 615], [1747, 615], [1747, 300]]
+  },
+  {
+    id: 'w-dcdc-mcu-3v3',
+    name: 'DC-DC +3.3V System Rail to STM32 Controller',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_dcdc_converters',
+    sourcePinId: 'v33_out',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'vdd_3v3',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+3.3V DC Regulated',
+    connectionPurpose: 'Powers primary microcontroller, clock oscillators, and digital peripherals',
+    signalDescription: 'Ultra-stable low-noise digital VDD power rail',
+    waypoints: [[443, 521], [480, 521], [480, 570], [735, 570], [735, 210], [818, 210]]
+  },
+  {
+    id: 'w-dcdc-ai-core',
+    name: 'DC-DC +3.3V Core Rail to AMD Versal AI Edge SoC',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_dcdc_converters',
+    sourcePinId: 'v33_out',
+    destComponentId: 'ai_jetson_orin',
+    destPinId: 'vdd_core',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+3.3V DC Regulated',
+    connectionPurpose: 'Powers AI engine I/O blocks and internal point-of-load core regulators',
+    signalDescription: 'High-current regulated power feed for adaptive neural processor',
+    waypoints: [[443, 521], [480, 521], [480, 580], [1075, 580], [1075, 210], [1115, 210]]
+  },
+  {
+    id: 'w-dcdc-sensor-5v',
+    name: 'DC-DC +5V Clean Rail to Subsea Pressure Transducer',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_dcdc_converters',
+    sourcePinId: 'v5_out',
+    destComponentId: 'sensor_subsea_pressure',
+    destPinId: 'vcc',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+5.0V DC Regulated',
+    connectionPurpose: 'Supplies regulated 5V power to precision oceanographic pressure sensor',
+    signalDescription: 'Clean analog supply filtered with LC network',
+    waypoints: [[443, 497], [443, 560], [70, 560], [70, 698]]
+  },
+  {
+    id: 'w-dcdc-pwr-mon',
+    name: 'Main Bus Current Sense Line to INA226 Monitor',
+    busType: 'POWER',
+    sourceComponentId: 'pwr_dcdc_converters',
+    sourcePinId: 'vin',
+    destComponentId: 'pwr_monitor_ic',
+    destPinId: 'vin_sense',
+    color: '#ef4444',
+    colorName: 'Red (Power Bus)',
+    voltage: '+14.4V DC',
+    connectionPurpose: 'High-side current shunt tap measuring total node electrical consumption',
+    signalDescription: 'Precision Kelvin voltage sense tap across 10 mΩ shunt',
+    waypoints: [[372, 460], [372, 410], [538, 410], [538, 480]]
+  },
+  {
+    id: 'w-pwr-mon-mcu-sda',
+    name: 'INA226 Power Telemetry I2C Data to STM32',
+    busType: 'I2C',
+    sourceComponentId: 'pwr_monitor_ic',
+    sourcePinId: 'sda',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'i2c1_sda',
+    color: '#06b6d4',
+    colorName: 'Cyan (I2C Bus)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Reports milliwatt-hour energy depletion and voltage telemetry to SNC controller',
+    signalDescription: 'I2C telemetry stream reporting battery reserve percentage',
+    waypoints: [[675, 480], [745, 480], [745, 270], [818, 270]]
+  },
+  {
+    id: 'w-mcu-pwr-mon-scl',
+    name: 'STM32 I2C Clock to INA226 Monitor',
+    busType: 'I2C',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'i2c1_scl',
+    destComponentId: 'pwr_monitor_ic',
+    destPinId: 'scl',
+    color: '#06b6d4',
+    colorName: 'Cyan (I2C Bus)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'I2C clock synchronization',
+    signalDescription: 'Shared I2C clock line',
+    waypoints: [[818, 295], [755, 295], [755, 510], [675, 510]]
+  },
+
+  // ── 7. External Interfaces & Status Indicators ──────────────────────────────
+  {
+    id: 'w-wetmate-mcu-eth',
+    name: 'Subsea Wet-Mate Ethernet Data to STM32 MAC',
+    busType: 'UART',
+    sourceComponentId: 'interface_wetmate_data',
+    sourcePinId: 'eth_rx_p',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'eth_rxd0',
+    color: '#a855f7',
+    colorName: 'Purple (High-Speed Ethernet Data)',
+    voltage: '3.3V Differential',
+    connectionPurpose: 'Allows rapid bulk offloading of mission sensor logs when plugged in at surface',
+    signalDescription: '100BASE-TX differential receive channel',
+    waypoints: [[1560, 555], [1400, 555], [1400, 525], [790, 525], [790, 450], [818, 450]]
+  },
+  {
+    id: 'w-debug-mcu-swdio',
+    name: 'Diagnostic SWD Data Line to STM32 Core',
+    busType: 'GPIO/PWM',
+    sourceComponentId: 'interface_debug_port',
+    sourcePinId: 'swdio',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'swdio',
+    color: '#22c55e',
+    colorName: 'Green (SWD Debug)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Enables in-circuit firmware programming and register inspection',
+    signalDescription: 'Bi-directional ARM Cortex Serial Wire Debug line',
+    waypoints: [[1670, 555], [1610, 555], [1610, 535], [780, 535], [780, 390], [818, 390]]
+  },
+  {
+    id: 'w-debug-mcu-swclk',
+    name: 'Diagnostic SWD Clock Line to STM32 Core',
+    busType: 'GPIO/PWM',
+    sourceComponentId: 'interface_debug_port',
+    sourcePinId: 'swclk',
+    destComponentId: 'mcu_stm32h7',
+    destPinId: 'swclk',
+    color: '#22c55e',
+    colorName: 'Green (SWD Debug)',
+    voltage: '3.3V Logic',
+    connectionPurpose: 'Hardware debugger clock synchronization',
+    signalDescription: 'SWD Clock input line',
+    waypoints: [[1670, 580], [1610, 580], [1610, 545], [770, 545], [770, 415], [818, 415]]
+  },
+  {
+    id: 'w-mcu-led-pwr',
+    name: 'STM32 Power Good Driver to Marine Status Panel',
+    busType: 'GPIO/PWM',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'gpio_pwr_led',
+    destComponentId: 'led_indicators_panel',
+    destPinId: 'pwr_in',
+    color: '#22c55e',
+    colorName: 'Green (GPIO Indicator)',
+    voltage: '3.3V Active-High',
+    connectionPurpose: 'Illuminates green indicator lens confirming power rails are in regulation',
+    signalDescription: 'Digital output drive current to green status LED',
+    waypoints: [[1015, 440], [1055, 440], [1055, 480], [1915, 480], [1915, 548]]
+  },
+  {
+    id: 'w-mcu-led-comm',
+    name: 'STM32 Acoustic TX Active Driver to Marine Panel',
+    busType: 'GPIO/PWM',
+    sourceComponentId: 'mcu_stm32h7',
+    sourcePinId: 'gpio_comm_led',
+    destComponentId: 'led_indicators_panel',
+    destPinId: 'comm_in',
+    color: '#22c55e',
+    colorName: 'Green (GPIO Indicator)',
+    voltage: '3.3V Active-High',
+    connectionPurpose: 'Flashes blue optical lens during active acoustic acoustic burst transmission',
+    signalDescription: 'Digital pulse output driving blue status LED',
+    waypoints: [[1015, 460], [1065, 460], [1065, 490], [1995, 490], [1995, 548]]
+  }
+];
+
+const ARDUINO_COMPONENTS: CircuitComponent[] = [
+  {
+    id: 'arduino_uno',
+    name: 'Arduino Uno R3 Microcontroller',
+    category: 'MCU',
+    modelNumber: 'ATmega328P DIP (Tinkercad Native)',
+    status: 'SIMULATED',
+    x: 50,
+    y: 110,
+    width: 260,
+    height: 215,
+    description: 'The standard Tinkercad Circuits reference microcontroller based on the Microchip ATmega328P 8-bit AVR architecture @ 16 MHz.',
+    roleInMarislink: 'Serves as the Tinkercad Classroom Demonstration Model equivalent to the production 32-bit Embedded Controller DevKit node.',
+    protocol: 'I2C (Pins A4/A5), 10-Bit ADC (A0-A3), 5V Digital I/O (D2, D4, D7)',
+    operatingVoltage: '5.0V DC (via USB or 7-12V DC Jack)',
+    currentDraw: '~45 mA',
+    tinkercadEquivNote: 'Natively supported in Tinkercad Circuits workspace.',
+    pins: [
+      { id: '3v3', label: '3.3V', x: 118, y: 175, type: 'POWER', description: '3.3V Auxiliary Output' },
+      { id: '5v', label: '5V', x: 127, y: 175, type: 'POWER', description: '5V Regulated Positive Power Rail' },
+      { id: 'gnd1', label: 'GND', x: 136, y: 175, type: 'GROUND', description: 'Power Ground Pin 1' },
+      { id: 'gnd2', label: 'GND', x: 146, y: 175, type: 'GROUND', description: 'Power Ground Pin 2' },
+      { id: 'vin', label: 'VIN', x: 155, y: 175, type: 'POWER', description: 'Raw External Voltage Input' },
+      { id: 'a0', label: 'A0', x: 169, y: 175, type: 'ADC', description: 'Analog Input 0: Battery Divider Voltage' },
+      { id: 'a1', label: 'A1', x: 178, y: 175, type: 'ADC', description: 'Analog Input 1: TMP36 Temperature Sensor (10mV/°C)' },
+      { id: 'a2', label: 'A2', x: 187, y: 175, type: 'ADC', description: 'Analog Input 2: Hydrostatic Pressure Potentiometer' },
+      { id: 'a3', label: 'A3', x: 197, y: 175, type: 'ADC', description: 'Analog Input 3: Acoustic Signal RSSI Potentiometer' },
+      { id: 'a4', label: 'A4', x: 206, y: 175, type: 'I2C', description: 'I2C Serial Data (SDA) to LCD1602 Display' },
+      { id: 'a5', label: 'A5', x: 215, y: 175, type: 'I2C', description: 'I2C Serial Clock (SCL) to LCD1602 Display' },
+      { id: 'gnd_d', label: 'GND', x: 120, y: 49, type: 'GROUND', description: 'Digital Header Ground Reference' },
+      { id: 'd7', label: 'D7', x: 146, y: 49, type: 'GPIO', description: 'Digital Pin 7: Red Critical Alert Fault' },
+      { id: 'd4', label: 'D4', x: 164, y: 49, type: 'GPIO', description: 'Digital Pin 4: Yellow Carrier Sync Lock' },
+      { id: 'd2', label: 'D2', x: 178, y: 49, type: 'GPIO', description: 'Digital Pin 2: Green Acoustic TX Pulse' },
+      { id: 'd1', label: 'D1', x: 185, y: 49, type: 'UART', description: 'Serial Transmit Pin (USB/TTL)' },
+      { id: 'd0', label: 'D0', x: 192, y: 49, type: 'UART', description: 'Serial Receive Pin (USB/TTL)' }
+    ]
+  },
+  {
+    id: 'breadboard_half',
+    name: 'Half Prototyping Breadboard',
+    category: 'BREADBOARD',
+    modelNumber: '400 Tie-Point Solderless',
+    status: 'SIMULATED',
+    x: 340,
+    y: 100,
+    width: 370,
+    height: 240,
+    description: 'Standard Tinkercad prototyping breadboard with upper and lower dual power distribution bus strips and 30 columns of 5-pin tie-points.',
+    roleInMarislink: 'Hosts the TMP36 temperature sensor, pressure potentiometer, and status LED circuits exactly as featured in the reference tutorial.',
+    protocol: 'Passive Electrical Interconnect',
+    operatingVoltage: '5V DC Bus Rails',
+    currentDraw: '0 mA',
+    pins: [
+      { id: 'pwr_top_plus', label: 'Top (+)', x: 40, y: 32, type: 'POWER', description: 'Top Positive 5V Power Rail' },
+      { id: 'pwr_top_minus', label: 'Top (-)', x: 40, y: 52, type: 'GROUND', description: 'Top Ground Return Rail' },
+      { id: 'pwr_bot_plus', label: 'Bot (+)', x: 40, y: 192, type: 'POWER', description: 'Bottom Positive 5V Power Rail' },
+      { id: 'pwr_bot_minus', label: 'Bot (-)', x: 40, y: 212, type: 'GROUND', description: 'Bottom Ground Return Rail' },
+      { id: 'row_led_green', label: 'Row 14', x: 205, y: 130, type: 'GPIO', description: 'Row 14 Green LED Terminal' },
+      { id: 'row_led_yellow', label: 'Row 18', x: 245, y: 130, type: 'GPIO', description: 'Row 18 Yellow LED Terminal' },
+      { id: 'row_led_red', label: 'Row 22', x: 285, y: 130, type: 'GPIO', description: 'Row 22 Red LED Terminal' }
+    ]
+  },
+  {
+    id: 'tmp36',
+    name: 'TMP36 Temperature Sensor',
+    category: 'SENSOR',
+    modelNumber: 'Analog Devices TMP36 (TO-92)',
+    status: 'SIMULATED',
+    x: 500,
+    y: 155,
+    width: 70,
+    height: 70,
+    description: 'Low-voltage, precision analog temperature sensor providing a linear voltage output proportional to Celsius temperature (10 mV/°C with a 500 mV offset at 0°C).',
+    roleInMarislink: 'Direct classroom simulation of ocean temperature monitoring, mirroring the beginner-friendly Tinkercad reference video demonstration.',
+    protocol: 'Linear DC Voltage (10 mV/°C)',
+    operatingVoltage: '2.7V - 5.5V DC',
+    currentDraw: '~50 µA',
+    tinkercadEquivNote: 'Natively modeled in Tinkercad with an interactive temperature slider (-40°C to +125°C).',
+    pins: [
+      { id: 'vcc', label: 'VCC (+)', x: 18, y: 55, type: 'POWER', description: 'Pin 1: +5V Power Supply' },
+      { id: 'vout', label: 'VOUT', x: 35, y: 55, type: 'ADC', description: 'Pin 2: Analog Voltage Out to Arduino A1' },
+      { id: 'gnd', label: 'GND (-)', x: 52, y: 55, type: 'GROUND', description: 'Pin 3: Ground Return' }
+    ]
+  },
+  {
+    id: 'lcd_1602',
+    name: '16x2 Character LCD Display',
+    category: 'DISPLAY',
+    modelNumber: 'HD44780 + PCF8574 I2C Backpack',
+    status: 'SIMULATED',
+    x: 740,
+    y: 110,
+    width: 270,
+    height: 140,
+    description: 'Classic 16-character by 2-line alphanumeric LCD display with I2C piggyback daughterboard, matching the reference tutorial hardware.',
+    roleInMarislink: 'Presents real-time node operational status, calibrated temperature, simulated depth pressure, and communication state for demonstrations.',
+    protocol: 'I2C (Address: 0x27 / 0x3F)',
+    operatingVoltage: '5.0V DC',
+    currentDraw: '~25 mA with LED backlight',
+    tinkercadEquivNote: 'Natively supported in Tinkercad Circuits workspace.',
+    pins: [
+      { id: 'gnd', label: 'GND', x: 20, y: 15, type: 'GROUND', description: 'Ground Supply' },
+      { id: 'vcc', label: 'VCC', x: 50, y: 15, type: 'POWER', description: '+5V Power Supply' },
+      { id: 'sda', label: 'SDA', x: 80, y: 15, type: 'I2C', description: 'I2C Serial Data line' },
+      { id: 'scl', label: 'SCL', x: 110, y: 15, type: 'I2C', description: 'I2C Serial Clock line' }
+    ]
+  }
+];
+
+const ARDUINO_WIRES: CircuitWire[] = [
+  // ── Power distribution from Arduino to Breadboard ─────────────────────────
+  {
+    id: 'wa-pwr-5v',
+    name: 'Arduino 5V Rail to Breadboard Positive Strip',
+    busType: 'POWER',
+    sourceComponentId: 'arduino_uno',
+    sourcePinId: '5v',
+    destComponentId: 'breadboard_half',
+    destPinId: 'pwr_bot_plus',
+    color: '#ef4444',
+    colorName: 'Red (+5V)',
+    voltage: '+5.0V DC Regulated',
+    signalDescription: 'Supplies regulated 5V DC from the Arduino Uno on-board voltage regulator to the lower breadboard power bus.',
+    waypoints: [[177, 285], [177, 430], [390, 430], [390, 382]]
+  },
+  {
+    id: 'wa-pwr-gnd',
+    name: 'Arduino GND to Breadboard Negative Strip',
+    busType: 'GROUND',
+    sourceComponentId: 'arduino_uno',
+    sourcePinId: 'gnd1',
+    destComponentId: 'breadboard_half',
+    destPinId: 'pwr_bot_minus',
+    color: '#0f172a',
+    colorName: 'Black (GND)',
+    voltage: '0.0V Ground',
+    signalDescription: 'Provides common ground return between Arduino Uno and breadboard components.',
+    waypoints: [[186, 285], [186, 445], [405, 445], [405, 402]]
+  },
+
+  // ── TMP36 Sensor on Breadboard ────────────────────────────────────────────
+  {
+    id: 'wa-tmp-vcc',
+    name: 'Breadboard 5V to TMP36 +Vs Pin',
+    busType: 'POWER',
+    sourceComponentId: 'breadboard_half',
+    sourcePinId: 'pwr_bot_plus',
+    destComponentId: 'tmp36',
+    destPinId: 'vcc',
+    color: '#ef4444',
+    colorName: 'Red (+5V)',
+    voltage: '+5.0V DC',
+    signalDescription: 'Powers the TMP36 analog temperature transducer from the lower positive breadboard rail.',
+    waypoints: [[390, 382], [390, 310], [498, 310], [498, 245]]
+  },
+  {
+    id: 'wa-tmp-gnd',
+    name: 'Breadboard GND to TMP36 GND Pin',
+    busType: 'GROUND',
+    sourceComponentId: 'breadboard_half',
+    sourcePinId: 'pwr_bot_minus',
+    destComponentId: 'tmp36',
+    destPinId: 'gnd',
+    color: '#0f172a',
+    colorName: 'Black (GND)',
+    voltage: '0.0V Ground',
+    signalDescription: 'Ground return for the TMP36 temperature sensor.',
+    waypoints: [[405, 402], [405, 325], [532, 325], [532, 245]]
+  },
+  {
+    id: 'wa-tmp-analog',
+    name: 'TMP36 Vout to Arduino Analog Pin A1',
+    busType: 'ADC',
+    sourceComponentId: 'tmp36',
+    sourcePinId: 'vout',
+    destComponentId: 'arduino_uno',
+    destPinId: 'a1',
+    color: '#f97316',
+    colorName: 'Orange (Analog A1)',
+    voltage: '0.1V - 1.75V DC Analog',
+    signalDescription: 'Analog temperature voltage line ($V_{out} = 10mV/°C + 500mV$). Sampled by Arduino 10-bit ADC (0-1023 counts).',
+    waypoints: [[515, 245], [515, 340], [228, 340], [228, 285]]
+  },
+
+  // ── LCD1602 Display (I2C on A4/A5) ────────────────────────────────────────
+  {
+    id: 'wa-lcd-pwr',
+    name: '5V Power Rail to LCD1602 Display',
+    busType: 'POWER',
+    sourceComponentId: 'breadboard_half',
+    sourcePinId: 'pwr_bot_plus',
+    destComponentId: 'lcd_1602',
+    destPinId: 'vcc',
+    color: '#ef4444',
+    colorName: 'Red (+5V)',
+    voltage: '+5.0V DC',
+    signalDescription: 'Supplies 5V DC power for character LCD logic and LED backlight.',
+    waypoints: [[390, 382], [390, 460], [790, 460], [790, 145]]
+  },
+  {
+    id: 'wa-lcd-gnd',
+    name: 'Ground Rail to LCD1602 Display',
+    busType: 'GROUND',
+    sourceComponentId: 'breadboard_half',
+    sourcePinId: 'pwr_bot_minus',
+    destComponentId: 'lcd_1602',
+    destPinId: 'gnd',
+    color: '#0f172a',
+    colorName: 'Black (GND)',
+    voltage: '0.0V Ground',
+    signalDescription: 'Common ground connection for LCD display module.',
+    waypoints: [[405, 402], [405, 475], [760, 475], [760, 145]]
+  },
+  {
+    id: 'wa-lcd-sda',
+    name: 'Arduino Pin A4 (SDA) to LCD I2C Backpack',
+    busType: 'I2C',
+    sourceComponentId: 'arduino_uno',
+    sourcePinId: 'a4',
+    destComponentId: 'lcd_1602',
+    destPinId: 'sda',
+    color: '#0284c7',
+    colorName: 'Blue (I2C SDA)',
+    voltage: '5V Bidirectional Data',
+    signalDescription: 'ATmega328P hardware I2C Data line on pin A4 streaming character bytes to LCD controller address 0x27.',
+    waypoints: [[256, 285], [256, 355], [820, 355], [820, 145]]
+  },
+  {
+    id: 'wa-lcd-scl',
+    name: 'Arduino Pin A5 (SCL) to LCD I2C Backpack',
+    busType: 'I2C',
+    sourceComponentId: 'arduino_uno',
+    sourcePinId: 'a5',
+    destComponentId: 'lcd_1602',
+    destPinId: 'scl',
+    color: '#eab308',
+    colorName: 'Yellow (I2C SCL)',
+    voltage: '5V Clock Pulses (100 kHz)',
+    signalDescription: 'ATmega328P hardware I2C Clock line on pin A5 synchronizing byte transfers to the character LCD.',
+    waypoints: [[265, 285], [265, 370], [850, 370], [850, 145]]
+  },
+
+  // ── Digital GPIO Status LEDs on Breadboard ────────────────────────────────
+  {
+    id: 'wa-led-tx',
+    name: 'Digital Pin D2 to Green TX LED (Row 14)',
+    busType: 'GPIO',
+    sourceComponentId: 'arduino_uno',
+    sourcePinId: 'd2',
+    destComponentId: 'breadboard_half',
+    destPinId: 'row_led_green',
+    color: '#22c55e',
+    colorName: 'Green (Digital D2)',
+    voltage: '5V Active-High Pulse',
+    signalDescription: 'Digital output pin 2 pulsing green TX LED on breadboard row 14 through an inline 220Ω resistor.',
+    waypoints: [[228, 159], [228, 70], [545, 70], [545, 230]]
+  },
+  {
+    id: 'wa-led-sync',
+    name: 'Digital Pin D4 to Yellow Sync LED (Row 18)',
+    busType: 'GPIO',
+    sourceComponentId: 'arduino_uno',
+    sourcePinId: 'd4',
+    destComponentId: 'breadboard_half',
+    destPinId: 'row_led_yellow',
+    color: '#ca8a04',
+    colorName: 'Amber (Digital D4)',
+    voltage: '5V Active-High Constant',
+    signalDescription: 'Digital output pin 4 illuminating yellow synchronization lock LED on breadboard row 18.',
+    waypoints: [[214, 159], [214, 55], [585, 55], [585, 230]]
+  },
+  {
+    id: 'wa-led-alert',
+    name: 'Digital Pin D7 to Red Alert LED (Row 22)',
+    busType: 'GPIO',
+    sourceComponentId: 'arduino_uno',
+    sourcePinId: 'd7',
+    destComponentId: 'breadboard_half',
+    destPinId: 'row_led_red',
+    color: '#dc2626',
+    colorName: 'Crimson (Digital D7)',
+    voltage: '5V Active-High Alert',
+    signalDescription: 'Digital output pin 7 triggering red fault LED on breadboard row 22 during simulated critical threshold breach.',
+    waypoints: [[196, 159], [196, 40], [625, 40], [625, 230]]
   },
 ];
 
-// ── COMPONENT SHAPE RENDERER ──────────────────────────────────────────────────
+// ── SMART ORTHOGONAL ROUTING & FILLET GENERATION ────────────────────────────
+
+function computeOrthogonalPoints(
+  src: { x: number; y: number },
+  dst: { x: number; y: number },
+  waypoints?: [number, number][]
+): [number, number][] {
+  if (waypoints && waypoints.length >= 2) {
+    const raw = [...waypoints];
+    const first = raw[0];
+    const pts: [number, number][] = [[src.x, src.y]];
+
+    if (Math.abs(first[0] - src.x) > 1 || Math.abs(first[1] - src.y) > 1) {
+      if (first[0] !== src.x && first[1] !== src.y) {
+        pts.push([src.x, first[1]]);
+      }
+    }
+
+    for (let i = 0; i < raw.length; i++) {
+      const p = raw[i];
+      const prev = pts[pts.length - 1];
+      if (Math.abs(p[0] - prev[0]) > 0.5 || Math.abs(p[1] - prev[1]) > 0.5) {
+        if (p[0] !== prev[0] && p[1] !== prev[1]) {
+          pts.push([prev[0], p[1]]);
+        }
+        pts.push([p[0], p[1]]);
+      }
+    }
+
+    const prevLast = pts[pts.length - 1];
+    if (Math.abs(prevLast[0] - dst.x) > 1 || Math.abs(prevLast[1] - dst.y) > 1) {
+      if (prevLast[0] !== dst.x && prevLast[1] !== dst.y) {
+        pts.push([prevLast[0], dst.y]);
+      }
+      pts.push([dst.x, dst.y]);
+    } else {
+      pts[pts.length - 1] = [dst.x, dst.y];
+    }
+    return pts;
+  }
+
+  // Fallback 3-segment orthogonal router
+  const dx = Math.abs(dst.x - src.x);
+  const dy = Math.abs(dst.y - src.y);
+  if (dx > dy) {
+    const midX = Math.round((src.x + dst.x) / 2);
+    return [
+      [src.x, src.y],
+      [midX, src.y],
+      [midX, dst.y],
+      [dst.x, dst.y],
+    ];
+  } else {
+    const midY = Math.round((src.y + dst.y) / 2);
+    return [
+      [src.x, src.y],
+      [src.x, midY],
+      [dst.x, midY],
+      [dst.x, dst.y],
+    ];
+  }
+}
+
+function pointsToFilletedPath(pts: [number, number][], radius = 8): string {
+  if (pts.length < 2) return '';
+  if (pts.length === 2) {
+    return `M ${pts[0][0]} ${pts[0][1]} L ${pts[1][0]} ${pts[1][1]}`;
+  }
+
+  const cleaned: [number, number][] = [pts[0]];
+  for (let i = 1; i < pts.length - 1; i++) {
+    const p0 = cleaned[cleaned.length - 1];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    if (
+      (p0[0] === p1[0] && p1[0] === p2[0]) ||
+      (p0[1] === p1[1] && p1[1] === p2[1])
+    ) {
+      continue;
+    }
+    if (p0[0] === p1[0] && p0[1] === p1[1]) {
+      continue;
+    }
+    cleaned.push(p1);
+  }
+  const last = pts[pts.length - 1];
+  const prev = cleaned[cleaned.length - 1];
+  if (prev[0] !== last[0] || prev[1] !== last[1]) {
+    cleaned.push(last);
+  }
+
+  if (cleaned.length === 2) {
+    return `M ${cleaned[0][0]} ${cleaned[0][1]} L ${cleaned[1][0]} ${cleaned[1][1]}`;
+  }
+
+  let d = `M ${cleaned[0][0]} ${cleaned[0][1]}`;
+  for (let i = 1; i < cleaned.length - 1; i++) {
+    const p_prev = cleaned[i - 1];
+    const p_curr = cleaned[i];
+    const p_next = cleaned[i + 1];
+
+    const d1x = p_curr[0] - p_prev[0];
+    const d1y = p_curr[1] - p_prev[1];
+    const len1 = Math.hypot(d1x, d1y);
+
+    const d2x = p_next[0] - p_curr[0];
+    const d2y = p_next[1] - p_curr[1];
+    const len2 = Math.hypot(d2x, d2y);
+
+    if (len1 < 1e-4 || len2 < 1e-4) {
+      continue;
+    }
+
+    const cross = d1x * d2y - d1y * d2x;
+    if (Math.abs(cross) < 1e-4) {
+      d += ` L ${p_curr[0]} ${p_curr[1]}`;
+      continue;
+    }
+
+    const r = Math.min(radius, len1 / 2, len2 / 2);
+    const sx = p_curr[0] - (d1x / len1) * r;
+    const sy = p_curr[1] - (d1y / len1) * r;
+    const ex = p_curr[0] + (d2x / len2) * r;
+    const ey = p_curr[1] + (d2y / len2) * r;
+
+    d += ` L ${sx.toFixed(1)} ${sy.toFixed(1)} Q ${p_curr[0]} ${p_curr[1]} ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+  }
+
+  d += ` L ${cleaned[cleaned.length - 1][0]} ${cleaned[cleaned.length - 1][1]}`;
+  return d;
+}
+
+
+// ── COMPONENT HELPER COMPONENT (renders SVG shape for each part) ──────────
 
 interface ComponentShapeProps {
   comp: CircuitComponent;
@@ -1000,478 +2202,463 @@ function ComponentShape({
   onSelectComponent,
   onSelectPin,
 }: ComponentShapeProps) {
+  const getCategoryColor = (cat: string) => {
+    switch (cat) {
+      case 'MCU': return '#0284c7';
+      case 'AI_PROCESSOR': return '#7c3aed';
+      case 'ACOUSTIC': return '#a855f7';
+      case 'SENSOR': return '#059669';
+      case 'POWER': return '#dc2626';
+      case 'COMMUNICATION': return '#d97706';
+      case 'STORAGE': return '#10b981';
+      case 'INDICATOR': return '#16a34a';
+      default: return '#64748b';
+    }
+  };
+
+  const getPinColor = (type: string) => {
+    switch (type) {
+      case 'POWER': return '#ef4444';
+      case 'GROUND': return '#1e293b';
+      case 'I2C': return '#06b6d4';
+      case 'SPI': return '#3b82f6';
+      case 'UART': return '#a855f7';
+      case 'ADC':
+      case 'DAC': return '#f97316';
+      case 'GPIO':
+      case 'PWM': return '#10b981';
+      case 'USB':
+      case 'PCIe': return '#2563eb';
+      default: return '#64748b';
+    }
+  };
+
+  const catColor = getCategoryColor(comp.category);
+
   return (
     <g
-      className={`circuit-comp-group ${isSelected ? 'selected' : ''}`}
-      transform={`translate(${comp.x}, ${comp.y})`}
+      id={`comp-${comp.id}`}
+      className={`circuit-component-group ${isSelected ? 'selected' : ''}`}
       onClick={(e) => {
         e.stopPropagation();
         onSelectComponent(comp);
       }}
+      style={{ cursor: 'pointer' }}
     >
-      {/* ── Genuine Physical Hardware Cutout Image ── */}
-      <image
-        href={comp.imageSrc || `/assets/hardware/${comp.id}.webp`}
-        x={0}
-        y={0}
+      {/* Component Outer Card Body */}
+      <rect
+        x={comp.x}
+        y={comp.y}
         width={comp.width}
         height={comp.height}
-        preserveAspectRatio="xMidYMid meet"
-        className="circuit-hardware-photo"
-        style={{
-          filter: isSelected
-            ? 'drop-shadow(0 0 16px rgba(56, 189, 248, 0.95)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45))'
-            : 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.28))',
-          cursor: 'pointer',
-          pointerEvents: 'auto',
-        }}
+        rx={8}
+        fill="#ffffff"
+        stroke={isSelected ? '#0284c7' : '#cbd5e1'}
+        strokeWidth={isSelected ? 2.5 : 1.2}
+        filter="drop-shadow(0 2px 5px rgba(0,0,0,0.06))"
+        className="component-card-bg"
       />
 
-      {/* ── Dynamic Live Overlays ── */}
-      {/* SSD1306 OLED Screen Live Telemetry */}
-      {comp.id === 'oled' && (
-        <g transform={`translate(${comp.width * 0.16}, ${comp.height * 0.3})`}>
-          <rect
-            width={comp.width * 0.68}
-            height={comp.height * 0.42}
-            rx={3}
-            fill="#030712"
-            opacity={0.92}
-          />
-          <text x={comp.width * 0.34} y={13} textAnchor="middle" fill="#38bdf8" fontSize={8} fontWeight="bold" fontFamily="monospace">
-            ESP32 ACOUSTIC
-          </text>
-          <text x={comp.width * 0.34} y={24} textAnchor="middle" fill="#4ade80" fontSize={7.5} fontWeight="bold" fontFamily="monospace">
-            21.4°C • 20.4MPa
-          </text>
-          <text x={comp.width * 0.34} y={35} textAnchor="middle" fill="#fbbf24" fontSize={7} fontFamily="monospace">
-            BAT: 95% • OPTIMAL
-          </text>
-        </g>
-      )}
-
-      {/* Status LEDs Optical Glowing Halo Animations */}
-      {comp.id === 'led_indicators' && (
+      {/* Realistic Component Visual Image */}
+      {comp.imageSrc ? (
+        <image
+          href={comp.imageSrc}
+          x={comp.x + 8}
+          y={comp.y + 8}
+          width={comp.width - 16}
+          height={Math.max(comp.height - 16, 20)}
+          preserveAspectRatio="xMidYMid meet"
+          className="component-realistic-img"
+        />
+      ) : (
+        /* Fallback schematic representation */
         <g>
-          <circle cx={comp.width * 0.25} cy={comp.height * 0.48} r={14} fill="rgba(34, 197, 94, 0.5)" filter="drop-shadow(0 0 8px #22c55e)" />
-          <circle cx={comp.width * 0.48} cy={comp.height * 0.48} r={14} fill="rgba(234, 179, 8, 0.5)" filter="drop-shadow(0 0 8px #eab308)" />
-          <circle cx={comp.width * 0.71} cy={comp.height * 0.48} r={14} fill="rgba(239, 68, 68, 0.5)" filter="drop-shadow(0 0 8px #ef4444)" />
+          <rect
+            x={comp.x + 8}
+            y={comp.y + 8}
+            width={comp.width - 16}
+            height={comp.height - 16}
+            rx={4}
+            fill="#f1f5f9"
+            stroke="#e2e8f0"
+          />
+          <text
+            x={comp.x + comp.width / 2}
+            y={comp.y + comp.height / 2 - 4}
+            textAnchor="middle"
+            fill={catColor}
+            fontSize={11}
+            fontWeight="bold"
+            fontFamily="system-ui, sans-serif"
+          >
+            {comp.name}
+          </text>
         </g>
       )}
 
-      {/* ── Component Neat Engineering Label Plaque ── */}
-      {(() => {
-        const labelBoxWidth = Math.min(Math.max(comp.width, 140), 220);
-        const labelBoxHeight = 44;
-
-        let statusText = '[VERIFIED IMPLEMENTED]';
-        let statusColor = '#15803d';
-        let statusBg = '#dcfce7';
-        let statusBadgeWidth = 116;
-
-        if (comp.status === 'ARCHITECTURAL') {
-          statusText = '[PROPOSED ARCHITECTURAL]';
-          statusColor = '#b45309';
-          statusBg = '#fef3c7';
-          statusBadgeWidth = 126;
-        }
-
-        return (
-          <g transform={`translate(${comp.width / 2}, ${comp.height + 8})`}>
-            <rect
-              x={-labelBoxWidth / 2}
-              y={0}
-              width={labelBoxWidth}
-              height={labelBoxHeight}
-              rx={6}
-              fill="#ffffff"
-              stroke={isSelected ? '#0284c7' : '#cbd5e1'}
-              strokeWidth={isSelected ? 1.5 : 1}
-              filter="drop-shadow(0 2px 5px rgba(0,0,0,0.06))"
-            />
-            {/* Line 1: Component Name */}
-            <text
-              x={0}
-              y={12.5}
-              textAnchor="middle"
-              fill="#0f172a"
-              fontSize={8.5}
-              fontWeight="800"
-              fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-              style={{ pointerEvents: 'none' }}
-            >
-              {comp.name}
-            </text>
-            {/* Line 2: Short Description / Model */}
-            <text
-              x={0}
-              y={24}
-              textAnchor="middle"
-              fill="#475569"
-              fontSize={7.2}
-              fontWeight="600"
-              fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-              style={{ pointerEvents: 'none' }}
-            >
-              {comp.modelNumber}
-            </text>
-            {/* Line 3: Implementation Status Badge */}
-            <g transform="translate(0, 29.5)">
-              <rect
-                x={-statusBadgeWidth / 2}
-                y={0}
-                width={statusBadgeWidth}
-                height={11}
-                rx={3}
-                fill={statusBg}
-              />
-              <text
-                x={0}
-                y={8}
-                textAnchor="middle"
-                fill={statusColor}
-                fontSize={6.5}
-                fontWeight="bold"
-                fontFamily="system-ui, -apple-system, sans-serif"
-                letterSpacing={0.4}
-                style={{ pointerEvents: 'none' }}
-              >
-                {statusText}
-              </text>
-            </g>
-          </g>
-        );
-      })()}
-
-      {/* ── Realistic Physical Hardware Pins ── */}
+      {/* Pins Layer */}
       {comp.pins.map((pin) => {
-        const localX = pin.x - comp.x;
-        const localY = pin.y - comp.y;
-        const isPinHighlighted = highlightedPinId === pin.id;
+        const pinColor = getPinColor(pin.type);
+        const pinKey = `${comp.id}:${pin.id}`;
+        const isPinHighlighted = highlightedPinId === pinKey;
 
         return (
           <g
             key={pin.id}
-            className={`circuit-pin-node ${isPinHighlighted ? 'pin-highlighted' : ''}`}
+            className={`component-pin ${isPinHighlighted ? 'pin-highlighted' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
               onSelectPin(comp, pin);
             }}
           >
-            {/* Solder Pad Outer Copper Ring */}
+            {/* Hitbox */}
             <circle
-              cx={localX}
-              cy={localY}
-              r={5.5}
-              fill="#d97706"
-              stroke="#b45309"
-              strokeWidth={1}
-              opacity={0.85}
-            />
-            {/* Inner Gold Pin Head */}
-            <circle
-              cx={localX}
-              cy={localY}
-              r={4}
-              fill={isPinHighlighted ? '#38bdf8' : '#fbbf24'}
-              stroke="#78350f"
-              strokeWidth={0.8}
-            />
-            {/* Center Drilled Through-Hole */}
-            <circle
-              cx={localX}
-              cy={localY}
-              r={1.8}
-              fill="#0f172a"
-            />
-            {/* Hover Glow Target */}
-            <circle
-              cx={localX}
-              cy={localY}
-              r={8}
+              cx={comp.x + pin.x}
+              cy={comp.y + pin.y}
+              r={7}
               fill="transparent"
-              className="pin-hover-target"
-            >
-              <title>{`${pin.name} (${pin.type}${pin.voltage ? ` ${pin.voltage}` : ''}) - ${pin.description || ''}`}</title>
-            </circle>
-            {/* Pin Identification Label */}
+              className="pin-hitbox"
+            />
+            {/* Solder Land Dot */}
+            <circle
+              cx={comp.x + pin.x}
+              cy={comp.y + pin.y}
+              r={3.8}
+              fill={pinColor}
+              stroke="#ffffff"
+              strokeWidth={1.2}
+              className="pin-solder-dot"
+            />
+            {/* Pin Label */}
             <text
-              x={localX < comp.width / 2 ? localX - 8 : localX + 8}
-              y={localY + 3}
-              textAnchor={localX < comp.width / 2 ? 'end' : 'start'}
-              fill="#334155"
+              x={comp.x + pin.x}
+              y={comp.y + pin.y + (pin.y > comp.height / 2 ? 10 : -7)}
+              textAnchor="middle"
+              fill="#475569"
               fontSize={7.5}
-              fontWeight="bold"
-              fontFamily="monospace"
-              style={{ pointerEvents: 'none', userSelect: 'none' }}
+              fontWeight="600"
+              fontFamily="system-ui, sans-serif"
             >
-              {pin.name}
+              {pin.label}
             </text>
           </g>
         );
       })}
+
+      {/* Component Title & Model below component */}
+      <text
+        x={comp.x + comp.width / 2}
+        y={comp.y + comp.height + 14}
+        textAnchor="middle"
+        fill="#0f172a"
+        fontSize={9.5}
+        fontWeight="700"
+        fontFamily="system-ui, sans-serif"
+      >
+        {comp.name}
+      </text>
+      <text
+        x={comp.x + comp.width / 2}
+        y={comp.y + comp.height + 25}
+        textAnchor="middle"
+        fill="#64748b"
+        fontSize={8}
+        fontFamily="system-ui, sans-serif"
+      >
+        {comp.modelNumber}
+      </text>
+      {comp.status && (
+        <text
+          x={comp.x + comp.width / 2}
+          y={comp.y + comp.height + 34}
+          textAnchor="middle"
+          fill={comp.status === 'IMPLEMENTED' ? '#0284c7' : comp.status === 'ARCHITECTURAL' ? '#d97706' : '#2563eb'}
+          fontSize={7}
+          fontWeight="800"
+          fontFamily="system-ui, sans-serif"
+        >
+          [{comp.status}]
+        </text>
+      )}
     </g>
   );
 }
 
-// ── COMPLETE END-TO-END SYSTEM WORKFLOW SECTION ───────────────────────────────
+// ── 5. COMPLETE END-TO-END SYSTEM WORKFLOW SECTION (HTML FLOW BELOW CANVAS) ──
 
-function SystemWorkflowSection() {
+function SystemWorkflowSection({ mode }: { mode: CircuitMode }) {
   const steps = [
-    { num: 1, title: 'Sensors & Transducers', icon: '🌊', desc: 'Bosch BMP280, PT1000, and bilge leak grid capture physical ocean data' },
-    { num: 2, title: 'ESP32 Dual-Core LX6', icon: '⚡', desc: '240 MHz deterministic firmware executes ocean depth calibration & telemetry loop' },
-    { num: 3, title: 'SNC Protocol Router', icon: '🧠', desc: 'Acoustic carrier modulation, TDMA framing, and swarm mesh routing' },
-    { num: 4, title: 'Local OLED & Telemetry', icon: '🖥️', desc: 'SSD1306 128x64 display and SPI MicroSD black-box telemetry logging' },
-    { num: 5, title: 'UW-Acoustic Modem v2.1', icon: '📡', desc: 'Serial packet framing & 100W Class-D resonant step-up acoustic driver' },
-    { num: 6, title: 'Tonpilz PZT Transducer', icon: '🔊', desc: 'Resonant piezoelectric compression wave transmission into seawater (20-45 kHz)' },
-    { num: 7, title: 'TC4013 Hydrophone Receiver', icon: '👂', desc: 'Ultra-low-noise front-end LNA captures multi-kilometer subsea acoustic packets' },
-    { num: 8, title: 'Mission Big Data Ingestion', icon: '📊', desc: 'Spark SQL 3.5.9 streaming analytics and Cassandra historical lake' },
+    { num: '1', title: 'Sensors', desc: 'Keller 60MPa, RTD, IMU, Leak', icon: '🌊', color: '#0284c7' },
+    { num: '2', title: 'STM32H7 Core', desc: 'Deterministic Data Acquisition', icon: '⚡', color: '#0d9488' },
+    { num: '3', title: 'SNC Router', desc: 'Swarm Mesh & TDMA Sched.', icon: '🧠', color: '#4f46e5' },
+    { num: '4', title: 'AI Engine', desc: 'Spectrogram & Anomaly Net', icon: '🤖', color: '#7c3aed' },
+    { num: '5', title: 'Acoustic TX', desc: 'DDS DAC ➔ 100W Amp ➔ PZT', icon: '🔊', color: '#db2777' },
+    { num: '6', title: 'Subsea Net', desc: 'Multi-Hop Acoustic Relays', icon: '📡', color: '#ea580c' },
+    { num: '7', title: 'Storage', desc: 'SLC MicroSD + eMMC/NVMe', icon: '💾', color: '#059669' },
+    { num: '8', title: 'Mission UI', desc: 'Spark Big Data & Dashboard', icon: '📊', color: '#d97706' },
   ];
 
   return (
-    <section className="circuit-workflow-section" aria-label="Unified Architecture Pipeline">
-      <div className="workflow-section-header">
-        <div className="workflow-title-block">
-          <span className="workflow-icon">🔄</span>
-          <div>
-            <h3>COMPLETE END-TO-END MARISLINK SYSTEM WORKFLOW</h3>
-            <p>Physical Sensor Acquisition → ESP32 Edge Ingestion → Acoustic Modulation & Transduction → Subsea Relay → Apache Spark Big Data Lake</p>
+    <section className="circuit-workflow-section" id="system-workflow-section">
+      <div className="workflow-card">
+        {/* Header */}
+        <div className="workflow-header">
+          <div className="workflow-title-wrap">
+            <span className="workflow-icon">🔄</span>
+            <div>
+              <h3 className="workflow-title">COMPLETE END-TO-END MARISLINK SYSTEM WORKFLOW</h3>
+              <p className="workflow-subtitle">
+                Primary Sensor Acquisition ➔ AI Spectrogram Analysis ➔ Acoustic Physical Layer Transmission ➔ Subsea Swarm Mesh Relays
+              </p>
+            </div>
+          </div>
+          <div className="workflow-mode-tag">
+            Current Architecture Mode: <strong>
+              {mode === 'complete_underwater' ? 'Complete MARISLINK Underwater Architecture (AMD Versal™ AI Edge + STM32H7)' :
+               mode === 'esp32_wokwi' ? 'Embedded Hardware Prototype (32-Bit LX6 + BMP280)' :
+               'Arduino Uno Tinkercad Model (Classroom Equivalent)'}
+            </strong>
           </div>
         </div>
-        <div className="workflow-mode-pill">
-          Architecture: <strong>Unified ESP32 Underwater Hardware Prototype</strong>
+
+        {/* 8 Pipeline Step Cards Grid */}
+        <div className="workflow-steps-container">
+          <div className="workflow-steps-grid">
+            {steps.map((st, i) => (
+              <React.Fragment key={st.num}>
+                <div className="workflow-step-card">
+                  <div className="step-header">
+                    <span className="step-num-pill" style={{ background: st.color }}>{st.num}</span>
+                    <span className="step-title-icon">{st.icon}</span>
+                  </div>
+                  <h4 className="step-title">{st.title}</h4>
+                  <p className="step-desc">{st.desc}</p>
+                </div>
+                {i < steps.length - 1 && (
+                  <div className="workflow-step-arrow">➔</div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="workflow-steps-grid">
-        {steps.map((st, i) => (
-          <React.Fragment key={st.num}>
-            <div className="workflow-card">
-              <div className="workflow-card-top">
-                <span className="workflow-step-num">{st.num}</span>
-                <span className="workflow-step-icon">{st.icon}</span>
-              </div>
-              <h4 className="workflow-step-title">{st.title}</h4>
-              <p className="workflow-step-desc">{st.desc}</p>
-            </div>
-            {i < steps.length - 1 && <div className="workflow-arrow" aria-hidden="true">➔</div>}
-          </React.Fragment>
-        ))}
-      </div>
-
-      <div className="workflow-rx-banner">
-        <span className="rx-badge">🔵 ACOUSTIC RECEIVING PATH</span>
-        <span className="rx-desc">
-          <strong>Teledyne TC4013 Hydrophone</strong> → Low-Noise Preamplifier (AD8429 LNA) → Acoustic Modem Demodulator → ESP32 UART2 RX → SNC Adaptive Mesh Router → Spark Telemetry Pipeline
-        </span>
+        {/* Dual Receive Acoustic Path Banner */}
+        <div className="workflow-acoustic-path">
+          <span className="path-badge">ACOUSTIC RECEIVING PATH:</span>
+          <span className="path-text">
+            Subsea Hydrophone (TC4013) ➔ Ultra-Low Noise LNA (&lt;1.2nV/√Hz) ➔ 24-bit 192kSPS ADC ➔ STM32H7 Demodulation ➔ AMD Versal AI Inference ➔ SNC Adaptive Mesh Route
+          </span>
+        </div>
       </div>
     </section>
   );
 }
 
-// ── ADDITIONAL ARCHITECTURE SPECIFICATIONS ────────────────────────────────────
+// ── 6. ADDITIONAL ARCHITECTURAL SPECIFICATIONS (BELOW WORKFLOW) ───────────────
 
 function CircuitAdditionalInfo() {
   return (
-    <section className="circuit-additional-info" aria-label="Hardware Architecture Details">
-      <div className="info-grid">
+    <section className="circuit-additional-info-section">
+      <div className="additional-info-grid">
         <div className="info-card">
           <div className="info-card-header">
-            <span className="info-icon">📡</span>
-            <h4>Subsea Acoustic Transceiver Subsystem</h4>
+            <span className="info-card-icon">⚡</span>
+            <h4>Hardware Architecture & Power Path</h4>
           </div>
           <p>
-            Transmits modulated acoustic carrier waves between 20 kHz – 45 kHz via custom prestressed PZT-4 Tonpilz transducers. Features a 100W Class-D resonant step-up amplifier paired with an ultra-low-noise differential receiver front-end (AD8429 LNA + Teledyne TC4013 hydrophone).
+            MARISLINK deploys an isolated dual-rail architecture. The primary seabed power source (Micro Nuclear Battery conceptual unit / primary chemical cell) provides baseline micro-power, while an aluminum-laminated Lithium Polymer (LiPo) buffer battery pack supplies instantaneous burst current for 100W acoustic transducers without digital logic voltage drop.
           </p>
+          <ul>
+            <li><strong>LTC4412 Ideal Diode Multiplexer:</strong> Automatic low-loss switching between external tether power, primary supply, and LiPo buffer.</li>
+            <li><strong>TI BQ76952 Smart BMS:</strong> Active cell balancing, thermal shutdown (-20°C to +65°C), and short-circuit fault isolation.</li>
+            <li><strong>TI INA226 Power Monitor:</strong> High-precision I2C digital voltage and shunt current tracking across all primary rails.</li>
+          </ul>
         </div>
 
         <div className="info-card">
           <div className="info-card-header">
-            <span className="info-icon">⚡</span>
-            <h4>ESP32-WROOM-32 Edge Microcontroller</h4>
+            <span className="info-card-icon">🌊</span>
+            <h4>Physical Transducers & Hydrodynamics</h4>
           </div>
           <p>
-            Dual-core Xtensa 32-bit LX6 running at 240 MHz with 520 KB SRAM. Handles 1 Hz deterministic sensor acquisition (BMP280 I2C), local OLED telemetry rendering, analog battery and RSSI monitoring, and hardware UART streaming to the acoustic transponder modem.
+            Ocean acoustic channels present high attenuation, multi-path Doppler shifts, and ambient noise. MARISLINK integrates matched acoustic front-ends:
           </p>
+          <ul>
+            <li><strong>Teledyne TC4013 Hydrophone:</strong> Omnidirectional broadband acoustic receiver (1 Hz to 170 kHz) with calibrated titanium housing.</li>
+            <li><strong>Tonpilz PZT-4 Ceramic Projector:</strong> High-efficiency resonant electroacoustic transducer capable of generating &gt;185 dB re 1µPa @ 1m sound pressure.</li>
+            <li><strong>AD8429 Ultra-Low-Noise LNA:</strong> Discrete subsea preamplifier with &lt;1.2nV/√Hz input voltage noise floor for weak acoustic packet reception.</li>
+          </ul>
         </div>
 
         <div className="info-card">
           <div className="info-card-header">
-            <span className="info-icon">🔋</span>
-            <h4>Subsea Rechargeable Power Architecture</h4>
+            <span className="info-card-icon">📊</span>
+            <h4>Real-Time Ingestion & Spark Pipeline</h4>
           </div>
           <p>
-            Powered by a 3.7V 2500mAh high-discharge Lithium Polymer (LiPo) pouch cell stack managed by a TP4056 BMS with integrated over-discharge cutoff and synchronous 3.3V step-down regulator. Scaled battery voltage is monitored continuously via analog ADC1 GPIO 34.
+            Continuous acoustic telemetry, hydrostatic pressure logs, and attitude measurements are captured deterministically by the embedded controller and streamed over encrypted telemetry interfaces into MARISLINK's Apache Spark & Scala big data processing pipeline for real-time anomaly detection.
           </p>
-        </div>
-
-        <div className="info-card">
-          <div className="info-card-header">
-            <span className="info-icon">📊</span>
-            <h4>Telemetry & Big Data Pipeline</h4>
-          </div>
-          <p>
-            Every packet serialized by the ESP32 flows through the MARISLINK telemetry scheduler directly into Apache Spark 3.5.9 and Scala 2.12.18 for distributed anomaly detection, acoustic channel degradation monitoring, and persistent Cassandra time-series storage.
-          </p>
+          <ul>
+            <li><strong>Telemetry Stream:</strong> High-rate sensor frames streamed to port 5000 /api/hardware endpoints.</li>
+            <li><strong>Spark Engine:</strong> Distributed batch and windowed aggregation computing signal-to-noise ratio (SNR), packet delivery ratio (PDR), and bit error rates (BER).</li>
+            <li><strong>Mission Database:</strong> Cloud-synchronized historical storage maintaining long-term acoustic oceanographic telemetry.</li>
+          </ul>
         </div>
       </div>
     </section>
   );
 }
 
-// ── MAIN UNIFIED CIRCUIT CONNECTIONS COMPONENT ────────────────────────────────
 
-interface CircuitConnectionsPageProps {
+// ── MAIN CIRCUIT CONNECTIONS WORKSPACE COMPONENT ─────────────────────────────
+
+export interface CircuitConnectionsPageProps {
   onNavigateToSpark?: () => void;
 }
 
 export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnectionsPageProps) {
+  // Mode selection: default to complete_underwater
+  const [mode, setMode] = useState<CircuitMode>('complete_underwater');
+
+  // Filter selection: default to ALL
   const [busFilter, setBusFilter] = useState<BusFilter>('ALL');
+
+  // Selection state
   const [selectedComponent, setSelectedComponent] = useState<CircuitComponent | null>(null);
   const [selectedWire, setSelectedWire] = useState<CircuitWire | null>(null);
   const [highlightedPin, setHighlightedPin] = useState<{ compId: string; pinId: string } | null>(null);
 
-  // Pan & Zoom Canvas Transform State (25% to 400%, default 72% to fit all 5 architecture columns)
-  const [zoom, setZoom] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const z = new URLSearchParams(window.location.search).get('zoom');
-      if (z) {
-        const val = parseFloat(z);
-        if (!isNaN(val) && val >= 0.25 && val <= 4.0) return val;
-      }
-    }
-    return 0.78;
-  });
-  const [pan, setPan] = useState<{ x: number; y: number }>(() => {
-    if (typeof window !== 'undefined') {
-      const px = new URLSearchParams(window.location.search).get('panX');
-      const py = new URLSearchParams(window.location.search).get('panY');
-      if (px && py) {
-        return { x: parseFloat(px), y: parseFloat(py) };
-      }
-    }
-    return { x: 25, y: 15 };
-  });
+  // Zoom & Pan state (Range 25% to 400%, Default 100%)
+  const [zoom, setZoom] = useState<number>(1.0);
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState<boolean>(false);
-  const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [startPan, setStartPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
   const canvasRef = useRef<SVGSVGElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
-  // Components and Wires for the Unified Prototype
-  const currentComponents = UNIFIED_PROTOTYPE_COMPONENTS;
-  const allWires = UNIFIED_PROTOTYPE_WIRES;
+  // Active Components and Wires based on Mode
+  const currentComponents = useMemo(() => {
+    switch (mode) {
+      case 'complete_underwater': return UNDERWATER_COMPONENTS;
+      case 'esp32_wokwi': return PROTOTYPE_COMPONENTS;
+      case 'arduino_tinkercad': return ARDUINO_COMPONENTS;
+      default: return UNDERWATER_COMPONENTS;
+    }
+  }, [mode]);
 
-  // Filtered Wires
+  const allWires = useMemo(() => {
+    switch (mode) {
+      case 'complete_underwater': return UNDERWATER_WIRES;
+      case 'esp32_wokwi': return PROTOTYPE_WIRES;
+      case 'arduino_tinkercad': return ARDUINO_WIRES;
+      default: return UNDERWATER_WIRES;
+    }
+  }, [mode]);
+
+  // Filtered wires
   const currentWires = useMemo(() => {
     if (busFilter === 'ALL') return allWires;
     return allWires.filter((w) => {
-      if (busFilter === 'POWER') return w.busType === 'POWER';
-      if (busFilter === 'GROUND') return w.busType === 'GROUND';
-      if (busFilter === 'I2C') return w.busType === 'I2C';
-      if (busFilter === 'SPI') return w.busType === 'SPI';
-      if (busFilter === 'UART') return w.busType === 'UART';
-      if (busFilter === 'ADC') return w.busType === 'ADC';
-      if (busFilter === 'GPIO') return w.busType === 'GPIO';
-      if (busFilter === 'ACOUSTIC') return w.busType === 'ACOUSTIC';
-      return true;
+      if (busFilter === 'ADC/DAC') return w.busType === 'ADC' || w.busType === 'DAC' || w.busType === 'ADC/DAC';
+      if (busFilter === 'GPIO/PWM') return w.busType === 'GPIO' || w.busType === 'PWM' || w.busType === 'GPIO/PWM';
+      if (busFilter === 'USB/PCIe') return w.busType === 'USB' || w.busType === 'PCIe' || w.busType === 'USB/PCIe';
+      return w.busType === busFilter;
     });
-  }, [busFilter, allWires]);
+  }, [allWires, busFilter]);
 
-  // Pin Coordinate Lookup Map
+  // Pin coordinate lookup table
   const pinCoordMap = useMemo(() => {
     const map = new Map<string, { x: number; y: number }>();
-    for (const comp of currentComponents) {
-      for (const pin of comp.pins) {
-        map.set(`${comp.id}:${pin.id}`, { x: pin.x, y: pin.y });
-      }
-    }
+    currentComponents.forEach((c) => {
+      c.pins.forEach((p) => {
+        map.set(`${c.id}:${p.id}`, { x: c.x + p.x, y: c.y + p.y });
+      });
+    });
     return map;
   }, [currentComponents]);
 
-  // Component Selection
-  const handleSelectComponent = useCallback((comp: CircuitComponent) => {
-    setSelectedComponent(comp);
-    setSelectedWire(null);
-    setHighlightedPin(null);
+  // Zoom controls (25% to 400%)
+  const handleZoomStep = useCallback((delta: number) => {
+    setZoom((prev) => Math.min(Math.max(Math.round((prev + delta) * 100) / 100, 0.25), 4.0));
   }, []);
 
-  // Wire Selection
-  const handleSelectWire = useCallback(
-    (wire: CircuitWire) => {
-      setSelectedWire(wire);
-      const comp = currentComponents.find((c) => c.id === wire.sourceComponentId) || null;
-      setSelectedComponent(comp);
-      setHighlightedPin({ compId: wire.sourceComponentId, pinId: wire.sourcePinId });
-    },
-    [currentComponents]
-  );
-
-  // Pin Selection
-  const handleSelectPin = useCallback(
-    (comp: CircuitComponent, pin: PinDefinition) => {
-      setSelectedComponent(comp);
-      setHighlightedPin({ compId: comp.id, pinId: pin.id });
-      const wire = currentWires.find(
-        (w) =>
-          (w.sourceComponentId === comp.id && w.sourcePinId === pin.id) ||
-          (w.destComponentId === comp.id && w.destPinId === pin.id)
-      );
-      if (wire) setSelectedWire(wire);
-    },
-    [currentWires]
-  );
-
-  // Canvas Reset View (100% Zoom)
   const handleResetView = useCallback(() => {
     setZoom(1.0);
-    setPan({ x: 30, y: 30 });
+    setPan({ x: 0, y: 0 });
     setSelectedComponent(null);
     setSelectedWire(null);
     setHighlightedPin(null);
   }, []);
 
-  // Fit to View (Center the entire unified prototype)
+  // Fit Entire Circuit onto screen
   const handleFitCircuit = useCallback(() => {
-    if (currentComponents.length === 0) return;
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
+    if (!viewportRef.current) return;
+    const rect = viewportRef.current.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
 
-    for (const c of currentComponents) {
-      minX = Math.min(minX, c.x);
-      minY = Math.min(minY, c.y);
-      maxX = Math.max(maxX, c.x + c.width);
-      maxY = Math.max(maxY, c.y + c.height + 50);
+    let minX = 30, minY = 30, maxX = 2100, maxY = 860;
+    if (mode === 'complete_underwater') {
+      minX = 20; minY = 20; maxX = 2120; maxY = 860;
+    } else if (mode === 'esp32_wokwi') {
+      minX = 10; minY = 10; maxX = 1100; maxY = 700;
+    } else {
+      minX = 10; minY = 10; maxX = 1050; maxY = 650;
     }
 
-    const circuitWidth = maxX - minX + 80;
-    const circuitHeight = maxY - minY + 80;
+    const contentW = maxX - minX;
+    const contentH = maxY - minY;
+    const scaleX = (rect.width - 48) / contentW;
+    const scaleY = (rect.height - 48) / contentH;
+    const fitZoom = Math.min(Math.max(Math.min(scaleX, scaleY), 0.35), 2.5);
 
-    const viewport = viewportRef.current;
-    const viewWidth = viewport ? viewport.clientWidth : 1200;
-    const viewHeight = viewport ? viewport.clientHeight : 700;
+    const centerCanvasX = rect.width / 2;
+    const centerCanvasY = rect.height / 2;
+    const centerContentX = (minX + maxX) / 2;
+    const centerContentY = (minY + maxY) / 2;
 
-    const scaleX = (viewWidth - 60) / circuitWidth;
-    const scaleY = (viewHeight - 60) / circuitHeight;
-    const fitScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.25), 1.5);
-
-    const targetX = Math.round((viewWidth - circuitWidth * fitScale) / 2 - minX * fitScale + 40 * fitScale);
-    const targetY = Math.round((viewHeight - circuitHeight * fitScale) / 2 - minY * fitScale + 40 * fitScale);
-
-    setZoom(parseFloat(fitScale.toFixed(2)));
-    setPan({ x: targetX, y: targetY });
-  }, [currentComponents]);
-
-  // Zoom In / Out Buttons
-  const handleZoomStep = useCallback((delta: number) => {
-    setZoom((prev) => {
-      const next = Math.min(Math.max(parseFloat((prev + delta).toFixed(2)), 0.25), 4.0);
-      return next;
+    setZoom(Math.round(fitZoom * 100) / 100);
+    setPan({
+      x: Math.round(centerCanvasX - centerContentX * fitZoom),
+      y: Math.round(centerCanvasY - centerContentY * fitZoom),
     });
-  }, []);
+  }, [mode]);
 
-  // Mouse Wheel Zoom centered on cursor
+  // Auto-fit on mode switch or read URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const m = params.get('mode') as CircuitMode | null;
+    if (m && (m === 'complete_underwater' || m === 'esp32_wokwi' || m === 'arduino_tinkercad')) {
+      if (mode !== m) {
+        setMode(m);
+        return;
+      }
+    }
+
+    const compId = params.get('comp') || params.get('component');
+    if (compId) {
+      const found = currentComponents.find((c) => c.id === compId);
+      if (found) setSelectedComponent(found);
+    }
+
+    const z = parseFloat(params.get('zoom') || '');
+    const px = parseFloat(params.get('panX') || '');
+    const py = parseFloat(params.get('panY') || '');
+    if (!isNaN(z) && z >= 0.25 && z <= 4.0) {
+      setZoom(z);
+      if (!isNaN(px) && !isNaN(py)) {
+        setPan({ x: px, y: py });
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleFitCircuit();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [mode, handleFitCircuit, currentComponents]);
+
+  // Mouse wheel cursor-anchored zoom
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
@@ -1482,144 +2669,64 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
       setZoom((prevZoom) => {
-        const nextZoom = Math.min(Math.max(parseFloat((prevZoom * zoomFactor).toFixed(3)), 0.25), 4.0);
-        if (nextZoom === prevZoom) return prevZoom;
-
-        const canvasX = (mouseX - pan.x) / prevZoom;
-        const canvasY = (mouseY - pan.y) / prevZoom;
-
-        const newPanX = Math.round(mouseX - canvasX * nextZoom);
-        const newPanY = Math.round(mouseY - canvasY * nextZoom);
-
-        setPan({ x: newPanX, y: newPanY });
+        const nextZoom = Math.min(Math.max(prevZoom * zoomFactor, 0.25), 4.0);
+        setPan((prevPan) => {
+          const nextPanX = mouseX - ((mouseX - prevPan.x) / prevZoom) * nextZoom;
+          const nextPanY = mouseY - ((mouseY - prevPan.y) / prevZoom) * nextZoom;
+          return { x: nextPanX, y: nextPanY };
+        });
         return nextZoom;
       });
     };
 
     el.addEventListener('wheel', onWheel, { passive: false });
-    return () => {
-      el.removeEventListener('wheel', onWheel);
-    };
-  }, [pan]);
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
 
-  // Panning Event Handlers
+  // Pan event handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    setIsPanning(true);
-    panStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+    // Only pan if clicking on viewport background
+    if ((e.target as HTMLElement).tagName === 'svg' || (e.target as HTMLElement).id === 'grid-background') {
+      setIsPanning(true);
+      setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    }
   }, [pan]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isPanning) return;
     setPan({
-      x: e.clientX - panStartRef.current.x,
-      y: e.clientY - panStartRef.current.y,
+      x: e.clientX - startPan.x,
+      y: e.clientY - startPan.y,
     });
-  }, [isPanning]);
+  }, [isPanning, startPan]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
   }, []);
 
-  // Orthogonal wire path generator
-  const getWirePath = useCallback(
-    (wire: CircuitWire) => {
-      if (wire.points && wire.points.length >= 2) {
-        return wire.points.reduce((acc, pt, idx) => {
-          return idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
-        }, '');
-      }
+  // Selection handlers
+  const handleSelectComponent = useCallback((comp: CircuitComponent) => {
+    setSelectedComponent(comp);
+    setSelectedWire(null);
+    setHighlightedPin(null);
+  }, []);
 
-      const src = pinCoordMap.get(`${wire.sourceComponentId}:${wire.sourcePinId}`);
-      const dst = pinCoordMap.get(`${wire.destComponentId}:${wire.destPinId}`);
-      if (!src || !dst) return '';
+  const handleSelectWire = useCallback((wire: CircuitWire) => {
+    setSelectedWire(wire);
+    setSelectedComponent(null);
+    setHighlightedPin({ compId: wire.sourceComponentId, pinId: wire.sourcePinId });
+  }, []);
 
-      const dx = dst.x - src.x;
-      const midX = src.x + dx / 2;
-      return `M ${src.x} ${src.y} L ${midX} ${src.y} L ${midX} ${dst.y} L ${dst.x} ${dst.y}`;
-    },
-    [pinCoordMap]
-  );
-
-  // Render Wire Segment
-  const renderWire = useCallback(
-    (wire: CircuitWire) => {
-      const pathData = getWirePath(wire);
-      if (!pathData) return null;
-
-      const isWireSelected = selectedWire?.id === wire.id;
-      const src = pinCoordMap.get(`${wire.sourceComponentId}:${wire.sourcePinId}`);
-      const dst = pinCoordMap.get(`${wire.destComponentId}:${wire.destPinId}`);
-      if (!src || !dst) return null;
-
-      return (
-        <g
-          key={wire.id}
-          className={`circuit-wire-group ${isWireSelected ? 'selected' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleSelectWire(wire);
-          }}
-        >
-          {/* Transparent thick hit area for easy clicking */}
-          <path
-            d={pathData}
-            fill="none"
-            stroke="transparent"
-            strokeWidth={14}
-            className="wire-hit-box"
-          />
-
-          {/* Wire outer glow / selection halo */}
-          <path
-            d={pathData}
-            fill="none"
-            stroke={isWireSelected ? '#38bdf8' : wire.color}
-            strokeWidth={isWireSelected ? 5.5 : 2.5}
-            strokeOpacity={isWireSelected ? 0.95 : 0.85}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="wire-line-main"
-          />
-
-          {/* Inner core line */}
-          <path
-            d={pathData}
-            fill="none"
-            stroke={isWireSelected ? '#ffffff' : wire.color}
-            strokeWidth={isWireSelected ? 2 : 1.2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="wire-line-core"
-          />
-
-          {/* Solder connection dots at endpoints */}
-          <circle
-            cx={src.x}
-            cy={src.y}
-            r={3.5}
-            fill={wire.color}
-            stroke="#ffffff"
-            strokeWidth={1.2}
-            className="wire-terminal-dot"
-          />
-          <circle
-            cx={dst.x}
-            cy={dst.y}
-            r={3.5}
-            fill={wire.color}
-            stroke="#ffffff"
-            strokeWidth={1.2}
-            className="wire-terminal-dot"
-          />
-        </g>
-      );
-    },
-    [pinCoordMap, selectedWire, handleSelectWire, getWirePath]
-  );
+  const handleSelectPin = useCallback((comp: CircuitComponent, pin: PinDefinition) => {
+    setHighlightedPin({ compId: comp.id, pinId: pin.id });
+    const wire = currentWires.find(
+      (w) => (w.sourceComponentId === comp.id && w.sourcePinId === pin.id) ||
+             (w.destComponentId === comp.id && w.destPinId === pin.id)
+    );
+    if (wire) setSelectedWire(wire);
+  }, [currentWires]);
 
   // Connected wires to selected component
   const connectedWiresToSelected = useMemo(() => {
@@ -1629,35 +2736,200 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
     );
   }, [selectedComponent, currentWires]);
 
+  // Render Wire Path with orthogonal lines & terminal solder dots
+  const renderWirePath = useCallback((wire: CircuitWire) => {
+    const src = pinCoordMap.get(`${wire.sourceComponentId}:${wire.sourcePinId}`);
+    const dst = pinCoordMap.get(`${wire.destComponentId}:${wire.destPinId}`);
+    if (!src || !dst) return null;
+
+    const points = computeOrthogonalPoints(src, dst, wire.waypoints);
+    const pathD = pointsToFilletedPath(points, 8);
+    const isWireSelected = selectedWire?.id === wire.id;
+    const isPowerOrGround = wire.busType === 'POWER' || wire.busType === 'GROUND';
+    const baseWidth = isPowerOrGround ? 2.8 : 2.0;
+    const activeWidth = isPowerOrGround ? 5.2 : 4.2;
+
+    return (
+      <g
+        key={wire.id}
+        className={`circuit-wire-group ${isWireSelected ? 'wire-selected' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleSelectWire(wire);
+        }}
+      >
+        {/* Transparent wide hitbox for clicking */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={16}
+          strokeLinecap="round"
+          className="wire-hitbox"
+        />
+
+        {/* Ambient shadow / depth underlay */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke="rgba(0, 0, 0, 0.22)"
+          strokeWidth={isWireSelected ? activeWidth + 2 : baseWidth + 1.6}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          transform="translate(0, 1.5)"
+        />
+
+        {/* Crisp solid conductor wire line */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke={wire.color}
+          strokeWidth={isWireSelected ? activeWidth : baseWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="wire-path-line"
+        />
+
+        {/* Dynamic active electrical flow animation ONLY on user selection */}
+        {isWireSelected && (
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth={1.5}
+            strokeDasharray="6 4"
+            className="wire-animated-flow"
+          />
+        )}
+
+        {/* Physical terminal connection solder dots */}
+        <circle
+          cx={src.x}
+          cy={src.y}
+          r={3.5}
+          fill={wire.color}
+          stroke="#ffffff"
+          strokeWidth={1.2}
+          className="wire-terminal-dot"
+        />
+        <circle
+          cx={dst.x}
+          cy={dst.y}
+          r={3.5}
+          fill={wire.color}
+          stroke="#ffffff"
+          strokeWidth={1.2}
+          className="wire-terminal-dot"
+        />
+      </g>
+    );
+  }, [pinCoordMap, selectedWire, handleSelectWire]);
+
   return (
     <div className="circuit-workspace-container">
-      {/* ── 1. Page Title Bar (Unified Prototype - No Multi-Mode Switcher) ── */}
+      {/* ── 1. Page Title & Horizontal Mode Selector ─────────────────────── */}
       <div className="circuit-top-bar">
         <div className="circuit-title-area">
           <h2>
-            <span>🔌</span> MARISLINK – INTEGRATED UNDERWATER HARDWARE PROTOTYPE
+            <span>🔌</span> MARISLINK – CIRCUIT CONNECTIONS
           </h2>
           <p>
-            Unified Physical Architecture &amp; Verified Pin-to-Pin System Wiring (ESP32 Controller + Subsea Acoustic Telemetry)
+            Interactive 2D Electronics Schematic & Pin-to-Pin System Architecture (Tinkercad & Wokwi Engineering Workspace)
           </p>
+        </div>
+
+        {/* Three Architecture Mode Switcher */}
+        <div className="circuit-mode-toggle">
+          <button
+            className={`mode-btn mode-complete ${mode === 'complete_underwater' ? 'active' : ''}`}
+            onClick={() => {
+              setMode('complete_underwater');
+              handleResetView();
+            }}
+          >
+            🌊 Complete MARISLINK Underwater Architecture (AMD Versal™ AI Edge + STM32H7)
+          </button>
+          <button
+            className={`mode-btn mode-prototype ${mode === 'esp32_wokwi' ? 'active' : ''}`}
+            onClick={() => {
+              setMode('esp32_wokwi');
+              handleResetView();
+            }}
+          >
+            ⚡ Embedded Hardware Prototype (32-Bit LX6 + BMP280)
+          </button>
+          <button
+            className={`mode-btn mode-arduino ${mode === 'arduino_tinkercad' ? 'active' : ''}`}
+            onClick={() => {
+              setMode('arduino_tinkercad');
+              handleResetView();
+            }}
+          >
+            📘 Arduino Uno Tinkercad Model (Classroom Equivalent)
+          </button>
         </div>
       </div>
 
-      {/* ── Academic Technical Accuracy Notice ─────────────────────────────── */}
+      {/* ── Evaluator Technical Accuracy Notice ───────────────────────────── */}
       <div className="circuit-academic-notice">
         <span className="notice-badge implemented">IMPLEMENTED</span>
-        <strong>Verified Embedded Prototype:</strong> Central ESP32-WROOM-32 controller executing compiled C/C++ firmware with live telemetry ingestion, Bosch BMP280, SSD1306 OLED, analog monitors, status LEDs, and UART acoustic modem interface.
-        <span className="notice-badge architectural" style={{ marginLeft: 14 }}>PROPOSED ARCHITECTURAL</span>
-        <strong>Subsea Acoustic Transceiver:</strong> Teledyne TC4013 hydrophone, Tonpilz PZT projector, 100W resonant drive stage, and bilge leak ingress grid modeled for deep-sea acoustic deployment.
+        <strong>Verified Embedded Prototype:</strong> Mode A runs the compiled controller firmware on simulated hardware with live telemetry ingestion.
+        <span className="notice-badge architectural" style={{ marginLeft: 14 }}>ARCHITECTURAL</span>
+        <strong>Deep-Sea Production Design:</strong> Mode B models the full multi-rail power system, AMD Versal™ / NVIDIA AI, STM32H7 SNC controller, and hydrophone transceiver.
+        <span className="notice-badge simulated" style={{ marginLeft: 14 }}>SIMULATED</span>
+        <strong>Classroom Equivalent:</strong> Mode C models the Tinkercad tutorial Arduino Uno circuit using supported 8-bit AVR components.
       </div>
 
-      {/* ── 2. Circuit Workspace & Components (Canvas + Inspector Sidebar) ── */}
+      {/* ── 2. WIRE BUS FILTER & ZOOM TOOLBAR (DISPLAYED ABOVE CIRCUIT CANVAS) ── */}
+      <div className="circuit-canvas-toolbar">
+        {/* Bus Filter Pills */}
+        <div className="circuit-filter-pills">
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>WIRE BUS FILTER:</span>
+          {(['ALL', 'POWER', 'GROUND', 'I2C', 'SPI', 'UART', 'ADC/DAC', 'GPIO/PWM', 'USB/PCIe'] as BusFilter[]).map((f) => (
+            <button
+              key={f}
+              className={`filter-pill ${busFilter === f ? 'active' : ''}`}
+              onClick={() => setBusFilter(f)}
+            >
+              {f === 'POWER' && '🔴 Power (+12V/+5V/+3.3V)'}
+              {f === 'GROUND' && '⚫ Ground (GND)'}
+              {f === 'I2C' && '🩵 I2C (SDA/SCL)'}
+              {f === 'SPI' && '🔵 SPI Bus'}
+              {f === 'UART' && '🟣 UART Serial'}
+              {f === 'ADC/DAC' && '🟠 ADC/DAC Analog'}
+              {f === 'GPIO/PWM' && '🟢 GPIO/PWM'}
+              {f === 'USB/PCIe' && '🔵 High-Speed USB/PCIe'}
+              {f === 'ALL' && '🌈 All Wires'}
+            </button>
+          ))}
+        </div>
+
+        {/* Zoom & View Controls */}
+        <div className="circuit-zoom-controls">
+          <button className="ctrl-btn" onClick={() => handleZoomStep(-0.25)} title="Zoom Out (-25%)">－</button>
+          <span className="zoom-indicator" title="Current Zoom">{Math.round(zoom * 100)}%</span>
+          <button className="ctrl-btn" onClick={() => handleZoomStep(0.25)} title="Zoom In (+25%)">＋</button>
+          <button className="ctrl-btn reset" onClick={handleResetView} title="Reset to 100% Zoom">
+            Reset 100%
+          </button>
+          <button className="ctrl-btn reset fit" onClick={handleFitCircuit} title="Fit Entire Circuit on Screen">
+            📐 Fit Circuit
+          </button>
+
+          {onNavigateToSpark && (
+            <button className="spark-nav-btn" onClick={onNavigateToSpark}>
+              ⚡ Spark Lab
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── 3. FULL-WIDTH CIRCUIT WORKSPACE (100% WIDTH CANVAS, NO FIXED SPLIT) ── */}
       <div className="circuit-workspace-body">
         {/* Interactive SVG Canvas Viewport */}
         <div
           ref={viewportRef}
-          className="circuit-canvas-viewport"
-          style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+          className={`circuit-canvas-viewport ${isPanning ? 'panning' : ''}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -1668,78 +2940,83 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
             <button className="float-ctrl-btn" onClick={() => handleZoomStep(0.25)} title="Zoom In (+25%)">＋</button>
             <button className="float-ctrl-btn" onClick={() => handleZoomStep(-0.25)} title="Zoom Out (-25%)">－</button>
             <span className="float-zoom-badge" title="Current Zoom Level">{Math.round(zoom * 100)}%</span>
-            <button className="float-ctrl-btn btn-text" onClick={handleResetView} title="Reset Zoom to 100%">↺ Reset</button>
-            <button className="float-ctrl-btn btn-text" onClick={handleFitCircuit} title="Fit Entire Circuit on Screen">📐 Fit</button>
+            <button className="float-ctrl-btn reset" onClick={handleResetView} title="Reset to 100%">↺ Reset</button>
+            <button className="float-ctrl-btn fit" onClick={handleFitCircuit} title="Fit Entire Circuit">📐 Fit</button>
           </div>
 
           <svg
             ref={canvasRef}
-            className="circuit-canvas-svg"
+            className="circuit-svg-canvas"
             width="100%"
             height="100%"
-            onClick={() => {
-              setSelectedComponent(null);
-              setSelectedWire(null);
-              setHighlightedPin(null);
-            }}
+            viewBox={
+              mode === 'complete_underwater' ? '0 0 2150 890' :
+              mode === 'esp32_wokwi' ? '0 0 1200 750' :
+              '0 0 1100 680'
+            }
           >
             <defs>
-              {/* Engineering Blueprint Dot Grid */}
-              <pattern id="circ-grid-dots" width="25" height="25" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1.1" fill="#94a3b8" opacity="0.32" />
+              <pattern id="tinkercad-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                <rect width="24" height="24" fill="#f8fafc" />
+                <circle cx="12" cy="12" r="1.2" fill="#cbd5e1" />
               </pattern>
             </defs>
 
-            {/* Background Grid */}
-            <rect width="100%" height="100%" fill="url(#circ-grid-dots)" />
+            {/* Background Grid Layer */}
+            <rect
+              id="grid-background"
+              x="-4000"
+              y="-4000"
+              width="10000"
+              height="10000"
+              fill="url(#tinkercad-grid)"
+            />
 
-            {/* Zoom & Pan Viewport Container */}
+            {/* Canvas Transformation Group (Zoom & Pan) */}
             <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-              {/* ── Subsystem Architecture Zone Boundary Frames ── */}
-              <g className="architecture-group-frames">
-                {/* Frame 1: Power Management */}
-                <g className="group-frame pwr-frame">
-                  <rect x="40" y="45" width="260" height="680" rx="10" fill="#f8fafc" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="5,4" opacity="0.45" />
-                  <text x="50" y="62" fill="#ef4444" fontSize="10.5" fontWeight="bold" letterSpacing="0.8">A. POWER MANAGEMENT &amp; STORAGE</text>
-                </g>
+              {/* Colored Subsystem Bounding Boxes (Mode B) */}
+              {mode === 'complete_underwater' &&
+                UNDERWATER_GROUPS.map((g) => (
+                  <g key={g.id}>
+                    <rect
+                      x={g.x}
+                      y={g.y}
+                      width={g.width}
+                      height={g.height}
+                      rx={10}
+                      fill={g.color}
+                      stroke={g.accent}
+                      strokeWidth={1.5}
+                      strokeDasharray="6 4"
+                      opacity={0.8}
+                    />
+                    <text
+                      x={g.x + 16}
+                      y={g.y + 24}
+                      fill={g.accent}
+                      fontSize={11.5}
+                      fontWeight="800"
+                      letterSpacing={0.8}
+                      fontFamily="system-ui, sans-serif"
+                    >
+                      {g.name}
+                    </text>
+                  </g>
+                ))}
 
-                {/* Frame 2: Sensor Inputs */}
-                <g className="group-frame sensor-frame">
-                  <rect x="330" y="45" width="220" height="680" rx="10" fill="#f8fafc" stroke="#0284c7" strokeWidth="1.2" strokeDasharray="5,4" opacity="0.45" />
-                  <text x="340" y="62" fill="#0284c7" fontSize="10.5" fontWeight="bold" letterSpacing="0.8">B. SENSOR INPUTS &amp; MONITORING</text>
-                </g>
-
-                {/* Frame 3: Central Controller */}
-                <g className="group-frame mcu-frame">
-                  <rect x="590" y="45" width="240" height="680" rx="10" fill="#f8fafc" stroke="#16a34a" strokeWidth="1.2" strokeDasharray="5,4" opacity="0.45" />
-                  <text x="600" y="62" fill="#16a34a" fontSize="10.5" fontWeight="bold" letterSpacing="0.8">C. MAIN CONTROLLER (ESP32)</text>
-                </g>
-
-                {/* Frame 4: Display & Status */}
-                <g className="group-frame display-frame">
-                  <rect x="850" y="45" width="260" height="680" rx="10" fill="#f8fafc" stroke="#eab308" strokeWidth="1.2" strokeDasharray="5,4" opacity="0.45" />
-                  <text x="860" y="62" fill="#ca8a04" fontSize="10.5" fontWeight="bold" letterSpacing="0.8">D. DISPLAY &amp; STATUS INDICATORS</text>
-                </g>
-
-                {/* Frame 5: Acoustic Communication */}
-                <g className="group-frame acoustic-frame">
-                  <rect x="1120" y="45" width="460" height="680" rx="10" fill="#f8fafc" stroke="#8b5cf6" strokeWidth="1.2" strokeDasharray="5,4" opacity="0.45" />
-                  <text x="1130" y="62" fill="#8b5cf6" fontSize="10.5" fontWeight="bold" letterSpacing="0.8">E. ACOUSTIC COMMUNICATION SUBSYSTEM</text>
-                </g>
+              {/* 1. Connecting Wires Layer (Behind Components) */}
+              <g className="wires-layer">
+                {currentWires.map(renderWirePath)}
               </g>
 
-              {/* ── Layer 1: Schematic Connection Wires ── */}
-              <g className="circuit-wires-layer">{currentWires.map((wire) => renderWire(wire))}</g>
-
-              {/* ── Layer 2: Hardware Components (Images, Pins & Labels) ── */}
-              <g className="circuit-components-layer">
+              {/* 2. Electronic Components Layer */}
+              <g className="components-layer">
                 {currentComponents.map((comp) => (
                   <ComponentShape
                     key={comp.id}
                     comp={comp}
                     isSelected={selectedComponent?.id === comp.id}
-                    selectedWire={selectedWire}
-                    highlightedPinId={highlightedPin?.compId === comp.id ? highlightedPin.pinId : null}
+                    highlightedPinId={highlightedPin ? `${highlightedPin.compId}:${highlightedPin.pinId}` : null}
                     onSelectComponent={handleSelectComponent}
                     onSelectPin={handleSelectPin}
                   />
@@ -1747,208 +3024,203 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
               </g>
             </g>
           </svg>
-        </div>
 
-        {/* ── Interactive Inspector Sidebar ── */}
-        <aside className="circuit-inspector-panel">
-          {selectedComponent ? (
-            <div className="inspector-content">
-              <div className="inspector-header">
-                <div className="inspector-icon-wrap">
-                  <img
-                    src={selectedComponent.imageSrc || `/assets/hardware/${selectedComponent.id}.webp`}
-                    alt={selectedComponent.name}
-                    className="inspector-thumb"
-                  />
-                </div>
-                <div>
-                  <span className={`inspector-status-tag ${(selectedComponent.status || 'IMPLEMENTED').toLowerCase()}`}>
-                    {selectedComponent.status === 'ARCHITECTURAL' ? 'PROPOSED ARCHITECTURAL' : 'VERIFIED IMPLEMENTED'}
+          {/* Canvas Bottom Hint */}
+          <div className="circuit-canvas-hint">
+            <span>✦ Click any component or wire to inspect • Click & drag canvas to pan • Scroll wheel to zoom (25% - 400%)</span>
+          </div>
+
+          {/* Floating Interactive Inspector Overlay (Opens ONLY when component or wire is selected) */}
+          {(selectedComponent || selectedWire) && (
+            <div className="circuit-inspector-floating-card">
+              {/* Floating Header with Close Button */}
+              <div className="inspector-floating-header">
+                <div className="inspector-floating-title-group">
+                  <div className="inspector-header-badges">
+                    <span className={`status-tag ${selectedComponent ? (selectedComponent.status || 'IMPLEMENTED').toLowerCase() : 'wire-tag'}`}>
+                      {selectedComponent ? (selectedComponent.status || 'IMPLEMENTED') : `${selectedWire?.busType} BUS`}
+                    </span>
+                  </div>
+                  <h4 className="inspector-title">
+                    {selectedComponent ? selectedComponent.name : selectedWire?.name}
+                  </h4>
+                  <span className="inspector-subtitle">
+                    {selectedComponent ? selectedComponent.modelNumber : `Route: ${selectedWire?.sourceComponentId.toUpperCase()} ➔ ${selectedWire?.destComponentId.toUpperCase()}`}
                   </span>
-                  <h3 className="inspector-title">{selectedComponent.name}</h3>
-                  <span className="inspector-model">{selectedComponent.modelNumber}</span>
                 </div>
+                <button
+                  className="inspector-close-btn"
+                  onClick={() => {
+                    setSelectedComponent(null);
+                    setSelectedWire(null);
+                    setHighlightedPin(null);
+                  }}
+                  title="Close Inspector"
+                >
+                  ✕
+                </button>
               </div>
 
-              <div className="inspector-body">
-                <div className="inspector-prop-row">
-                  <span className="prop-name">Category:</span>
-                  <span className="prop-value">{selectedComponent.category}</span>
-                </div>
-                <div className="inspector-prop-row">
-                  <span className="prop-name">Operating Voltage:</span>
-                  <span className="prop-value">{selectedComponent.operatingVoltage}</span>
-                </div>
-                <div className="inspector-prop-row">
-                  <span className="prop-name">Protocol / Bus:</span>
-                  <span className="prop-value">{selectedComponent.communicationProtocol}</span>
-                </div>
-
-                <div className="inspector-desc-box">
-                  <h4>Description</h4>
-                  <p>{selectedComponent.description}</p>
-                </div>
-
-                <div className="inspector-role-box">
-                  <h4>Role in MARISLINK System</h4>
-                  <p>{selectedComponent.roleInMarislink}</p>
-                </div>
-
-                <div className="inspector-pins-box">
-                  <h4>Physical Pinout ({selectedComponent.pins.length} Terminals)</h4>
-                  <div className="inspector-pins-table-wrap">
-                    <table className="inspector-pins-table">
-                      <thead>
-                        <tr>
-                          <th>Pin</th>
-                          <th>Type</th>
-                          <th>Voltage / Signal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedComponent.pins.map((p) => {
-                          const isPinActive = highlightedPin?.compId === selectedComponent.id && highlightedPin.pinId === p.id;
-                          return (
-                            <tr
-                              key={p.id}
-                              className={isPinActive ? 'active-pin-row' : ''}
-                              onClick={() => handleSelectPin(selectedComponent, p)}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <td>
-                                <code>{p.name}</code>
-                              </td>
-                              <td>
-                                <span className={`pin-type-pill ${p.type.toLowerCase()}`}>{p.type}</span>
-                              </td>
-                              <td>{p.voltage || p.description || '—'}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {connectedWiresToSelected.length > 0 && (
-                  <div className="inspector-connected-wires">
-                    <h4>Connected Wires ({connectedWiresToSelected.length})</h4>
-                    <div className="inspector-wires-list">
-                      {connectedWiresToSelected.map((w) => (
-                        <div
-                          key={w.id}
-                          className={`inspector-wire-item ${selectedWire?.id === w.id ? 'active' : ''}`}
-                          onClick={() => handleSelectWire(w)}
-                        >
-                          <span className="wire-color-indicator" style={{ backgroundColor: w.color }} />
-                          <div className="wire-info">
-                            <strong>{w.busType}:</strong> {w.sourceComponentId}:{w.sourcePinId} ➔ {w.destComponentId}:{w.destPinId}
-                            <span className="wire-sub">{w.signalDescription}</span>
-                          </div>
-                        </div>
-                      ))}
+              {/* Inspector Body Content */}
+              <div className="inspector-floating-body">
+                {selectedWire ? (
+                  /* Wire Details */
+                  <div className="inspector-wire-details">
+                    <div className="inspector-kv-grid">
+                      <div className="kv-item">
+                        <span className="kv-label">Signal Bus</span>
+                        <span className="kv-val bus-val">{selectedWire.busType}</span>
+                      </div>
+                      <div className="kv-item">
+                        <span className="kv-label">Voltage / Logic</span>
+                        <span className="kv-val">{selectedWire.voltage}</span>
+                      </div>
+                      <div className="kv-item">
+                        <span className="kv-label">Insulation Color</span>
+                        <span className="kv-val">{selectedWire.colorName}</span>
+                      </div>
+                      <div className="kv-item">
+                        <span className="kv-label">Signal Flow</span>
+                        <span className="kv-val">{selectedWire.signalDirection || 'BIDIRECTIONAL'}</span>
+                      </div>
                     </div>
+
+                    <div className="pin-to-pin-box">
+                      <div className="p2p-header">PIN-TO-PIN CONNECTION ROUTE:</div>
+                      <div className="p2p-route">
+                        <div className="p2p-node">
+                          <span className="comp-name">{selectedWire.sourceComponentId.toUpperCase()}</span>
+                          <span className="pin-label">Pin: <strong>{selectedWire.sourcePinId.toUpperCase()}</strong></span>
+                        </div>
+                        <div className="p2p-arrow" style={{ color: selectedWire.color }}>➔</div>
+                        <div className="p2p-node">
+                          <span className="comp-name">{selectedWire.destComponentId.toUpperCase()}</span>
+                          <span className="pin-label">Pin: <strong>{selectedWire.destPinId.toUpperCase()}</strong></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="inspector-desc-section">
+                      <div className="section-label">Connection Purpose:</div>
+                      <p>{selectedWire.connectionPurpose}</p>
+                    </div>
+
+                    <div className="inspector-desc-section">
+                      <div className="section-label">Signal Description & Role:</div>
+                      <p>{selectedWire.signalDescription}</p>
+                    </div>
+
+                    <button className="hw-btn hw-btn-outline" onClick={() => setSelectedWire(null)}>
+                      Clear Wire Selection
+                    </button>
                   </div>
-                )}
-              </div>
-            </div>
-          ) : selectedWire ? (
-            <div className="inspector-content">
-              <div className="inspector-header">
-                <div>
-                  <span className="inspector-status-tag implemented">ACTIVE CONNECTION</span>
-                  <h3 className="inspector-title">{selectedWire.busType} Bus Wire</h3>
-                  <span className="inspector-model">{selectedWire.voltage}</span>
-                </div>
-              </div>
-              <div className="inspector-body">
-                <div className="inspector-prop-row">
-                  <span className="prop-name">Source Terminal:</span>
-                  <span className="prop-value">
-                    {selectedWire.sourceComponentId} (<code>{selectedWire.sourcePinId}</code>)
-                  </span>
-                </div>
-                <div className="inspector-prop-row">
-                  <span className="prop-name">Destination Terminal:</span>
-                  <span className="prop-value">
-                    {selectedWire.destComponentId} (<code>{selectedWire.destPinId}</code>)
-                  </span>
-                </div>
-                <div className="inspector-prop-row">
-                  <span className="prop-name">Bus Protocol:</span>
-                  <span className="prop-value">{selectedWire.busType}</span>
-                </div>
-                <div className="inspector-desc-box">
-                  <h4>Signal Description</h4>
-                  <p>{selectedWire.signalDescription}</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="inspector-empty-state">
-              <span className="empty-icon" style={{ fontSize: '2rem' }}>🔍</span>
-              <h4>Interactive Circuit Inspector</h4>
-              <p>
-                Click any electronic component on the canvas to inspect its physical pinout, operating voltages, communication protocol, and role in MARISLINK.
-              </p>
-              <p className="empty-sub" style={{ marginTop: 6, fontSize: '0.75rem', color: '#64748b' }}>
-                Click any wire to view its source pin, destination pin, signal bus type, and electrical properties.
-              </p>
-              <div className="empty-state-stats">
-                <div className="stat-pill">Components: <strong>{currentComponents.length}</strong></div>
-                <div className="stat-pill">Wires: <strong>{currentWires.length}</strong></div>
-                <div className="stat-pill">Architecture: <strong>ESP32 Unified Prototype</strong></div>
+                ) : selectedComponent ? (
+                  /* Component Details */
+                  <div className="inspector-comp-details">
+                    <div className="inspector-kv-grid">
+                      <div className="kv-item">
+                        <span className="kv-label">Category</span>
+                        <span className="kv-val">{selectedComponent.category}</span>
+                      </div>
+                      <div className="kv-item">
+                        <span className="kv-label">Protocol</span>
+                        <span className="kv-val">{selectedComponent.protocol}</span>
+                      </div>
+                      <div className="kv-item">
+                        <span className="kv-label">Voltage Rail</span>
+                        <span className="kv-val">{selectedComponent.operatingVoltage}</span>
+                      </div>
+                      <div className="kv-item">
+                        <span className="kv-label">Current Draw</span>
+                        <span className="kv-val">{selectedComponent.currentDraw}</span>
+                      </div>
+                    </div>
+
+                    <div className="inspector-desc-section">
+                      <div className="section-label">Component Overview:</div>
+                      <p>{selectedComponent.description}</p>
+                    </div>
+
+                    <div className="inspector-desc-section">
+                      <div className="section-label">Role in MARISLINK System:</div>
+                      <p>{selectedComponent.roleInMarislink}</p>
+                    </div>
+
+                    {selectedComponent.technicalExplanation && (
+                      <div className="inspector-tech-box">
+                        <strong>Technical Engineering Details:</strong> {selectedComponent.technicalExplanation}
+                      </div>
+                    )}
+
+                    {selectedComponent.tinkercadEquivNote && (
+                      <div className="inspector-compat-box">
+                        <strong>Classroom Equivalence Note:</strong> {selectedComponent.tinkercadEquivNote}
+                      </div>
+                    )}
+
+                    {/* Pin Mapping Table */}
+                    <div className="inspector-pins-table-section">
+                      <div className="section-label">
+                        Pins & Connected Circuits ({selectedComponent.pins.length} Pins, {connectedWiresToSelected.length} Active Wires):
+                      </div>
+                      <div className="table-wrapper">
+                        <table className="inspector-pin-table">
+                          <thead>
+                            <tr>
+                              <th>Pin</th>
+                              <th>Type</th>
+                              <th>Connected Route</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedComponent.pins.map((pin) => {
+                              const connected = currentWires.find(
+                                (w) => (w.sourceComponentId === selectedComponent.id && w.sourcePinId === pin.id) ||
+                                       (w.destComponentId === selectedComponent.id && w.destPinId === pin.id)
+                              );
+                              return (
+                                <tr
+                                  key={pin.id}
+                                  className={highlightedPin?.pinId === pin.id ? 'row-highlighted' : ''}
+                                  onClick={() => handleSelectPin(selectedComponent, pin)}
+                                >
+                                  <td><strong>{pin.label}</strong></td>
+                                  <td><span className={`pin-type-tag ${pin.type.toLowerCase()}`}>{pin.type}</span></td>
+                                  <td style={{ fontSize: 11 }}>
+                                    {connected ? (
+                                      <span style={{ color: connected.color, fontWeight: 700 }}>
+                                        ➔ {connected.sourceComponentId === selectedComponent.id ? connected.destComponentId.toUpperCase() : connected.sourceComponentId.toUpperCase()} ({connected.busType})
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: '#94a3b8' }}>Unconnected / Internal</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <button className="hw-btn hw-btn-outline" onClick={() => setSelectedComponent(null)}>
+                      Deselect Component
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           )}
-        </aside>
-      </div>
-
-      {/* ── 3. Circuit Controls & Legend Toolbar ────────────────────────────── */}
-      <div className="circuit-canvas-toolbar">
-        <div className="circuit-filter-pills">
-          <span className="filter-label" style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginRight: 6 }}>WIRE BUS FILTER:</span>
-          {(['ALL', 'POWER', 'GROUND', 'I2C', 'SPI', 'UART', 'ADC', 'GPIO', 'ACOUSTIC'] as BusFilter[]).map((f) => (
-            <button
-              key={f}
-              className={`filter-pill ${busFilter === f ? 'active' : ''}`}
-              onClick={() => setBusFilter(f)}
-            >
-              {f === 'ALL' && '⚡ All Wires'}
-              {f === 'POWER' && '🔴 Power (+3.3V/+5V)'}
-              {f === 'GROUND' && '⚫ Ground (GND)'}
-              {f === 'I2C' && '🔵 I2C (SDA/SCL)'}
-              {f === 'SPI' && '🟣 SPI Bus'}
-              {f === 'UART' && '🟣 UART Serial'}
-              {f === 'ADC' && '🟠 ADC Analog'}
-              {f === 'GPIO' && '🟢 GPIO/PWM'}
-              {f === 'ACOUSTIC' && '🔵 Acoustic Transducer'}
-            </button>
-          ))}
-        </div>
-
-        <div className="circuit-zoom-controls">
-          <button className="ctrl-btn" onClick={() => handleZoomStep(-0.25)} title="Zoom Out (–25%)">－</button>
-          <span className="zoom-level-badge" style={{ fontSize: '0.8125rem', fontWeight: 800, color: '#0369a1', minWidth: 44, textAlign: 'center', fontFamily: 'monospace' }}>
-            {Math.round(zoom * 100)}%
-          </span>
-          <button className="ctrl-btn" onClick={() => handleZoomStep(0.25)} title="Zoom In (+25%)">＋</button>
-          <button className="ctrl-btn reset" onClick={handleResetView} title="Reset View to 100%">Reset 100%</button>
-          <button className="ctrl-btn reset" onClick={handleFitCircuit} title="Fit Entire Circuit on Screen">📐 Fit Circuit</button>
-          {onNavigateToSpark && (
-            <button className="ctrl-btn reset" onClick={onNavigateToSpark} title="Navigate to Spark Big Data Lab" style={{ background: '#f59e0b', color: '#ffffff', borderColor: '#d97706' }}>
-              ⚡ Spark Big Data Lab
-            </button>
-          )}
         </div>
       </div>
 
-      {/* ── 4. COMPLETE END-TO-END MARISLINK SYSTEM WORKFLOW ───────────────── */}
-      <SystemWorkflowSection />
+      {/* ── 4. COMPLETE END-TO-END SECTION (HTML Flow Below Canvas) ───────── */}
+      <SystemWorkflowSection mode={mode} />
 
-      {/* ── 5. Additional Subsea Architectural Specifications ──────────────── */}
+      {/* ── 5. Additional System Architecture Specifications ──────────────── */}
       <CircuitAdditionalInfo />
     </div>
   );
 }
+
 export default CircuitConnectionsPage;
