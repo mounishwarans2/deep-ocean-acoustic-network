@@ -30,29 +30,31 @@ export type Page = 'overview' | 'circuits' | 'hardware' | 'snc' | 'energy' | 'ac
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
-// Row 1: Core System Telemetry & Operational Dashboards
-const NAV_ROW_1: { id: Page; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'circuits', label: '🔌 Circuit Connections' },
-  { id: 'snc', label: 'SNC Analytics' },
-  { id: 'energy', label: 'Energy' },
-  { id: 'acoustic', label: 'Acoustic' },
-  { id: 'environment', label: 'Environment' },
-  { id: 'health', label: 'Device Health' },
-  { id: 'alerts', label: 'Alerts' },
+// Single unified horizontal navigation (all 14 items in one row)
+export interface NavItemDef {
+  id: Page;
+  label: string;
+  shortLabel: string;
+}
+
+const ALL_NAV_ITEMS: NavItemDef[] = [
+  { id: 'overview', label: 'Overview', shortLabel: 'Overview' },
+  { id: 'circuits', label: 'Circuit', shortLabel: 'Circuit' },
+  { id: 'snc', label: 'SNC Analytics', shortLabel: 'SNC' },
+  { id: 'energy', label: 'Energy', shortLabel: 'Energy' },
+  { id: 'acoustic', label: 'Acoustic', shortLabel: 'Acoustic' },
+  { id: 'environment', label: 'Environment', shortLabel: 'Env' },
+  { id: 'health', label: 'Health', shortLabel: 'Health' },
+  { id: 'alerts', label: 'Alerts', shortLabel: 'Alerts' },
+  { id: 'history', label: 'History', shortLabel: 'History' },
+  { id: 'bigdata', label: 'Big Data', shortLabel: 'Big Data' },
+  { id: 'sim3d', label: '3D Sim', shortLabel: '3D' },
+  { id: 'sensors', label: 'Sensors', shortLabel: 'Sensors' },
+  { id: 'prototype', label: 'Exploded', shortLabel: 'Exploded' },
+  { id: 'about', label: 'About', shortLabel: 'About' },
 ];
 
-// Row 2: Deep Analytics, Simulation, Sensors, Hardware & Knowledge
-const NAV_ROW_2: { id: Page; label: string }[] = [
-  { id: 'history', label: 'Historical' },
-  { id: 'bigdata', label: '⚡ Big Data Lab' },
-  { id: 'sim3d', label: '3D Simulation' },
-  { id: 'sensors', label: '🌊 Ocean Sensors' },
-  { id: 'prototype', label: '🔬 Exploded View' },
-  { id: 'about', label: '📖 About the Project' },
-];
-
-const NAV_ITEMS: { id: Page; label: string }[] = [...NAV_ROW_1, ...NAV_ROW_2];
+const NAV_ITEMS: { id: Page; label: string }[] = ALL_NAV_ITEMS;
 
 const VALID_PAGES = new Set<string>(NAV_ITEMS.map(i => i.id));
 
@@ -354,36 +356,30 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
         </div>
       </header>
 
-      <nav className="nav" aria-label="Main Navigation">
-        <div className="nav-row nav-row-1">
-          {NAV_ROW_1.map(item => (
-            <div
+      <nav className="nav single-row-nav" aria-label="Main Navigation">
+        <div className="nav-items-track">
+          {ALL_NAV_ITEMS.map((item) => (
+            <button
               key={item.id}
+              type="button"
               className={`nav-item ${page === item.id ? 'active' : ''}`}
               onClick={() => goPage(item.id)}
+              title={item.label}
             >
-              {item.label}
-            </div>
+              <span className="nav-label-full">{item.label}</span>
+              <span className="nav-label-short">{item.shortLabel}</span>
+            </button>
           ))}
         </div>
-        <div className="nav-row nav-row-2">
-          {NAV_ROW_2.map(item => (
-            <div
-              key={item.id}
-              className={`nav-item ${page === item.id ? 'active' : ''}`}
-              onClick={() => goPage(item.id)}
-            >
-              {item.label}
-            </div>
-          ))}
-          <div className="nav-row-spacer" />
-          <div
-            className="nav-item nav-item-failure"
-            onClick={handleSystemFailure}
-          >
-            System Failure
-          </div>
-        </div>
+        <button
+          type="button"
+          className="nav-item nav-item-failure"
+          onClick={handleSystemFailure}
+          title="Manual Emergency Failure Drill"
+        >
+          <span className="nav-label-full">Failure Drill</span>
+          <span className="nav-label-short">Failure</span>
+        </button>
       </nav>
 
       {failureActive && (

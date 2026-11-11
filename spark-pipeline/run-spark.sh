@@ -36,5 +36,25 @@ cd "$SCRIPT_DIR"
 REL_INPUT=$(realpath --relative-to="$SCRIPT_DIR" "$INPUT_PATH")
 REL_OUTPUT=$(realpath --relative-to="$SCRIPT_DIR" "$OUTPUT_PATH")
 
+# Ensure PATH includes common sbt / java locations
+export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:$PATH"
+
+# Locate sbt executable
+SBT_CMD="sbt"
+if ! command -v sbt &> /dev/null; then
+  for candidate in \
+    "$HOME/.local/bin/sbt" \
+    "/home/mounish/.local/bin/sbt" \
+    "/usr/local/bin/sbt" \
+    "/usr/bin/sbt" \
+    "/opt/sbt/bin/sbt"
+  do
+    if [ -x "$candidate" ]; then
+      SBT_CMD="$candidate"
+      break
+    fi
+  done
+fi
+
 export SBT_OPTS="-Xms512M -Xmx2048M"
-sbt "run \"$REL_INPUT\" \"$REL_OUTPUT\""
+"$SBT_CMD" "run \"$REL_INPUT\" \"$REL_OUTPUT\""
