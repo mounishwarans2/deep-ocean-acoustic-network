@@ -2474,7 +2474,7 @@ function ComponentShape({
 
 // ── 5. COMPLETE END-TO-END SYSTEM WORKFLOW SECTION (HTML FLOW BELOW CANVAS) ──
 
-function SystemWorkflowSection({ mode }: { mode: CircuitMode }) {
+function SystemWorkflowSection({ mode: _mode }: { mode?: CircuitMode }) {
   const steps = [
     { num: '1', title: 'Sensors', desc: 'Keller 60MPa, RTD, IMU, Leak', icon: '🌊', color: '#0284c7' },
     { num: '2', title: 'STM32H7 Core', desc: 'Deterministic Data Acquisition', icon: '⚡', color: '#0d9488' },
