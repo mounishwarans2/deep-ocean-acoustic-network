@@ -2968,16 +2968,6 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
         </div>
       </div>
 
-      {/* ── Evaluator Technical Accuracy Notice ───────────────────────────── */}
-      <div className="circuit-academic-notice">
-        <span className="notice-badge implemented">IMPLEMENTED</span>
-        <strong>Verified Embedded Prototype:</strong> Mode A runs the compiled ESP32 firmware on simulated Wokwi hardware with live telemetry ingestion.
-        <span className="notice-badge architectural" style={{ marginLeft: 14 }}>ARCHITECTURAL</span>
-        <strong>Deep-Sea Production Design:</strong> Mode B models the full multi-rail power system, AMD Versal™ / NVIDIA AI, STM32H7 SNC controller, and hydrophone transceiver.
-        <span className="notice-badge simulated" style={{ marginLeft: 14 }}>SIMULATED</span>
-        <strong>Classroom Equivalent:</strong> Mode C models the Tinkercad tutorial Arduino Uno circuit using supported 8-bit AVR components.
-      </div>
-
       {/* ── 2. WIRE BUS FILTER & ZOOM TOOLBAR (DISPLAYED ABOVE CIRCUIT CANVAS) ── */}
       <div className="circuit-canvas-toolbar">
         {/* Bus Filter Pills */}
