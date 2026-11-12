@@ -341,7 +341,9 @@ app.post('/api/notify/failure', async (req, res) => {
     force: force === true,
   });
 
-  const httpStatus = result.status || (result.ok ? 200 : 502);
+  const httpStatus = typeof result.statusCode === 'number'
+    ? result.statusCode
+    : (typeof result.status === 'number' ? result.status : (result.ok ? 200 : 502));
   return res.status(httpStatus).json(result);
 });
 
@@ -363,7 +365,9 @@ app.post('/api/notify/test', async (req, res) => {
   }
 
   const result = await notificationService.sendTestNotification({ type });
-  const httpStatus = result.status || (result.ok ? 200 : 502);
+  const httpStatus = typeof result.statusCode === 'number'
+    ? result.statusCode
+    : (typeof result.status === 'number' ? result.status : (result.ok ? 200 : 502));
   return res.status(httpStatus).json(result);
 });
 
@@ -380,7 +384,9 @@ app.post('/api/notify/recovery', async (req, res) => {
     message,
   });
 
-  const httpStatus = result.ok ? 200 : (result.status || 500);
+  const httpStatus = typeof result.statusCode === 'number'
+    ? result.statusCode
+    : (typeof result.status === 'number' ? result.status : (result.ok ? 200 : 500));
   return res.status(httpStatus).json(result);
 });
 

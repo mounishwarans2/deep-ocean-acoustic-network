@@ -338,7 +338,7 @@ async function sendEmergencyAlert({ nodeId, status, message, enableVoiceCall = t
   if (!isConfigured()) {
     return {
       ok: false,
-      status: 503,
+      statusCode: 503,
       error: 'Twilio is not configured on the server. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER and MARISLINK_ALERT_RECIPIENT.',
     };
   }
@@ -347,7 +347,7 @@ async function sendEmergencyAlert({ nodeId, status, message, enableVoiceCall = t
   if (!validation.valid) {
     return {
       ok: false,
-      status: 400,
+      statusCode: 400,
       error: `Invalid Twilio configuration: ${validation.errors.join(' ')}`,
     };
   }
@@ -468,7 +468,7 @@ async function sendEmergencyAlert({ nodeId, status, message, enableVoiceCall = t
   if (!result.sms && !result.call) {
     return {
       ok: false,
-      status: 502,
+      statusCode: 502,
       incidentId,
       error: errors.join(' | ') || 'Twilio delivery failed across both SMS and Voice channels.',
     };
@@ -561,7 +561,7 @@ async function sendTestNotification({ type = 'both' }) {
   if (!isConfigured()) {
     return {
       ok: false,
-      status: 503,
+      statusCode: 503,
       error: 'Twilio is not configured on the server. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER and MARISLINK_ALERT_RECIPIENT.',
     };
   }
@@ -570,7 +570,7 @@ async function sendTestNotification({ type = 'both' }) {
   if (!validation.valid) {
     return {
       ok: false,
-      status: 400,
+      statusCode: 400,
       error: `Invalid Twilio configuration: ${validation.errors.join(' ')}`,
     };
   }
