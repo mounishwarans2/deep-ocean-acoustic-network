@@ -183,21 +183,34 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (path: string) 
           });
           const data = (await res.json().catch(() => ({}))) as {
             ok?: boolean;
+            cooldownActive?: boolean;
+            message?: string;
             sms?: { sid: string; status: string };
             call?: { sid: string; status: string };
             warning?: string;
             error?: string;
           };
-          // A real Twilio call SID = success -> stop retrying, show Ringing.
-          if (res.ok && data.ok && data.call) {
-            writeNotifyStatus({
-              phase: 'done',
-              sms: data.sms ? `Sent (${data.sms.status})` : 'Failed',
-              call: `🔔 Ringing (${data.call.status})`,
-              detail: data.warning,
-              at: Date.now(),
-            });
-            return;
+          if (res.ok && data.ok) {
+            if (data.cooldownActive) {
+              writeNotifyStatus({
+                phase: 'done',
+                sms: 'Suppressed (Cooldown)',
+                call: 'Suppressed (Cooldown)',
+                detail: data.message || 'Alert suppressed by active 5-minute incident cooldown.',
+                at: Date.now(),
+              });
+              return;
+            }
+            if (data.call || data.sms) {
+              writeNotifyStatus({
+                phase: 'done',
+                sms: data.sms ? `Sent (${data.sms.status})` : 'Failed',
+                call: data.call ? `🔔 Ringing (${data.call.status})` : (data.warning ? 'Skipped/Failed' : 'None'),
+                detail: data.warning,
+                at: Date.now(),
+              });
+              return;
+            }
           }
           const reason = data.error || `Notify request failed (HTTP ${res.status})`;
           if (attempt === NOTIFY_MAX_ATTEMPTS) {

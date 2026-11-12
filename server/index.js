@@ -13,11 +13,21 @@ const express = require('express');
 const cors = require('cors');
 
 const PORT = Number(process.env.PORT || 5000);
-const { TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM, ALERT_TO } = process.env;
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '128kb' }));
+
+// ── Twilio Emergency Notification Service ────────────────────────────────────
+const notificationService = require('./notification-service');
+
+function credentialsConfigured() {
+  return notificationService.isConfigured();
+}
+
+function getTwilioClient() {
+  return notificationService.getTwilioClient();
+}
 
 // ── Big Data & Spark Pipeline Routes ──────────────────────────────────────────
 const sparkRouter = require('./spark-routes');
@@ -26,19 +36,6 @@ app.use('/api/spark', sparkRouter);
 // ── Virtual Hardware & IoT Telemetry Routes ───────────────────────────────────
 const hardwareRouter = require('./hardware-telemetry');
 app.use('/api/hardware', hardwareRouter);
-
-// ── Twilio helpers ────────────────────────────────────────────────────────────
-function credentialsConfigured() {
-  return Boolean(TWILIO_SID && TWILIO_TOKEN && TWILIO_FROM && ALERT_TO);
-}
-
-function getTwilioClient() {
-  // Required lazily so the server boots (and serves health/validation)
-  // even when Twilio env vars are not configured.
-  // eslint-disable-next-line global-require
-  const twilio = require('twilio');
-  return twilio(TWILIO_SID, TWILIO_TOKEN);
-}
 
 // ── Supabase configuration & client helper ────────────────────────────────────
 function getSupabaseConfig() {
@@ -317,9 +314,9 @@ app.get('/api/telemetry', async (req, res) => {
   }
 });
 
-// ── POST /api/notify/failure (Twilio notification workflow) ───────────────────
+// ── POST /api/notify/failure (Twilio emergency alert workflow) ────────────────
 app.post('/api/notify/failure', async (req, res) => {
-  const { nodeId, status, message } = req.body || {};
+  const { nodeId, status, message, enableVoiceCall, force } = req.body || {};
 
   // ---- backend validation ----
   if (typeof nodeId !== 'string' || nodeId.trim() === '') {
@@ -329,53 +326,75 @@ app.post('/api/notify/failure', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'nodeId is too long (max 64 characters).' });
   }
 
-  const safeNode = nodeId.trim();
-  const safeStatus = typeof status === 'string' && status ? status.slice(0, 32) : 'CRITICAL';
-  const safeMessage = typeof message === 'string' && message ? message.slice(0, 500) : 'Underwater node failure detected';
-
   if (!credentialsConfigured()) {
     return res.status(503).json({
       ok: false,
-      error: 'Twilio is not configured on the server. Set TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM and ALERT_TO.',
+      error: 'Twilio is not configured on the server. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER and MARISLINK_ALERT_RECIPIENT.',
     });
   }
 
-  void safeNode;
-  void safeStatus;
-  void safeMessage;
-  const smsBody = 'sms_appointment_reminders';
-  const VOICE_TEMPLATE_URL = 'https://webhooks.twilio.com/v1/Voice/Template/voice_speech_recognition';
+  const result = await notificationService.sendEmergencyAlert({
+    nodeId,
+    status,
+    message,
+    enableVoiceCall: enableVoiceCall !== false,
+    force: force === true,
+  });
 
-  const result = { ok: true, sms: null, call: null };
-  const errors = [];
+  const httpStatus = result.status || (result.ok ? 200 : 502);
+  return res.status(httpStatus).json(result);
+});
 
-  try {
-    const client = getTwilioClient();
-    const sms = await client.messages.create({ from: TWILIO_FROM, to: ALERT_TO, body: smsBody });
-    result.sms = { sid: sms.sid, status: sms.status };
-  } catch (err) {
-    errors.push(`SMS failed: ${err && err.message ? err.message : err}`);
-  }
+// ── GET /api/notify/status (Inspect Twilio connection & active incident states) ─
+app.get('/api/notify/status', (req, res) => {
+  const status = notificationService.getNotificationStatus();
+  return res.json(status);
+});
 
-  try {
-    const client = getTwilioClient();
-    const call = await client.calls.create({
-      from: TWILIO_FROM,
-      to: ALERT_TO,
-      url: VOICE_TEMPLATE_URL,
+// ── POST /api/notify/test (Controlled non-disruptive integration verification) ─
+app.post('/api/notify/test', async (req, res) => {
+  const { type = 'both' } = req.body || {};
+  const allowed = ['verify', 'sms', 'call', 'both'];
+  if (!allowed.includes(type)) {
+    return res.status(400).json({
+      ok: false,
+      error: `Invalid test type '${type}'. Allowed: ${allowed.join(', ')}`,
     });
-    result.call = { sid: call.sid, status: call.status };
-  } catch (err) {
-    errors.push(`Call failed: ${err && err.message ? err.message : err}`);
   }
 
-  if (!result.sms && !result.call) {
-    return res.status(502).json({ ok: false, error: errors.join(' | ') || 'Twilio request failed.' });
+  const result = await notificationService.sendTestNotification({ type });
+  const httpStatus = result.status || (result.ok ? 200 : 502);
+  return res.status(httpStatus).json(result);
+});
+
+// ── POST /api/notify/recovery (Node operational recovery notice) ───────────────
+app.post('/api/notify/recovery', async (req, res) => {
+  const { nodeId, previousStatus, message } = req.body || {};
+  if (typeof nodeId !== 'string' || nodeId.trim() === '') {
+    return res.status(400).json({ ok: false, error: 'nodeId is required and must be a non-empty string.' });
   }
-  if (errors.length > 0) {
-    result.warning = errors.join(' | ');
-  }
-  return res.json(result);
+
+  const result = await notificationService.sendRecoveryAlert({
+    nodeId: nodeId.trim(),
+    previousStatus,
+    message,
+  });
+
+  const httpStatus = result.ok ? 200 : (result.status || 500);
+  return res.status(httpStatus).json(result);
+});
+
+// ── GET /api/notify/logs (Recent audit logs with masked phone numbers) ────────
+app.get('/api/notify/logs', (req, res) => {
+  const logs = notificationService.getNotificationLogs();
+  const rawLimit = Number(req.query.limit || 50);
+  const limit = Math.max(1, Math.min(100, Number.isNaN(rawLimit) ? 50 : rawLimit));
+  return res.json({
+    ok: true,
+    total: logs.length,
+    limit,
+    logs: logs.slice(0, limit),
+  });
 });
 
 // ── Server listen ─────────────────────────────────────────────────────────────

@@ -2301,14 +2301,39 @@ function ComponentShape({
           width={comp.width + 8}
           height={comp.height + 8}
           rx={8}
-          fill="none"
+          fill="rgba(2, 132, 199, 0.08)"
           stroke="#0284c7"
           strokeWidth={2.5}
           strokeDasharray="5 3"
         />
       )}
 
-      {/* Realistic Hardware Component Image - rendered directly on canvas with drop-shadow */}
+      {/* Component Hover Indicator (vector-crisp outline) */}
+      <rect
+        x={comp.x - 2}
+        y={comp.y - 2}
+        width={comp.width + 4}
+        height={comp.height + 4}
+        rx={8}
+        fill="none"
+        stroke="#38bdf8"
+        strokeWidth={1.5}
+        className="component-hover-halo"
+        pointerEvents="none"
+      />
+
+      {/* Subtle Vector Backing Card for Physical Hardware Depth without raster pixelation */}
+      <rect
+        x={comp.x + 2}
+        y={comp.y + 3}
+        width={comp.width - 4}
+        height={comp.height - 3}
+        rx={6}
+        fill="rgba(15, 23, 42, 0.08)"
+        pointerEvents="none"
+      />
+
+      {/* Realistic Hardware Component Image - rendered directly on canvas at native resolution */}
       {comp.imageSrc ? (
         <image
           href={comp.imageSrc}
@@ -2318,8 +2343,8 @@ function ComponentShape({
           height={comp.height}
           preserveAspectRatio="xMidYMid meet"
           className="component-realistic-img"
+          imageRendering="optimizeQuality"
           style={{
-            filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.22))',
             pointerEvents: 'none'
           }}
         />
@@ -2417,6 +2442,16 @@ function ComponentShape({
 
       {/* Floating Info Badge Card Below Component */}
       <g className="component-info-card">
+        {/* Vector Shadow Card */}
+        <rect
+          x={badgeX + 1}
+          y={badgeY + 2}
+          width={badgeWidth}
+          height={badgeHeight}
+          rx={5}
+          fill="rgba(15, 23, 42, 0.07)"
+          pointerEvents="none"
+        />
         <rect
           x={badgeX}
           y={badgeY}
@@ -2426,7 +2461,6 @@ function ComponentShape({
           fill="#ffffff"
           stroke={isSelected ? '#0284c7' : '#e2e8f0'}
           strokeWidth={isSelected ? 1.8 : 1}
-          filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))"
           className="component-card-bg"
         />
 
@@ -2627,7 +2661,9 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<SVGSVGElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
@@ -2752,13 +2788,67 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
     return () => clearTimeout(timer);
   }, [mode, handleFitCircuit, currentComponents]);
 
-  // Mouse wheel cursor-anchored zoom
+  // Fullscreen toggle callback
+  const toggleFullscreen = useCallback(() => {
+    setIsFullscreen((prev) => {
+      const next = !prev;
+      if (next) {
+        const elem = containerRef.current;
+        if (elem && elem.requestFullscreen && !document.fullscreenElement) {
+          elem.requestFullscreen().catch(() => {
+            // CSS fullscreen fallback takes effect automatically
+          });
+        }
+      } else {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+      setTimeout(() => {
+        handleFitCircuit();
+      }, 120);
+      return next;
+    });
+  }, [handleFitCircuit]);
+
+  // Sync fullscreen change & Esc key events
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const isDocFs = Boolean(document.fullscreenElement);
+      setIsFullscreen(isDocFs);
+      setTimeout(() => {
+        handleFitCircuit();
+      }, 120);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        setTimeout(() => {
+          handleFitCircuit();
+        }, 120);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isFullscreen, handleFitCircuit]);
+
+  // Mouse wheel cursor-anchored zoom (isolated strictly to canvas, preventing page scroll)
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       const rect = el.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
@@ -2779,17 +2869,30 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
     return () => el.removeEventListener('wheel', onWheel);
   }, []);
 
-  // Pan event handlers
+  // Pan event handlers: dragging smoothly moves canvas without sideways page scrolling
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // Only pan if clicking on viewport background
-    if ((e.target as HTMLElement).tagName === 'svg' || (e.target as HTMLElement).id === 'grid-background') {
-      setIsPanning(true);
-      setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    const target = e.target as HTMLElement;
+    // Don't pan if clicking directly on an interactive pin, inspector, button, or link
+    if (
+      target.closest('.circuit-pin-point') ||
+      target.closest('.ctrl-btn') ||
+      target.closest('.float-ctrl-btn') ||
+      target.closest('.circuit-quick-inspector-overlay') ||
+      target.closest('button') ||
+      target.closest('a')
+    ) {
+      return;
     }
+    e.preventDefault();
+    e.stopPropagation();
+    setIsPanning(true);
+    setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
   }, [pan]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isPanning) return;
+    e.preventDefault();
+    e.stopPropagation();
     setPan({
       x: e.clientX - startPan.x,
       y: e.clientY - startPan.y,
@@ -2940,129 +3043,161 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
         </div>
       </div>
 
-      {/* ── 2. WIRE BUS FILTER & ZOOM TOOLBAR (DISPLAYED ABOVE CIRCUIT CANVAS) ── */}
-      <div className="circuit-canvas-toolbar">
-        {/* Bus Filter Pills */}
-        <div className="circuit-filter-pills">
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>WIRE BUS FILTER:</span>
-          {(['ALL', 'POWER', 'GROUND', 'I2C', 'SPI', 'UART', 'ADC/DAC', 'GPIO/PWM', 'USB/PCIe'] as BusFilter[]).map((f) => (
-            <button
-              key={f}
-              className={`filter-pill ${busFilter === f ? 'active' : ''}`}
-              onClick={() => setBusFilter(f)}
-            >
-              {f === 'POWER' && '🔴 Power (+12V/+5V/+3.3V)'}
-              {f === 'GROUND' && '⚫ Ground (GND)'}
-              {f === 'I2C' && '🩵 I2C (SDA/SCL)'}
-              {f === 'SPI' && '🔵 SPI Bus'}
-              {f === 'UART' && '🟣 UART Serial'}
-              {f === 'ADC/DAC' && '🟠 ADC/DAC Analog'}
-              {f === 'GPIO/PWM' && '🟢 GPIO/PWM'}
-              {f === 'USB/PCIe' && '🔵 High-Speed USB/PCIe'}
-              {f === 'ALL' && '🌈 All Wires'}
-            </button>
-          ))}
-        </div>
-
-        {/* Zoom & View Controls */}
-        <div className="circuit-zoom-controls">
-          <button className="ctrl-btn" onClick={() => handleZoomStep(-0.25)} title="Zoom Out (-25%)">－</button>
-          <span className="zoom-indicator" title="Current Zoom">{Math.round(zoom * 100)}%</span>
-          <button className="ctrl-btn" onClick={() => handleZoomStep(0.25)} title="Zoom In (+25%)">＋</button>
-          <button className="ctrl-btn reset" onClick={handleResetView} title="Reset to 100% Zoom">
-            Reset 100%
-          </button>
-          <button className="ctrl-btn reset fit" onClick={handleFitCircuit} title="Fit Entire Circuit on Screen">
-            📐 Fit Circuit
-          </button>
-
-          {onNavigateToSpark && (
-            <button className="spark-nav-btn" onClick={onNavigateToSpark}>
-              ⚡ Spark Lab
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* ── 3. FULL-WIDTH CIRCUIT WORKSPACE (100% WIDTH CANVAS, NO FIXED SPLIT) ── */}
-      <div className="circuit-workspace-body">
-        {/* Interactive SVG Canvas Viewport */}
-        <div
-          ref={viewportRef}
-          className={`circuit-canvas-viewport ${isPanning ? 'panning' : ''}`}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          {/* Floating On-Canvas Quick Zoom Controls (25% - 400%) */}
-          <div className="circuit-canvas-floating-controls">
-            <button className="float-ctrl-btn" onClick={() => handleZoomStep(0.25)} title="Zoom In (+25%)">＋</button>
-            <button className="float-ctrl-btn" onClick={() => handleZoomStep(-0.25)} title="Zoom Out (-25%)">－</button>
-            <span className="float-zoom-badge" title="Current Zoom Level">{Math.round(zoom * 100)}%</span>
-            <button className="float-ctrl-btn reset" onClick={handleResetView} title="Reset to 100%">↺ Reset</button>
-            <button className="float-ctrl-btn fit" onClick={handleFitCircuit} title="Fit Entire Circuit">📐 Fit</button>
+      {/* ── 2 & 3. INTERACTIVE CANVAS CONTAINER (SUPPORTS FULLSCREEN MODE) ── */}
+      <div
+        ref={containerRef}
+        className={`circuit-interactive-container ${isFullscreen ? 'is-fullscreen' : ''}`}
+      >
+        {/* ── 2. WIRE BUS FILTER & ZOOM TOOLBAR (DISPLAYED ABOVE CIRCUIT CANVAS) ── */}
+        <div className="circuit-canvas-toolbar">
+          {/* Bus Filter Pills */}
+          <div className="circuit-filter-pills">
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>WIRE BUS FILTER:</span>
+            {(['ALL', 'POWER', 'GROUND', 'I2C', 'SPI', 'UART', 'ADC/DAC', 'GPIO/PWM', 'USB/PCIe'] as BusFilter[]).map((f) => (
+              <button
+                key={f}
+                className={`filter-pill ${busFilter === f ? 'active' : ''}`}
+                onClick={() => setBusFilter(f)}
+              >
+                {f === 'POWER' && '🔴 Power (+12V/+5V/+3.3V)'}
+                {f === 'GROUND' && '⚫ Ground (GND)'}
+                {f === 'I2C' && '🩵 I2C (SDA/SCL)'}
+                {f === 'SPI' && '🔵 SPI Bus'}
+                {f === 'UART' && '🟣 UART Serial'}
+                {f === 'ADC/DAC' && '🟠 ADC/DAC Analog'}
+                {f === 'GPIO/PWM' && '🟢 GPIO/PWM'}
+                {f === 'USB/PCIe' && '🔵 High-Speed USB/PCIe'}
+                {f === 'ALL' && '🌈 All Wires'}
+              </button>
+            ))}
           </div>
 
-          <svg
-            ref={canvasRef}
-            className="circuit-svg-canvas"
-            width="100%"
-            height="100%"
-            viewBox={
-              mode === 'complete_underwater' ? '0 0 2150 890' :
-              mode === 'esp32_wokwi' ? '0 0 1200 750' :
-              '0 0 1100 680'
-            }
+          {/* Zoom & View Controls */}
+          <div className="circuit-zoom-controls">
+            <button className="ctrl-btn" onClick={() => handleZoomStep(-0.25)} title="Zoom Out (-25%)">－</button>
+            <span className="zoom-indicator" title="Current Zoom">{Math.round(zoom * 100)}%</span>
+            <button className="ctrl-btn" onClick={() => handleZoomStep(0.25)} title="Zoom In (+25%)">＋</button>
+            <button className="ctrl-btn reset" onClick={handleResetView} title="Reset to 100% Zoom">
+              Reset 100%
+            </button>
+            <button className="ctrl-btn reset fit" onClick={handleFitCircuit} title="Fit Entire Circuit on Screen">
+              📐 Fit Circuit
+            </button>
+            <button
+              className={`ctrl-btn reset fullscreen-btn ${isFullscreen ? 'is-active' : ''}`}
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Exit Full Screen (Esc)' : 'Full Screen View (Fill entire screen)'}
+            >
+              {isFullscreen ? '🗗 Exit Full Screen' : '⛶ Full Screen'}
+            </button>
+
+            {onNavigateToSpark && (
+              <button className="spark-nav-btn" onClick={onNavigateToSpark}>
+                ⚡ Spark Lab
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ── 3. FULL-WIDTH CIRCUIT WORKSPACE (100% WIDTH CANVAS, NO FIXED SPLIT) ── */}
+        <div className="circuit-workspace-body">
+          {/* Interactive SVG Canvas Viewport */}
+          <div
+            ref={viewportRef}
+            className={`circuit-canvas-viewport ${isPanning ? 'panning' : ''}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           >
-            <defs>
-              <pattern id="tinkercad-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-                <rect width="24" height="24" fill="#f8fafc" />
-                <circle cx="12" cy="12" r="1.2" fill="#cbd5e1" />
-              </pattern>
-            </defs>
+            {/* Floating On-Canvas Quick Zoom Controls (25% - 400%) */}
+            <div className="circuit-canvas-floating-controls">
+              <button className="float-ctrl-btn" onClick={() => handleZoomStep(0.25)} title="Zoom In (+25%)">＋</button>
+              <button className="float-ctrl-btn" onClick={() => handleZoomStep(-0.25)} title="Zoom Out (-25%)">－</button>
+              <span className="float-zoom-badge" title="Current Zoom Level">{Math.round(zoom * 100)}%</span>
+              <button className="float-ctrl-btn reset" onClick={handleResetView} title="Reset to 100%">↺ Reset</button>
+              <button className="float-ctrl-btn fit" onClick={handleFitCircuit} title="Fit Entire Circuit">📐 Fit</button>
+              <button
+                className={`float-ctrl-btn fullscreen-btn ${isFullscreen ? 'is-active' : ''}`}
+                onClick={toggleFullscreen}
+                title={isFullscreen ? 'Exit Full Screen (Esc)' : 'Full Screen View'}
+              >
+                {isFullscreen ? '🗗 Exit' : '⛶ Fullscreen'}
+              </button>
+            </div>
 
-            {/* Background Grid Layer */}
-            <rect
-              id="grid-background"
-              x="-4000"
-              y="-4000"
-              width="10000"
-              height="10000"
-              fill="url(#tinkercad-grid)"
-            />
+            {/* Prominent floating exit button in fullscreen mode */}
+            {isFullscreen && (
+              <button
+                className="circuit-fullscreen-exit-pill"
+                onClick={toggleFullscreen}
+                title="Exit Full Screen View (or press Esc)"
+              >
+                ✕ Exit Full Screen (Esc)
+              </button>
+            )}
 
-            {/* Canvas Transformation Group (Zoom & Pan) */}
-            <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-              {/* Colored Subsystem Bounding Boxes (Mode B) */}
-              {mode === 'complete_underwater' &&
-                UNDERWATER_GROUPS.map((g) => (
-                  <g key={g.id}>
-                    <rect
-                      x={g.x}
-                      y={g.y}
-                      width={g.width}
-                      height={g.height}
-                      rx={10}
-                      fill={g.color}
-                      stroke={g.accent}
-                      strokeWidth={1.5}
-                      strokeDasharray="6 4"
-                      opacity={0.8}
-                    />
-                    <text
-                      x={g.x + 16}
-                      y={g.y + 24}
-                      fill={g.accent}
-                      fontSize={11.5}
-                      fontWeight="800"
-                      letterSpacing={0.8}
-                      fontFamily="system-ui, sans-serif"
-                    >
-                      {g.name}
-                    </text>
-                  </g>
-                ))}
+            <svg
+              ref={canvasRef}
+              className="circuit-svg-canvas"
+              width="100%"
+              height="100%"
+              viewBox={
+                mode === 'complete_underwater' ? '0 0 2150 890' :
+                mode === 'esp32_wokwi' ? '0 0 1200 750' :
+                '0 0 1100 680'
+              }
+            >
+              <defs>
+                <pattern id="tinkercad-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                  <rect width="24" height="24" fill="#f8fafc" />
+                  <circle cx="12" cy="12" r="1.2" fill="#cbd5e1" />
+                </pattern>
+              </defs>
+
+              {/* Background Grid Layer */}
+              <rect
+                id="grid-background"
+                x="-4000"
+                y="-4000"
+                width="10000"
+                height="10000"
+                fill="url(#tinkercad-grid)"
+              />
+
+              {/* Canvas Transformation Group (Zoom & Pan) */}
+              <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+                {/* Colored Subsystem Bounding Boxes (Mode B) */}
+                {mode === 'complete_underwater' &&
+                  UNDERWATER_GROUPS.map((g) => (
+                    <g key={g.id} style={{ pointerEvents: 'none' }}>
+                      <rect
+                        x={g.x}
+                        y={g.y}
+                        width={g.width}
+                        height={g.height}
+                        rx={10}
+                        fill={g.color}
+                        stroke={g.accent}
+                        strokeWidth={1.5}
+                        strokeDasharray="6 4"
+                        opacity={0.8}
+                        pointerEvents="none"
+                      />
+                      <text
+                        x={g.x + 16}
+                        y={g.y + 24}
+                        fill={g.accent}
+                        fontSize={11.5}
+                        fontWeight="800"
+                        letterSpacing={0.8}
+                        fontFamily="system-ui, sans-serif"
+                        pointerEvents="none"
+                      >
+                        {g.name}
+                      </text>
+                    </g>
+                  ))}
 
               {/* 1. Connecting Wires Layer (Behind Components) */}
               <g className="wires-layer">
@@ -3273,6 +3408,7 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
           )}
         </div>
       </div>
+    </div>
 
       {/* ── 4. COMPLETE END-TO-END SECTION (HTML Flow Below Canvas) ───────── */}
       <SystemWorkflowSection mode={mode} />

@@ -262,6 +262,32 @@ async function runTests() {
     assert(whitespaceNodeGet.status === 200, 'GET /api/telemetry with whitespace nodeId returns 200 (permissive handling)');
     assert(whitespaceNodeGet.data.nodeId === null, 'Whitespace-only nodeId query is normalized to null (no filter applied)');
 
+    // ── Phase 7: Twilio Notification Endpoints & Security Checks ─────────────
+    console.log('\n--- Phase 7: Twilio Notification Endpoints & Security Checks ---');
+
+    // GET /api/notify/status
+    const notifyStatusRes = await request('GET', '/api/notify/status');
+    assert(notifyStatusRes.status === 200, 'GET /api/notify/status returns 200');
+    assert(notifyStatusRes.data.ok === true, 'GET /api/notify/status returns ok=true');
+    assert(notifyStatusRes.data.service === 'marislink-twilio-notification-service', 'Reports service name');
+    assert(typeof notifyStatusRes.data.configured === 'boolean', 'Reports configured boolean');
+    assert(Array.isArray(notifyStatusRes.data.recentLogs), 'Provides recentLogs array');
+    assert(Array.isArray(notifyStatusRes.data.activeIncidents), 'Provides activeIncidents array');
+
+    // POST /api/notify/test with invalid type
+    const testBadTypeRes = await request('POST', '/api/notify/test', { type: 'invalid_type' });
+    assert(testBadTypeRes.status === 400 && testBadTypeRes.data.error.includes('Invalid test type'), 'POST /api/notify/test rejects invalid type with 400');
+
+    // POST /api/notify/recovery missing nodeId
+    const recNoNodeRes = await request('POST', '/api/notify/recovery', {});
+    assert(recNoNodeRes.status === 400 && recNoNodeRes.data.error.includes('nodeId is required'), 'POST /api/notify/recovery rejects missing nodeId with 400');
+
+    // GET /api/notify/logs
+    const logsRes = await request('GET', '/api/notify/logs?limit=5');
+    assert(logsRes.status === 200, 'GET /api/notify/logs returns 200');
+    assert(logsRes.data.ok === true && Array.isArray(logsRes.data.logs), 'GET /api/notify/logs returns logs array');
+    assert(logsRes.data.limit === 5, 'GET /api/notify/logs honors limit query param');
+
     console.log(`\n======================================================`);
     console.log(`Results: ${passed} passed, ${failed} failed.`);
     console.log(`======================================================\n`);
