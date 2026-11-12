@@ -1,0 +1,11 @@
+# Ignore oversized static videos exceeding Vercel 100MB limit
+public/ocean_video.mp4
+dist/ocean_video.mp4
+.vercel/output/static/ocean_video.mp4
+
+# Ignore backend server, dataset archives and build caches from client frontend bundle
+DATA _SETmarislink/
+server/
+hardware-simulation/
+spark-pipeline/
+scripts/
