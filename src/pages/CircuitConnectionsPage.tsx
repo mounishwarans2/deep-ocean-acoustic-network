@@ -2501,11 +2501,7 @@ function SystemWorkflowSection({ mode }: { mode: CircuitMode }) {
             </div>
           </div>
           <div className="workflow-mode-tag">
-            Current Architecture Mode: <strong>
-              {mode === 'complete_underwater' ? 'Complete MARISLINK Underwater Architecture (AMD Versal™ AI Edge + STM32H7)' :
-               mode === 'esp32_wokwi' ? 'ESP32 Wokwi Production Prototype (32-Bit LX6 + BMP280)' :
-               'Arduino Uno Tinkercad Model (Classroom Equivalent)'}
-            </strong>
+            Current Architecture: <strong>Complete MARISLINK Underwater Architecture (AMD Versal™ AI Edge + STM32H7)</strong>
           </div>
         </div>
 
@@ -2932,39 +2928,15 @@ export function CircuitConnectionsPage({ onNavigateToSpark }: CircuitConnections
             <span>🔌</span> MARISLINK – CIRCUIT CONNECTIONS
           </h2>
           <p>
-            Interactive 2D Electronics Schematic & Pin-to-Pin System Architecture (Tinkercad & Wokwi Engineering Workspace)
+            Interactive 2D Electronics Schematic & Pin-to-Pin System Architecture
           </p>
         </div>
 
-        {/* Three Architecture Mode Switcher */}
+        {/* Unified MARISLINK Architecture Badge */}
         <div className="circuit-mode-toggle">
-          <button
-            className={`mode-btn mode-complete ${mode === 'complete_underwater' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('complete_underwater');
-              handleResetView();
-            }}
-          >
+          <div className="mode-btn mode-complete active" style={{ cursor: 'default' }}>
             🌊 Complete MARISLINK Underwater Architecture (AMD Versal™ AI Edge + STM32H7)
-          </button>
-          <button
-            className={`mode-btn mode-prototype ${mode === 'esp32_wokwi' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('esp32_wokwi');
-              handleResetView();
-            }}
-          >
-            ⚡ ESP32 Wokwi Production Prototype (32-Bit LX6 + BMP280)
-          </button>
-          <button
-            className={`mode-btn mode-arduino ${mode === 'arduino_tinkercad' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('arduino_tinkercad');
-              handleResetView();
-            }}
-          >
-            📘 Arduino Uno Tinkercad Model (Classroom Equivalent)
-          </button>
+          </div>
         </div>
       </div>
 
