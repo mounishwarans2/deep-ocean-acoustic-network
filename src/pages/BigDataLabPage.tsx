@@ -1170,10 +1170,6 @@ export function BigDataLabPage({ state }: Props) {
                           <span>Depth: <b>{inspectedDevice.depth} m</b></span>
                           <span>|</span>
                           <span>Status: <b>{inspectedDevice.nodeStatus}</b></span>
-                          <span>|</span>
-                          <span style={{ background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: 4, fontWeight: 700, fontSize: 11 }}>
-                            ⚠️ {deviceHistoryData?.dataSource || inspectedDevice.dataSource || 'SIMULATION DATA – Acoustic Propagation Model'}
-                          </span>
                         </div>
                       </div>
                     </div>

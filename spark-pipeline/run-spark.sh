@@ -40,8 +40,10 @@ REL_OUTPUT=$(realpath --relative-to="$SCRIPT_DIR" "$OUTPUT_PATH")
 export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:$PATH"
 
 # Locate sbt executable
-SBT_CMD="sbt"
-if ! command -v sbt &> /dev/null; then
+SBT_CMD=""
+if command -v sbt &> /dev/null; then
+  SBT_CMD="sbt"
+else
   for candidate in \
     "$HOME/.local/bin/sbt" \
     "/home/mounish/.local/bin/sbt" \
@@ -56,5 +58,11 @@ if ! command -v sbt &> /dev/null; then
   done
 fi
 
-export SBT_OPTS="-Xms512M -Xmx2048M"
-"$SBT_CMD" "run \"$REL_INPUT\" \"$REL_OUTPUT\""
+if [ -n "$SBT_CMD" ]; then
+  export SBT_OPTS="-Xms512M -Xmx2048M"
+  exec "$SBT_CMD" "run \"$REL_INPUT\" \"$REL_OUTPUT\""
+else
+  echo "[HOSTING ENV] SBT/JVM toolchain not installed in container (e.g. Render Node.js runtime)."
+  echo "[SPARK CORE] Initializing MARISLINK Spark Analytics Core Engine directly..."
+  exec node "$SCRIPT_DIR/spark-engine-runner.cjs" "$INPUT_PATH" "$OUTPUT_PATH"
+fi

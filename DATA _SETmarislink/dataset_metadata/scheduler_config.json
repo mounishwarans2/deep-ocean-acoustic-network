@@ -5,11 +5,11 @@
   "timezone": "Asia/Kolkata",
   "startDate": "2026-09-01",
   "initialEndDate": "2026-11-05",
-  "lastGeneratedDate": "2026-11-12",
-  "nextScheduledRun": "2026-11-13 00:05:00 Asia/Kolkata",
+  "lastGeneratedDate": "2026-11-13",
+  "nextScheduledRun": "2026-11-14 00:05:00 Asia/Kolkata",
   "backfillCompleted": true,
   "totalDatesTarget": 66,
-  "totalDatesGenerated": 73,
+  "totalDatesGenerated": 74,
   "failedDates": [],
   "history": [
     {
@@ -39,8 +39,8 @@
     }
   ],
   "catchupPolicy": "AUTO_ON_RESTART",
-  "updatedAt": "2026-11-12T04:23:04.226Z",
+  "updatedAt": "2026-11-13T17:18:54.395Z",
   "deploymentNote": "Persistent generation continues daily at 00:05 Asia/Kolkata while backend runs. If the server was stopped, missed dates are automatically backfilled on startup. For permanent 24/7 generation without local machine running, deploy as a daemon or worker service (PM2 / systemd / Cloud VM).",
-  "lastRunAt": "2026-11-12T04:23:04.226Z",
+  "lastRunAt": "2026-11-13T17:18:54.395Z",
   "lastRunStatus": "SUCCESS"
 }

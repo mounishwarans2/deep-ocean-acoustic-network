@@ -3,8 +3,64 @@
   "description": "MARISLINK Date-Wise Dataset & Spark Analytics Master Catalog",
   "timezone": "Asia/Kolkata",
   "storageRoot": "DATA _SETmarislink",
-  "updatedAt": "2026-11-12T04:23:04.223Z",
+  "updatedAt": "2026-11-13T17:18:54.394Z",
   "datasets": [
+    {
+      "id": "ds_20261113_daily",
+      "filename": "marislink_telemetry_20261113.csv.gz",
+      "relativePath": "DATA _SETmarislink/2026-11-13/generated_datasets/marislink_telemetry_20261113.csv.gz",
+      "absolutePath": "/home/mounish/project/ProjectAM/agile methology/DATA _SETmarislink/2026-11-13/generated_datasets/marislink_telemetry_20261113.csv.gz",
+      "date": "2026-11-13",
+      "time": "000500",
+      "displayTime": "2026-11-13, 00:05:00",
+      "createdAt": "2026-11-13T17:18:54.388Z",
+      "category": "GENERATED",
+      "source": "DAILY AUTOMATIC SIMULATION DATA (Acoustic Propagation Engine)",
+      "recordCount": 480,
+      "uniqueNodeCount": 20,
+      "uniqueNodes": [
+        "DC-01",
+        "SR-01",
+        "MN-01",
+        "MN-02",
+        "SUB-A",
+        "SUB-B",
+        "SUB-C",
+        "SUB-D",
+        "S-01",
+        "S-02",
+        "S-03",
+        "S-04",
+        "S-05",
+        "S-06",
+        "S-07",
+        "S-08",
+        "S-09",
+        "S-10",
+        "S-11",
+        "S-12"
+      ],
+      "columns": [
+        "node_id",
+        "timestamp",
+        "depth_m",
+        "temperature_c",
+        "pressure_mpa",
+        "battery_level",
+        "signal_strength",
+        "latency_ms",
+        "packet_loss",
+        "communication_status",
+        "node_status"
+      ],
+      "rawSizeBytes": 39671,
+      "compressedSizeBytes": 9816,
+      "compressionRatioPercent": 75.3,
+      "sparkStatus": "PENDING",
+      "resultFilename": null,
+      "resultPath": null,
+      "lastProcessedAt": null
+    },
     {
       "id": "ds_20261112_daily",
       "filename": "marislink_telemetry_20261112.csv.gz",
@@ -4840,19 +4896,20 @@
     }
   ],
   "summary": {
-    "totalDatasets": 87,
-    "totalGenerated": 86,
+    "totalDatasets": 88,
+    "totalGenerated": 87,
     "totalUploaded": 1,
-    "totalRecords": 40744,
-    "totalCompressedBytes": 840717,
-    "totalRawBytes": 3384505,
+    "totalRecords": 41224,
+    "totalCompressedBytes": 850533,
+    "totalRawBytes": 3424176,
     "spaceSavedPercent": 75.2,
     "processedDatasets": 6,
-    "pendingDatasets": 81,
+    "pendingDatasets": 82,
     "totalSimulatedNodes": 40,
     "earliestDate": "2026-09-01",
-    "latestDate": "2026-11-12",
+    "latestDate": "2026-11-13",
     "datesAvailable": [
+      "2026-11-13",
       "2026-11-12",
       "2026-11-11",
       "2026-11-10",
@@ -4928,6 +4985,12 @@
       "2026-09-01"
     ],
     "diskUsageByDate": {
+      "2026-11-13": {
+        "count": 1,
+        "records": 480,
+        "compressedBytes": 9816,
+        "rawBytes": 39671
+      },
       "2026-11-12": {
         "count": 1,
         "records": 480,
@@ -5368,7 +5431,7 @@
       }
     },
     "diskUsageByCategory": {
-      "GENERATED": 840453,
+      "GENERATED": 850269,
       "UPLOADED": 264,
       "SPARK_RESULTS": 190730
     }
