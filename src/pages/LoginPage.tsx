@@ -3,10 +3,19 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MeshBackground } from '../components/MeshBackground';
 import './LoginPage.css';
 
-const DEFAULT_USERNAME = '927624BAD044';
-const DEFAULT_PASSWORD = 'kaviyarasu';
+// Cryptographic SHA-256 hashes of authorized administrative credentials.
+// Plaintext usernames and passwords are NEVER committed or stored in source code.
+const DEFAULT_USER_HASH = 'acee2a5b8b2a049e31d63a89de3773c7459b9b4c5a092afb1e976f19f56bd1ec';
+const DEFAULT_PASS_HASH = '7b41810ae5883567231042f47dd2e31b75c519754b130358c4f1a3e4759f85f6';
 
-function getStoredCredentials() {
+async function sha256(str: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function getStoredCredentials(): { username: string; passwordHash: string } | null {
   const stored = localStorage.getItem('signupCredentials');
   if (stored) {
     try { return JSON.parse(stored); } catch { return null; }
@@ -27,7 +36,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -50,15 +59,19 @@ export default function LoginPage() {
         setError('Username already exists');
         return;
       }
-      localStorage.setItem('signupCredentials', JSON.stringify({ username, password }));
+      const passwordHash = await sha256(password);
+      localStorage.setItem('signupCredentials', JSON.stringify({ username, passwordHash }));
       setSuccess('Account created! You can now login.');
       setTimeout(() => navigate('/login'), 1500);
     } else {
       const stored = getStoredCredentials();
-      const validUser = stored && stored.username === username && stored.password === password;
-      const isDefault = username === DEFAULT_USERNAME && password === DEFAULT_PASSWORD;
+      const enteredPassHash = await sha256(password);
+      const enteredUserHash = await sha256(username);
 
-      if (validUser || isDefault) {
+      const validStoredUser = stored && stored.username === username && stored.passwordHash === enteredPassHash;
+      const isDefault = enteredUserHash === DEFAULT_USER_HASH && enteredPassHash === DEFAULT_PASS_HASH;
+
+      if (validStoredUser || isDefault) {
         sessionStorage.setItem('authenticated', 'true');
         navigate('/dashboard', { replace: true });
       } else {
